@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi" data-platform="ios" data-theme="light">
+<html lang="vi">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
@@ -8,6 +8,29 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#f8fafc">
 <meta name="apple-mobile-web-app-title" content="Chi Tiêu">
+<script>
+/* Inline bootstrap — chạy TRƯỚC khi CSS load để tránh FOUC theme + flash platform.
+   Đọc state.theme từ localStorage, set data-theme + data-platform + meta theme-color. */
+(function () {
+  var theme = 'light';
+  try {
+    var raw = localStorage.getItem('expense_tracker_v1');
+    if (raw) {
+      var parsed = JSON.parse(raw);
+      if (parsed && parsed.settings && parsed.settings.theme === 'dark') theme = 'dark';
+    }
+  } catch (e) {}
+  document.documentElement.setAttribute('data-theme', theme);
+
+  var ua = navigator.userAgent || '';
+  var platform = 'ios';
+  if (/Android/.test(ua)) platform = 'android';
+  document.documentElement.setAttribute('data-platform', platform);
+
+  var meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute('content', theme === 'dark' ? '#0b1020' : '#f8fafc');
+})();
+</script>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
@@ -96,14 +119,14 @@
          ============================================================ -->
     <section class="panel" id="panel-reports">
       <div class="month-nav">
-        <button class="month-nav-btn" id="prevMonth">
+        <button class="month-nav-btn" id="prevMonth" aria-label="Tháng trước">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <div class="month-label" id="reportMonthLabel">—</div>
-        <button class="month-nav-btn" id="nextMonth">
+        <button class="month-nav-btn" id="nextMonth" aria-label="Tháng sau">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
-        <button class="btn-export-pdf" id="exportPdfBtn">
+        <button class="btn-export-pdf" id="exportPdfBtn" aria-label="Xuất PDF">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
           PDF
         </button>
@@ -220,7 +243,7 @@
       <div class="settings-card">
         <div class="settings-title"><span data-icon="infoCircle"></span>Về ứng dụng</div>
         <div style="font-size:12px;color:var(--text-muted);line-height:1.65;">
-          <strong style="color:var(--text);">Quản Lý Chi Tiêu v6.0 — Module</strong> · Mobile-first · 60fps
+          <strong style="color:var(--text);">Quản Lý Chi Tiêu v6.1 — Module</strong> · Mobile-first · 60fps
         </div>
       </div>
     </section>
