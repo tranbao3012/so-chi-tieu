@@ -1,5 +1,6 @@
-/* css/app.css — V1.1
-   Fix: App Bar padding-top dùng max() — tránh mất title khi safe-area-inset-top = 0
+/* css/app.css — V1.2
+   V1.1: Fix App Bar padding-top dùng max() — tránh mất title khi safe-area-inset-top = 0
+   V1.2: .overview-grid luôn 1 cột (chỉ còn card Hôm nay sau khi xoá card Tháng)
    Toàn bộ CSS layout + components (đã trừ theme/reset)
    Thứ tự load: theme.css → app.css */
 
@@ -261,9 +262,6 @@
   grid-template-columns: 1fr;
   gap: 10px;
   margin-bottom: 12px;
-}
-@media (min-width: 640px) {
-  .overview-grid { grid-template-columns: 1fr 1fr; }
 }
 
 .overview-card {
