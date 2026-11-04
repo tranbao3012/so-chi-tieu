@@ -1,14 +1,15 @@
-/* js/dashboard.js — V1.0
-   Render tab Tổng quan: overview Hôm nay/Tháng, health, AI insights,
-   phân tích kế toán 50/30/20, danh sách giao dịch gần đây */
+/* js/dashboard.js — V1.1
+   Render tab Tổng quan: overview Hôm nay, health, AI insights,
+   phân tích kế toán 50/30/20, danh sách giao dịch gần đây.
+   V1.1: Xoá renderMonthOverview() và các import không còn dùng. */
 
 import {
   state, AI, ACCT,
   ic, escapeHtml,
-  fmtMoney, fmtMoneyShort, fmtDate, dayIso, monthLabel,
-  getDayExpenses, getMonthExpenses, getLastMonth,
+  fmtMoney, fmtMoneyShort, fmtDate, dayIso,
+  getDayExpenses,
   calcSummary, calcByCategory, calcTrend,
-  daysInMonth, getCategory, getPayment,
+  getCategory, getPayment,
   renderSparkline
 } from './core.js';
 
@@ -44,37 +45,6 @@ function renderTodayOverview() {
     </div>`;
 
   renderSparkline(document.getElementById('todaySpark'), AI.sparklineData(7), '#f97316');
-}
-
-/* ==================================================================
-   OVERVIEW — Tháng này
-   ================================================================== */
-function renderMonthOverview() {
-  const el = document.getElementById('monthOverview');
-  if (!el) return;
-
-  const today = new Date();
-  const monthExp = getMonthExpenses(today);
-  const { total, count } = calcSummary(monthExp);
-  const lastTotal = calcSummary(getMonthExpenses(getLastMonth())).total;
-  const trend = calcTrend(total, lastTotal, 'tháng trước');
-  const days = daysInMonth(today.getFullYear(), today.getMonth());
-  const avg = total / days;
-  const budget = state.settings.monthlyBudget || 0;
-  const remaining = budget > 0 ? budget - total : 0;
-
-  el.innerHTML = `
-    <div class="overview-header">
-      <div class="overview-title"><span class="overview-icon month">${ic('calendar')}</span>Tháng này</div>
-      <span class="overview-date">${monthLabel(today)}</span>
-    </div>
-    <div class="overview-main-row"><div class="overview-big">${fmtMoney(total)}</div></div>
-    <div class="overview-trend ${trend.type}">${ic(trend.icon)}<span>${trend.text}</span></div>
-    <div class="overview-mini-kpis">
-      <div class="mini-kpi"><div class="mini-kpi-label">Số GD</div><div class="mini-kpi-value">${count}</div></div>
-      <div class="mini-kpi"><div class="mini-kpi-label">TB/Ngày</div><div class="mini-kpi-value">${fmtMoneyShort(Math.round(avg))}</div></div>
-      <div class="mini-kpi"><div class="mini-kpi-label">${budget > 0 ? 'Còn' : 'NS'}</div><div class="mini-kpi-value" style="${budget > 0 && remaining < 0 ? 'color:var(--danger);' : ''}">${budget > 0 ? fmtMoneyShort(Math.abs(remaining)) : '—'}</div></div>
-    </div>`;
 }
 
 /* ==================================================================
@@ -224,7 +194,6 @@ function renderRecentList() {
    ================================================================== */
 export function renderDashboard() {
   renderTodayOverview();
-  renderMonthOverview();
   renderHealthCard();
   renderAIAssistant();
   renderAccounting();
