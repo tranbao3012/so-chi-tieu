@@ -1,6 +1,8 @@
-/* js/main.js — V1.0
+/* js/main.js — V1.1
    Entry point: bootstrap app, bind global events, điều phối render,
-   đăng ký service worker. File duy nhất được load từ index.html */
+   đăng ký service worker.
+   V1.1: Thêm handleQueryParams() — hỗ trợ ?tab=xxx và ?action=add
+   từ manifest.shortcuts. */
 
 import {
   PLATFORM,
@@ -167,6 +169,48 @@ function bindStateChanged() {
 }
 
 /* ==================================================================
+   Query param từ PWA shortcuts (manifest.json)
+   Hỗ trợ:
+     ?tab=dashboard|expenses|categories|reports|settings
+     ?action=add   → mở form thêm chi tiêu
+   ================================================================== */
+function handleQueryParams() {
+  const params = new URLSearchParams(window.location.search);
+  const tabParam = params.get('tab');
+  const actionParam = params.get('action');
+
+  let handled = false;
+  let pendingOpenAdd = false;
+
+  // Ưu tiên 1: chuyển tab nếu hợp lệ và khác tab hiện tại
+  if (tabParam && TAB_TITLES[tabParam] && tabParam !== currentTab) {
+    switchTab(tabParam);
+    handled = true;
+  }
+
+  // Ưu tiên 2: mở form thêm chi tiêu
+  if (actionParam === 'add') {
+    pendingOpenAdd = true;
+    handled = true;
+  }
+
+  // Xoá query string để F5 / reload không kích hoạt lại shortcut
+  if (handled) {
+    try {
+      const cleanUrl = window.location.pathname + window.location.hash;
+      history.replaceState({}, '', cleanUrl);
+    } catch (e) {
+      // ignore — Safari private mode có thể throw, không ảnh hưởng UX
+    }
+  }
+
+  // Mở sheet sau khi tab đã render xong (delay nhẹ cho transition mượt)
+  if (pendingOpenAdd) {
+    setTimeout(() => openExpenseModal(), 80);
+  }
+}
+
+/* ==================================================================
    Service Worker
    ================================================================== */
 function registerSW() {
@@ -201,11 +245,14 @@ function init() {
   bindStateChanged();
   setupScrollBehavior();
 
-  // Render tab đầu tiên
+  // Render tab đầu tiên (mặc định dashboard)
   renderTab('dashboard');
 
+  // Xử lý query param — có thể override tab hoặc mở sheet
+  handleQueryParams();
+
   console.log(
-    `%cQuản Lý Chi Tiêu v6.0 — ${PLATFORM.toUpperCase()} Module`,
+    `%cQuản Lý Chi Tiêu v6.1 — ${PLATFORM.toUpperCase()} Module`,
     'color:#4f46e5;font-weight:bold;font-size:14px;'
   );
 
