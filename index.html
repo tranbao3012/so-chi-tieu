@@ -9,8 +9,7 @@
 <meta name="theme-color" content="#f8fafc">
 <meta name="apple-mobile-web-app-title" content="Chi Tiêu">
 <script>
-/* Inline bootstrap — chạy TRƯỚC khi CSS load để tránh FOUC theme + flash platform.
-   Đọc state.theme từ localStorage, set data-theme + data-platform + meta theme-color. */
+/* Inline bootstrap — chạy TRƯỚC khi CSS load để tránh FOUC theme + flash platform. */
 (function () {
   var theme = 'light';
   try {
@@ -218,6 +217,25 @@
         </div>
       </div>
 
+      <!-- SYNC SETTINGS CARD (MỚI) -->
+      <div class="settings-card">
+        <div class="settings-title"><span data-icon="transfer"></span>Đồng bộ Gist (GitHub)</div>
+        <div class="settings-row" id="syncLoginRow">
+          <div class="settings-meta">
+            <div class="settings-label">Đăng nhập</div>
+            <div class="settings-desc" id="syncStatus">Chưa kết nối</div>
+          </div>
+          <button class="btn btn-sm btn-primary" id="syncLoginBtn">Đăng nhập</button>
+        </div>
+        <div class="settings-row" id="syncActionRow" style="display: none;">
+          <div class="settings-meta">
+            <div class="settings-label">Đồng bộ ngay</div>
+            <div class="settings-desc">Đẩy dữ liệu lên Gist và kéo về</div>
+          </div>
+          <button class="btn btn-sm" id="syncNowBtn">Sync</button>
+        </div>
+      </div>
+
       <div class="settings-card">
         <div class="settings-title"><span data-icon="download"></span>Dữ liệu</div>
         <div class="settings-row">
@@ -242,7 +260,7 @@
       <div class="settings-card">
         <div class="settings-title"><span data-icon="infoCircle"></span>Về ứng dụng</div>
         <div style="font-size:12px;color:var(--text-muted);line-height:1.65;">
-          <strong style="color:var(--text);">Quản Lý Chi Tiêu v6.2 — Module</strong> · Mobile-first · 60fps
+          <strong style="color:var(--text);">Quản Lý Chi Tiêu v6.3 — Module</strong> · Mobile-first · 60fps
         </div>
       </div>
     </section>
