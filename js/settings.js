@@ -1,5 +1,6 @@
-/* js/settings.js — V1.0
-   Render tab Cài đặt: toggle AI, form tài chính, export/import JSON/CSV, reset */
+/* js/settings.js — V1.1
+   Render tab Cài đặt: toggle AI, form tài chính, export/import JSON/CSV, reset.
+   V1.1: Tích hợp đồng bộ Gist (GitHub) và markLocalChange. */
 
 import {
   state,
@@ -10,6 +11,8 @@ import {
   hapticTap,
   saveState, applyTheme
 } from './core.js';
+
+import { login, syncNow, markLocalChange } from './sync.js';
 
 /* ==================================================================
    RENDER — sync UI với state hiện tại
@@ -31,7 +34,7 @@ export function renderSettings() {
 }
 
 /* ==================================================================
-   EXPORT JSON
+   EXPORT JSON / CSV
    ================================================================== */
 function exportJson() {
   const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
@@ -44,9 +47,6 @@ function exportJson() {
   toast('Đã xuất JSON');
 }
 
-/* ==================================================================
-   EXPORT CSV
-   ================================================================== */
 function exportCsv() {
   if (!state.expenses.length) { toast('Chưa có dữ liệu', 'error'); return; }
 
@@ -98,8 +98,9 @@ function importJson(file) {
             : JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
           state.settings = Object.assign({}, state.settings, data.settings || {});
           saveState();
+          markLocalChange(); // Báo cho sync engine biết có dữ liệu mới
           applyTheme();
-          // Re-render toàn bộ các tab đang cache
+          
           document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'import-full' } }));
           toast('Đã nhập dữ liệu');
         }
@@ -123,7 +124,8 @@ export function bindSettingsTabEvents() {
       state.settings[key] = !state.settings[key];
       t.classList.toggle('on', state.settings[key]);
       saveState();
-      // Toggle AI ảnh hưởng dashboard → cần re-render dashboard
+      markLocalChange(); // Trigger sync
+      
       document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'toggle', key } }));
     });
   });
@@ -132,6 +134,7 @@ export function bindSettingsTabEvents() {
   document.getElementById('setBudget').addEventListener('change', (e) => {
     state.settings.monthlyBudget = Math.max(0, Number(e.target.value) || 0);
     saveState();
+    markLocalChange(); // Trigger sync
     document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'budget' } }));
   });
 
@@ -139,6 +142,7 @@ export function bindSettingsTabEvents() {
   document.getElementById('setIncome').addEventListener('change', (e) => {
     state.settings.monthlyIncome = Math.max(0, Number(e.target.value) || 0);
     saveState();
+    markLocalChange(); // Trigger sync
     document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'income' } }));
   });
 
@@ -146,6 +150,7 @@ export function bindSettingsTabEvents() {
   document.getElementById('setCurrency').addEventListener('change', (e) => {
     state.settings.currency = e.target.value.trim() || 'đ';
     saveState();
+    markLocalChange(); // Trigger sync
     document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'currency' } }));
   });
 
@@ -173,9 +178,38 @@ export function bindSettingsTabEvents() {
         state.settings.monthlyBudget = 0;
         state.settings.monthlyIncome = 0;
         saveState();
+        markLocalChange(); // Trigger sync
         document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'reset-full' } }));
         toast('Đã xoá toàn bộ dữ liệu');
       }
     );
+  });
+
+  /* -------- Sync Gist UI -------- */
+  document.getElementById('syncLoginBtn').addEventListener('click', () => {
+    hapticTap();
+    try {
+      login(); // Chuyển hướng sang trang đăng nhập GitHub
+    } catch (err) {
+      toast('Lỗi khởi tạo Sync', 'error');
+    }
+  });
+
+  document.getElementById('syncNowBtn').addEventListener('click', () => {
+    hapticTap();
+    syncNow();
+  });
+
+  // Lắng nghe sự kiện đăng nhập thành công từ main.js
+  document.addEventListener('sync:user', (e) => {
+    const loginRow = document.getElementById('syncLoginRow');
+    const actionRow = document.getElementById('syncActionRow');
+    const statusText = document.getElementById('syncStatus');
+
+    if (e.detail && e.detail.user) {
+      if (loginRow) loginRow.style.display = 'none';
+      if (actionRow) actionRow.style.display = 'flex';
+      if (statusText) statusText.textContent = `Đã kết nối: ${e.detail.user.login || 'GitHub'}`;
+    }
   });
 }
