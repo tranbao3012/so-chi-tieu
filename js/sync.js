@@ -7,7 +7,7 @@ import { createGistSync } from 'https://esm.sh/@repus/gist-sync@0.2.2';
 // ==== CẤU HÌNH ====
 const CONFIG = {
   // BẮT BUỘC: Thay mã bên dưới bằng Client ID thật của bạn
-  clientId: 'YOUR_GITHUB_CLIENT_ID', 
+  clientId: 'Ov23li9f3mWd0uDSxiL0', 
   
   // URL Worker Cloudflare của bạn (nhớ giữ nguyên /token ở cuối)
   brokerUrl: 'https://gist-sync-broker.baobao-tran.workers.dev/token',
