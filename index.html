@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="vi" data-platform="ios" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#f8fafc">
+<meta name="apple-mobile-web-app-title" content="Chi Tiêu">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<title>Quản Lý Chi Tiêu</title>
+<link rel="stylesheet" href="css/theme.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<div class="app">
+  <header class="app-bar" id="appBar">
+    <div class="app-bar-inner">
+      <div class="app-bar-title-wrap">
+        <div>
+          <div class="app-bar-title" id="appBarTitle">Tổng quan</div>
+          <div class="app-bar-subtitle" id="appBarSubtitle">Quản lý chi tiêu</div>
+        </div>
+        <div class="app-bar-actions">
+          <button class="bar-icon-btn" id="themeBtn" aria-label="Đổi giao diện">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="themeIcon">
+              <circle cx="12" cy="12" r="4"/>
+              <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="app-content" id="appContent">
+
+    <!-- ============================================================
+         PANEL — TỔNG QUAN
+         ============================================================ -->
+    <section class="panel active" id="panel-dashboard">
+      <div class="overview-grid">
+        <div class="overview-card today" id="todayOverview"></div>
+        <div class="overview-card month" id="monthOverview"></div>
+      </div>
+      <div class="ai-grid">
+        <div class="ai-card header-card" id="healthCard"></div>
+        <div class="ai-card" id="aiAssistant"></div>
+      </div>
+      <div class="acct-card" id="accountingCard"></div>
+      <div class="card">
+        <div class="section-title">
+          <div class="section-title-left"><span class="section-title-icon" data-icon="clock"></span><span class="section-title-text">Gần đây</span></div>
+          <button class="btn btn-sm btn-ghost" data-goto="expenses">Xem tất cả →</button>
+        </div>
+        <div class="recent-list" id="recentList"></div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         PANEL — GIAO DỊCH
+         ============================================================ -->
+    <section class="panel" id="panel-expenses">
+      <div class="smart-filters" id="smartFilters"></div>
+      <div class="filter-bar">
+        <input type="date" id="filterFrom" title="Từ ngày">
+        <input type="date" id="filterTo" title="Đến ngày">
+        <select id="filterCategory"><option value="">Tất cả</option></select>
+        <input type="text" class="filter-search" id="filterSearch" placeholder="Tìm ghi chú...">
+        <button class="filter-reset-btn" id="filterReset">Xoá</button>
+      </div>
+      <div class="summary-bar" id="summaryBar"></div>
+      <div id="expenseList"></div>
+    </section>
+
+    <!-- ============================================================
+         PANEL — DANH MỤC
+         ============================================================ -->
+    <section class="panel" id="panel-categories">
+      <div class="section-title">
+        <div class="section-title-left"><span class="section-title-icon" data-icon="tag"></span><span class="section-title-text">Danh mục</span></div>
+        <button class="btn btn-sm btn-primary" id="addCatBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;"><path d="M12 5v14M5 12h14"/></svg>
+          Thêm
+        </button>
+      </div>
+      <div class="cat-grid" id="catGrid"></div>
+    </section>
+
+    <!-- ============================================================
+         PANEL — BÁO CÁO
+         ============================================================ -->
+    <section class="panel" id="panel-reports">
+      <div class="month-nav">
+        <button class="month-nav-btn" id="prevMonth">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div class="month-label" id="reportMonthLabel">—</div>
+        <button class="month-nav-btn" id="nextMonth">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <button class="btn-export-pdf" id="exportPdfBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
+          PDF
+        </button>
+      </div>
+      <div class="report-hero" id="reportHero"></div>
+      <div class="kpi-grid" id="reportKpis"></div>
+      <div class="card" id="reportInsights"></div>
+      <div class="reports-grid">
+        <div class="card">
+          <div class="section-title">
+            <div class="section-title-left"><span class="section-title-icon" data-icon="pieChart"></span><span class="section-title-text">Danh mục</span></div>
+          </div>
+          <div class="donut-wrap">
+            <div class="donut-container" id="reportDonut"></div>
+            <div class="legend" id="reportLegend"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="section-title">
+            <div class="section-title-left"><span class="section-title-icon" data-icon="barChart"></span><span class="section-title-text">Theo ngày</span></div>
+            <small id="reportBarsLabel"></small>
+          </div>
+          <div class="chart-wrap">
+            <div class="chart-max-label" id="reportBarsMax">—</div>
+            <div class="chart-bars" id="reportBars"></div>
+            <div class="chart-hint">Nhấn giữ cột để xem chi tiết</div>
+          </div>
+        </div>
+      </div>
+      <div class="reports-grid">
+        <div class="card">
+          <div class="section-title">
+            <div class="section-title-left"><span class="section-title-icon" data-icon="creditCard"></span><span class="section-title-text">Phương thức</span></div>
+          </div>
+          <div id="reportPayments"></div>
+        </div>
+        <div class="card">
+          <div class="section-title">
+            <div class="section-title-left"><span class="section-title-icon" data-icon="calendar"></span><span class="section-title-text">Theo tuần</span></div>
+          </div>
+          <div class="weekly-grid" id="reportWeekly"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title">
+          <div class="section-title-left"><span class="section-title-icon" data-icon="trendUp"></span><span class="section-title-text">Top 10 chi tiêu</span></div>
+          <small id="reportTopLabel"></small>
+        </div>
+        <div id="reportTop"></div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         PANEL — CÀI ĐẶT
+         ============================================================ -->
+    <section class="panel" id="panel-settings">
+      <div class="settings-card">
+        <div class="settings-title"><span data-icon="brain"></span>AI Tài chính</div>
+        <div class="settings-row">
+          <div class="settings-meta"><div class="settings-label">Phân tích thông minh</div><div class="settings-desc">Nhận xét, dự báo, cảnh báo</div></div>
+          <div class="toggle on" id="toggleAI" data-setting="aiEnabled"></div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-meta"><div class="settings-label">Phát hiện bất thường</div><div class="settings-desc">Cảnh báo giao dịch cao bất thường</div></div>
+          <div class="toggle on" id="toggleAnomaly" data-setting="anomalyEnabled"></div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-meta"><div class="settings-label">Gợi ý thông minh</div><div class="settings-desc">Gợi ý danh mục và số tiền</div></div>
+          <div class="toggle on" id="toggleSuggest" data-setting="suggestEnabled"></div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-meta"><div class="settings-label">Kế toán 50/30/20</div><div class="settings-desc">Phân tích Thiết yếu / Mong muốn / Tiết kiệm</div></div>
+          <div class="toggle on" id="toggleAccounting" data-setting="accountingEnabled"></div>
+        </div>
+      </div>
+
+      <div class="settings-card">
+        <div class="settings-title"><span data-icon="target"></span>Tài chính</div>
+        <div class="settings-row">
+          <div class="settings-meta"><div class="settings-label">Ngân sách tháng</div><div class="settings-desc">0 = không giới hạn</div></div>
+          <input type="number" class="form-input" id="setBudget" min="0" step="1000" placeholder="0">
+        </div>
+        <div class="settings-row">
+          <div class="settings-meta"><div class="settings-label">Thu nhập tháng</div><div class="settings-desc">Dùng cho phân tích 50/30/20</div></div>
+          <input type="number" class="form-input" id="setIncome" min="0" step="1000" placeholder="0">
+        </div>
+        <div class="settings-row">
+          <div class="settings-meta"><div class="settings-label">Đơn vị tiền tệ</div><div class="settings-desc">Ký hiệu hiển thị</div></div>
+          <input type="text" class="form-input" id="setCurrency" maxlength="3" placeholder="đ" style="width:70px;text-align:center;font-weight:700;">
+        </div>
+      </div>
+
+      <div class="settings-card">
+        <div class="settings-title"><span data-icon="download"></span>Dữ liệu</div>
+        <div class="settings-row">
+          <div class="settings-meta"><div class="settings-label">Xuất JSON</div><div class="settings-desc">Sao lưu toàn bộ dữ liệu</div></div>
+          <button class="btn btn-sm" id="exportBtn">Tải</button>
+        </div>
+        <div class="settings-row">
+          <div class="settings-meta"><div class="settings-label">Xuất CSV</div><div class="settings-desc">Mở bằng Excel</div></div>
+          <button class="btn btn-sm" id="exportCsvBtn">Tải</button>
+        </div>
+        <div class="settings-row">
+          <div class="settings-meta"><div class="settings-label">Nhập JSON</div><div class="settings-desc">Khôi phục từ file sao lưu</div></div>
+          <button class="btn btn-sm" id="importBtn">Chọn</button>
+          <input type="file" accept=".json" id="importFile" style="display:none;">
+        </div>
+        <div class="settings-row">
+          <div class="settings-meta"><div class="settings-label" style="color:var(--danger);">Xoá tất cả</div><div class="settings-desc">Không thể hoàn tác</div></div>
+          <button class="btn btn-sm btn-danger" id="resetBtn">Xoá</button>
+        </div>
+      </div>
+
+      <div class="settings-card">
+        <div class="settings-title"><span data-icon="infoCircle"></span>Về ứng dụng</div>
+        <div style="font-size:12px;color:var(--text-muted);line-height:1.65;">
+          <strong style="color:var(--text);">Quản Lý Chi Tiêu v6.0 — Module</strong> · Mobile-first · 60fps
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <button class="fab" id="fab" aria-label="Thêm chi tiêu">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 5v14M5 12h14"/>
+    </svg>
+  </button>
+
+  <nav class="tab-bar">
+    <button class="tab-btn active" data-tab="dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+        <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+        <rect x="14" y="14" width="7" height="7" rx="1.5"/>
+        <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+      </svg>
+      <span>Tổng quan</span>
+    </button>
+    <button class="tab-btn" data-tab="expenses">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
+        <circle cx="4" cy="6" r="1" fill="currentColor"/><circle cx="4" cy="12" r="1" fill="currentColor"/><circle cx="4" cy="18" r="1" fill="currentColor"/>
+      </svg>
+      <span>Giao dịch</span>
+    </button>
+    <button class="tab-btn" data-tab="categories">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>
+      </svg>
+      <span>Danh mục</span>
+    </button>
+    <button class="tab-btn" data-tab="reports">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/>
+      </svg>
+      <span>Báo cáo</span>
+    </button>
+    <button class="tab-btn" data-tab="settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+      <span>Cài đặt</span>
+    </button>
+  </nav>
+</div>
+
+<!-- ============================================================
+     SHEET — THÊM/SỬA CHI TIÊU
+     ============================================================ -->
+<div class="sheet-overlay" id="expenseModal">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title" id="expenseModalTitle">Thêm chi tiêu</div>
+      <button class="sheet-close" data-close="expenseModal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="sheet-body">
+      <div class="sheet-section">
+        <div class="sheet-section-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          Số tiền
+        </div>
+        <div class="amount-input-wrap">
+          <span class="amount-currency-prefix" id="amountCurrencyPrefix">đ</span>
+          <input type="number" class="amount-input" id="formAmount" placeholder="0" min="0" step="1000" inputmode="numeric">
+        </div>
+        <div class="quick-amounts" id="aiAmountChips"></div>
+        <div class="field-error" id="errAmount">Vui lòng nhập số tiền hợp lệ</div>
+        <div id="anomalyWarn"></div>
+        <div id="aiHintBanner"></div>
+      </div>
+      <div class="sheet-section">
+        <div class="sheet-section-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+          Danh mục
+        </div>
+        <div class="category-grid-modal" id="formCategories"></div>
+        <div class="field-error" id="errCategory">Vui lòng chọn danh mục</div>
+      </div>
+      <div class="sheet-section">
+        <div class="sheet-section-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          Phương thức
+        </div>
+        <div class="payment-row-modal" id="formPayments"></div>
+      </div>
+      <div class="sheet-section">
+        <div class="form-2col">
+          <div>
+            <div class="sheet-section-label">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              Ngày
+            </div>
+            <input type="date" class="field-input" id="formDate">
+          </div>
+          <div>
+            <div class="sheet-section-label">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Ghi chú
+            </div>
+            <input type="text" class="field-input" id="formNote" placeholder="Không bắt buộc" maxlength="120">
+          </div>
+        </div>
+      </div>
+      <div class="sheet-section">
+        <div class="summary-preview">
+          <div class="summary-preview-title">Tóm tắt</div>
+          <div class="summary-preview-row"><span class="summary-preview-label">Danh mục</span><span class="summary-preview-value" id="sumCategory">—</span></div>
+          <div class="summary-preview-row"><span class="summary-preview-label">Ngày</span><span class="summary-preview-value" id="sumDate">—</span></div>
+          <div class="summary-preview-row"><span class="summary-preview-label">Phương thức</span><span class="summary-preview-value" id="sumPayment">—</span></div>
+          <div class="summary-preview-row"><span class="summary-preview-label" style="font-weight:800;color:var(--text);">Tổng</span><span class="summary-preview-value big" id="sumAmount">0 đ</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="sheet-footer">
+      <button class="btn btn-ghost" data-close="expenseModal" style="flex:0 0 90px;">Huỷ</button>
+      <button class="btn btn-primary" id="saveExpenseBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><polyline points="20 6 9 17 4 12"/></svg>
+        Lưu
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     SHEET — THÊM/SỬA DANH MỤC
+     ============================================================ -->
+<div class="sheet-overlay" id="categoryModal">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title" id="categoryModalTitle">Thêm danh mục</div>
+      <button class="sheet-close" data-close="categoryModal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="sheet-body">
+      <div class="sheet-section">
+        <div class="sheet-section-label">Tên danh mục</div>
+        <input type="text" class="field-input" id="catName" placeholder="Ví dụ: Cà phê" maxlength="24">
+        <div class="field-error" id="errCatName">Tên không được để trống</div>
+      </div>
+      <div class="sheet-section">
+        <div class="sheet-section-label">Màu sắc</div>
+        <div class="color-grid" id="catColors"></div>
+      </div>
+    </div>
+    <div class="sheet-footer">
+      <button class="btn btn-ghost" data-close="categoryModal" style="flex:0 0 90px;">Huỷ</button>
+      <button class="btn btn-primary" id="saveCategoryBtn">Lưu</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     SHEET — XÁC NHẬN
+     ============================================================ -->
+<div class="sheet-overlay" id="confirmModal">
+  <div class="sheet" style="max-height:340px;">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title" id="confirmTitle">Xác nhận</div>
+    </div>
+    <div class="confirm-sheet-body" id="confirmMessage">Bạn có chắc?</div>
+    <div class="confirm-sheet-footer">
+      <button class="btn btn-ghost" data-close="confirmModal">Huỷ</button>
+      <button class="btn btn-danger" id="confirmOkBtn">Xác nhận</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MISC
+     ============================================================ -->
+<div class="bar-tooltip" id="barTooltip"></div>
+<div id="pdfReport"></div>
+<div class="toast-container" id="toastContainer"></div>
+
+<script type="module" src="js/main.js"></script>
+
+</body>
+</html>

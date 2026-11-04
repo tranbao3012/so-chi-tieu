@@ -1,0 +1,69 @@
+{
+  "name": "Quản Lý Chi Tiêu",
+  "short_name": "Chi Tiêu",
+  "description": "Quản lý chi tiêu cá nhân với AI, kế toán 50/30/20, báo cáo PDF, hoạt động offline.",
+  "lang": "vi",
+  "dir": "ltr",
+  "id": "quan-ly-chi-tieu-pwa-v1",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait-primary",
+  "background_color": "#f8fafc",
+  "theme_color": "#4f46e5",
+  "categories": ["finance", "productivity", "lifestyle"],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Thêm chi tiêu",
+      "short_name": "Thêm",
+      "description": "Mở nhanh form thêm giao dịch",
+      "url": "./?action=add",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Xem báo cáo",
+      "short_name": "Báo cáo",
+      "description": "Mở tab báo cáo tháng này",
+      "url": "./?tab=reports",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}
