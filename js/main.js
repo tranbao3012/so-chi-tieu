@@ -1,16 +1,18 @@
-/* js/main.js — V1.1
+/* js/main.js — V1.2
    Entry point: bootstrap app, bind global events, điều phối render,
    đăng ký service worker.
-   V1.1: Thêm handleQueryParams() — hỗ trợ ?tab=xxx và ?action=add
-   từ manifest.shortcuts. */
+   V1.2: Tích hợp module sync.js (GitHub Gist). */
 
 import {
+  state, saveState, toast,
   PLATFORM,
   loadState,
   applyTheme, toggleTheme,
   fillIcons,
   closeSheet, bindConfirmOK
 } from './core.js';
+
+import { bindState, initSync } from './sync.js';
 
 import { renderDashboard } from './dashboard.js';
 
@@ -112,19 +114,16 @@ function closeSheetById(id) {
 }
 
 function bindSheets() {
-  // Nút data-close
   document.querySelectorAll('[data-close]').forEach(b => {
     b.addEventListener('click', () => closeSheetById(b.dataset.close));
   });
 
-  // Click overlay (ngoài sheet)
   document.querySelectorAll('.sheet-overlay').forEach(o => {
     o.addEventListener('click', (e) => {
       if (e.target === o) closeSheetById(o.id);
     });
   });
 
-  // Escape key
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
     document.querySelectorAll('.sheet-overlay.active').forEach(o => {
@@ -163,16 +162,15 @@ function setupScrollBehavior() {
    Cross-module: mọi module bắn sự kiện này khi state thay đổi
    ================================================================== */
 function bindStateChanged() {
-  document.addEventListener('state:changed', () => {
+  document.addEventListener('state:changed', (e) => {
+    // Nếu thay đổi đến từ sync, có thể bỏ qua việc render lại nếu đang ở form
+    // (nhưng hiện tại cứ render bình thường)
     renderTab(currentTab);
   });
 }
 
 /* ==================================================================
    Query param từ PWA shortcuts (manifest.json)
-   Hỗ trợ:
-     ?tab=dashboard|expenses|categories|reports|settings
-     ?action=add   → mở form thêm chi tiêu
    ================================================================== */
 function handleQueryParams() {
   const params = new URLSearchParams(window.location.search);
@@ -182,29 +180,23 @@ function handleQueryParams() {
   let handled = false;
   let pendingOpenAdd = false;
 
-  // Ưu tiên 1: chuyển tab nếu hợp lệ và khác tab hiện tại
   if (tabParam && TAB_TITLES[tabParam] && tabParam !== currentTab) {
     switchTab(tabParam);
     handled = true;
   }
 
-  // Ưu tiên 2: mở form thêm chi tiêu
   if (actionParam === 'add') {
     pendingOpenAdd = true;
     handled = true;
   }
 
-  // Xoá query string để F5 / reload không kích hoạt lại shortcut
   if (handled) {
     try {
       const cleanUrl = window.location.pathname + window.location.hash;
       history.replaceState({}, '', cleanUrl);
-    } catch (e) {
-      // ignore — Safari private mode có thể throw, không ảnh hưởng UX
-    }
+    } catch (e) {}
   }
 
-  // Mở sheet sau khi tab đã render xong (delay nhẹ cho transition mượt)
   if (pendingOpenAdd) {
     setTimeout(() => openExpenseModal(), 80);
   }
@@ -221,6 +213,43 @@ function registerSW() {
       });
     });
   }
+}
+
+/* ==================================================================
+   SYNC ENGINE
+   ================================================================== */
+function setupSync() {
+  // Kết nối state của app với sync engine
+  bindState(
+    () => state, // Hàm getState
+    (newState) => { // Hàm setState
+      state.expenses = newState.expenses;
+      state.categories = newState.categories;
+      state.settings = newState.settings;
+      saveState(); // Lưu vào localStorage
+      
+      // Phát sự kiện để vẽ lại UI
+      document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'sync' } }));
+    }
+  );
+
+  // Khởi tạo sync
+  initSync({
+    onStatus: (status) => {
+      console.log('[Sync Status]:', status);
+      if (status === 'syncing') toast('Đang đồng bộ...', 'info');
+      if (status === 'error') toast('Lỗi đồng bộ dữ liệu', 'error');
+    },
+    onToast: (msg) => toast(msg, 'success'),
+    onUser: (user) => {
+      console.log('[Sync User]:', user);
+      // Bạn có thể cập nhật UI Settings tại đây nếu muốn
+    },
+    onConflict: (conflict) => {
+      console.warn('[Sync Conflict]:', conflict);
+      toast('Đã giải quyết xung đột dữ liệu', 'warning');
+    }
+  });
 }
 
 /* ==================================================================
@@ -245,6 +274,9 @@ function init() {
   bindStateChanged();
   setupScrollBehavior();
 
+  // Khởi tạo Sync Engine
+  setupSync();
+
   // Render tab đầu tiên (mặc định dashboard)
   renderTab('dashboard');
 
@@ -252,15 +284,14 @@ function init() {
   handleQueryParams();
 
   console.log(
-    `%cQuản Lý Chi Tiêu v6.1 — ${PLATFORM.toUpperCase()} Module`,
+    `%cQuản Lý Chi Tiêu v6.2 — ${PLATFORM.toUpperCase()} Module`,
     'color:#4f46e5;font-weight:bold;font-size:14px;'
   );
 
   registerSW();
 }
 
-// type="module" luôn defer → DOM đã sẵn sàng. Check vẫn an toàn nếu sau này
-// ai đó chuyển script lên <head>.
+// type="module" luôn defer → DOM đã sẵn sàng.
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', init);
 } else {
