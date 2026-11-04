@@ -1,4 +1,5 @@
-/* css/app.css — V1.0
+/* css/app.css — V1.1
+   Fix: App Bar padding-top dùng max() — tránh mất title khi safe-area-inset-top = 0
    Toàn bộ CSS layout + components (đã trừ theme/reset)
    Thứ tự load: theme.css → app.css */
 
@@ -22,12 +23,12 @@
 .app-bar {
   flex-shrink: 0;
   background: var(--bg);
-  padding-top: var(--safe-top);
+  padding-top: max(calc(var(--safe-top) + 8px), 24px);
   z-index: 20;
   border-bottom: 1px solid transparent;
 }
 [data-platform="ios"] .app-bar {
-  padding: var(--safe-top) 16px 0;
+  padding: max(calc(var(--safe-top) + 8px), 24px) 16px 0;
 }
 [data-platform="ios"] .app-bar.scrolled {
   border-bottom-color: var(--border-soft);
@@ -36,7 +37,7 @@
 [data-platform="android"] .app-bar {
   background: var(--surface);
   box-shadow: 0 1px 2px rgba(0,0,0,0.04);
-  padding: var(--safe-top) 12px 0 16px;
+  padding: max(calc(var(--safe-top) + 8px), 24px) 12px 0 16px;
 }
 
 .app-bar-inner {
