@@ -1,24 +1,22 @@
-/* js/sync.js — V1.0
-   Kết nối với Cloudflare Worker Broker và GitHub Gist.
-   Sử dụng thư viện @repus/gist-sync để merge dữ liệu. */
+/* js/sync.js — V1.2
+   Đồng bộ dữ liệu qua GitHub Gist sử dụng @repus/gist-sync.
+   Yêu cầu: Cloudflare Worker broker đã deploy. */
 
 import { createGistSync } from 'https://esm.sh/@repus/gist-sync@0.2.2';
 
 // ==== CẤU HÌNH ====
 const CONFIG = {
-  // BẮT BUỘC: Thay mã bên dưới bằng Client ID thật của bạn
-  clientId: 'Ov23li9f3mWd0uDSxiL0', 
+  // Đã điền sẵn Client ID từ ảnh chụp của bạn
+  clientId: 'Ov23li9f3mWdOuDSxiL0', 
   
-  // URL Worker Cloudflare của bạn (nhớ giữ nguyên /token ở cuối)
-  brokerUrl: 'https://gist-sync-broker.baobao-tran.workers.dev/token',
+  // Đã đổi thành brokerPath (thay vì brokerUrl) để đúng chuẩn thư viện
+  brokerPath: 'https://gist-sync-broker.baobao-tran.workers.dev/token',
   
   // Tên file lưu trữ trên Gist
   filename: 'so-chi-tieu-data.json'
 };
 
 // ==== SCHEMA ĐỒNG BỘ ====
-// expenses & categories: merge dựa trên trường 'id' (thêm/sửa không đè lên nhau)
-// settings: merge từng key (ví dụ thiết bị A đổi theme, B đổi ngân sách -> giữ cả 2)
 const schema = {
   collections: {
     expenses: { kind: 'idKeyed', key: 'id' },
@@ -32,7 +30,6 @@ let _getState = null;
 let _setState = null;
 let sync = null;
 
-// Hàm kết nối state của app với sync engine
 export function bindState(getStateFn, setStateFn) {
   _getState = getStateFn;
   _setState = setStateFn;
@@ -60,33 +57,42 @@ function apply(bundle) {
 
 // ==== KHỞI TẠO ====
 export function initSync(ports = {}) {
-  sync = createGistSync({
-    config: CONFIG,
-    schema,
-    ports: {
-      serialize,
-      apply,
-      onStatus: ports.onStatus || (() => {}), // Trạng thái: syncing | idle | error
-      onToast: ports.onToast || (() => {}),   // Hiển thị thông báo Toast
-      onUser: ports.onUser || (() => {}),     // Thông tin user GitHub
-      onConflict: ports.onConflict || (() => {}) // Xử lý xung đột (nếu có)
-    }
-  });
+  try {
+    sync = createGistSync({
+      config: CONFIG,
+      schema,
+      ports: {
+        serialize,
+        apply,
+        onStatus: ports.onStatus || (() => {}), 
+        onToast: ports.onToast || (() => {}),   
+        onUser: ports.onUser || (() => {}),     
+        onConflict: ports.onConflict || (() => {}) 
+      }
+    });
 
-  // Tự động xử lý callback nếu URL có ?code=... sau khi GitHub redirect về
-  sync.handleOAuthCallback();
-  
-  return sync;
+    // Tự động xử lý callback nếu URL có ?code=... sau khi GitHub redirect về
+    sync.handleOAuthCallback();
+    
+    return sync;
+  } catch (err) {
+    console.error('[Sync] Lỗi khởi tạo:', err);
+    // Không throw lỗi ra ngoài để tránh sập app
+    return null;
+  }
 }
 
 // ==== HÀM PUBLIC ====
 export function login() {
-  if (!sync) throw new Error('Sync chưa được khởi tạo');
+  if (!sync) {
+    alert('Tính năng đồng bộ chưa sẵn sàng. Vui lòng tải lại trang.');
+    return;
+  }
   return sync.login();
 }
 
 export function syncNow() {
-  if (!sync) throw new Error('Sync chưa được khởi tạo');
+  if (!sync) return;
   return sync.syncNow();
 }
 
