@@ -162,6 +162,7 @@ svg { display: block; }
 
 /* ==================================================================
    APP BAR (Header) — SOLID, NO BLUR
+   Đã sửa: Cộng thêm safe-area-inset-top cho iOS và Android
    ================================================================== */
 .app-bar {
   flex-shrink: 0;
@@ -169,20 +170,18 @@ svg { display: block; }
   padding-top: var(--safe-top);
   z-index: 20;
   border-bottom: 1px solid transparent;
-  /* NO backdrop-filter, NO animation, NO transition on background */
 }
 [data-platform="ios"] .app-bar {
-  padding: 4px 16px 0;
+  padding: var(--safe-top) 16px 0;
 }
 [data-platform="ios"] .app-bar.scrolled {
   border-bottom-color: var(--border-soft);
-  /* Shadow added via box-shadow, cheaper than blur */
   box-shadow: 0 1px 0 var(--border-soft);
 }
 [data-platform="android"] .app-bar {
   background: var(--surface);
   box-shadow: 0 1px 2px rgba(0,0,0,0.04);
-  padding: 0 12px 0 16px;
+  padding: var(--safe-top) 12px 0 16px;
 }
 
 .app-bar-inner {
@@ -207,7 +206,6 @@ svg { display: block; }
   gap: 8px;
 }
 
-/* Fixed-size title — NO font-size animation (prevents layout reflow) */
 .app-bar-title {
   font-size: 22px;
   font-weight: 800;
@@ -220,7 +218,6 @@ svg { display: block; }
   letter-spacing: -0.2px;
 }
 
-/* Subtitle — only opacity transition (composited, smooth) */
 .app-bar-subtitle {
   font-size: 11.5px;
   color: var(--text-soft);
@@ -283,7 +280,6 @@ svg { display: block; }
   padding-bottom: calc(var(--tab-bar-h) + var(--safe-bottom) + 24px);
 }
 
-/* INSTANT panel switch — no animation */
 .panel {
   display: none;
   padding: 12px 16px 24px;
@@ -370,7 +366,7 @@ svg { display: block; }
 }
 
 /* ==================================================================
-   FAB — GPU composited, will-change on transform
+   FAB
    ================================================================== */
 .fab {
   position: fixed;
@@ -398,7 +394,7 @@ svg { display: block; }
 }
 
 /* ==================================================================
-   CARDS — contain layout paint (isolate reflow)
+   CARDS
    ================================================================== */
 .card,
 .overview-card,
@@ -830,41 +826,6 @@ svg { display: block; }
 }
 
 /* ==================================================================
-   DONUT
-   ================================================================== */
-.donut-wrap { display: flex; flex-direction: column; align-items: center; gap: 12px; }
-.donut-container { position: relative; width: 160px; height: 160px; }
-.donut-center {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-}
-.donut-center-label { font-size: 9.5px; color: var(--text-soft); font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; }
-.donut-center-value { font-size: 17px; font-weight: 800; color: var(--text); margin-top: 2px; letter-spacing: -0.3px; }
-
-.legend { display: flex; flex-direction: column; gap: 4px; width: 100%; }
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 7px 10px;
-  border-radius: var(--radius-sm);
-  font-size: 12px;
-}
-.legend-item:active { background: var(--surface-2); }
-.legend-dot { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
-.legend-name { flex: 1; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.legend-value { font-weight: 700; color: var(--text-muted); font-variant-numeric: tabular-nums; font-size: 11.5px; }
-.legend-pct { font-size: 10.5px; color: var(--text-soft); font-weight: 600; margin-left: 2px; min-width: 32px; text-align: right; }
-
-.dash-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
-@media (min-width: 720px) { .dash-grid { grid-template-columns: 1fr 1fr; } }
-
-/* ==================================================================
    RECENT LIST
    ================================================================== */
 .recent-list { display: flex; flex-direction: column; gap: 1px; }
@@ -940,7 +901,6 @@ svg { display: block; }
   white-space: nowrap;
   flex-shrink: 0;
   min-height: 34px;
-  /* Only transition colors — no transform, no scale */
   transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 .filter-chip.active {
@@ -1430,7 +1390,39 @@ svg { display: block; }
 @media (min-width: 720px) { .reports-grid { grid-template-columns: 1fr 1fr; } }
 
 /* ==================================================================
-   BAR CHART — no gradients, no gridlines (fewer paint ops)
+   DONUT (Chỉ dùng trong Reports)
+   ================================================================== */
+.donut-wrap { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.donut-container { position: relative; width: 160px; height: 160px; }
+.donut-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.donut-center-label { font-size: 9.5px; color: var(--text-soft); font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; }
+.donut-center-value { font-size: 17px; font-weight: 800; color: var(--text); margin-top: 2px; letter-spacing: -0.3px; }
+
+.legend { display: flex; flex-direction: column; gap: 4px; width: 100%; }
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+}
+.legend-item:active { background: var(--surface-2); }
+.legend-dot { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
+.legend-name { flex: 1; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.legend-value { font-weight: 700; color: var(--text-muted); font-variant-numeric: tabular-nums; font-size: 11.5px; }
+.legend-pct { font-size: 10.5px; color: var(--text-soft); font-weight: 600; margin-left: 2px; min-width: 32px; text-align: right; }
+
+/* ==================================================================
+   BAR CHART
    ================================================================== */
 .chart-wrap { display: flex; flex-direction: column; gap: 4px; }
 .chart-max-label {
@@ -1493,7 +1485,7 @@ svg { display: block; }
   font-weight: 600;
 }
 
-/* Bar tooltip — only opacity+transform transition (GPU) */
+/* Bar tooltip */
 .bar-tooltip {
   position: fixed;
   z-index: 3000;
@@ -1694,7 +1686,7 @@ svg { display: block; }
 }
 .form-input:focus { border-color: var(--primary); }
 
-/* Toggle — transitions background-color and transform only */
+/* Toggle */
 .toggle {
   position: relative;
   width: 44px;
@@ -1751,9 +1743,6 @@ svg { display: block; }
 
 /* ==================================================================
    SHEET (bottom sheet modal)
-   - will-change: transform for GPU compositing
-   - No backdrop-filter (main jank fix)
-   - Overlay solid rgba, no blur
    ================================================================== */
 .sheet-overlay {
   position: fixed;
@@ -1763,7 +1752,6 @@ svg { display: block; }
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s linear;
-  /* NO backdrop-filter — that's the #1 jank source */
 }
 .sheet-overlay.active { opacity: 1; pointer-events: auto; }
 
@@ -1782,7 +1770,6 @@ svg { display: block; }
   transform: translateY(100%);
   transition: transform 0.32s cubic-bezier(.16,1,.3,1);
   padding-bottom: env(safe-area-inset-bottom, 0px);
-  /* GPU acceleration for smooth slide */
   will-change: transform;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
@@ -2280,28 +2267,7 @@ svg { display: block; }
         <div class="ai-card" id="aiAssistant"></div>
       </div>
       <div class="acct-card" id="accountingCard"></div>
-      <div class="dash-grid">
-        <div class="card">
-          <div class="section-title">
-            <div class="section-title-left"><span class="section-title-icon" data-icon="pieChart"></span><span class="section-title-text">Hôm nay</span></div>
-            <small id="todayDonutLabel"></small>
-          </div>
-          <div class="donut-wrap">
-            <div class="donut-container" id="todayDonut"></div>
-            <div class="legend" id="todayLegend"></div>
-          </div>
-        </div>
-        <div class="card">
-          <div class="section-title">
-            <div class="section-title-left"><span class="section-title-icon" data-icon="pieChart"></span><span class="section-title-text">Tháng này</span></div>
-            <small id="monthDonutLabel"></small>
-          </div>
-          <div class="donut-wrap">
-            <div class="donut-container" id="monthDonut"></div>
-            <div class="legend" id="monthLegend"></div>
-          </div>
-        </div>
-      </div>
+      
       <div class="card">
         <div class="section-title">
           <div class="section-title-left"><span class="section-title-icon" data-icon="clock"></span><span class="section-title-text">Gần đây</span></div>
@@ -2458,7 +2424,7 @@ svg { display: block; }
       <div class="settings-card">
         <div class="settings-title"><span data-icon="infoCircle"></span>Về ứng dụng</div>
         <div style="font-size:12px;color:var(--text-muted);line-height:1.65;">
-          <strong style="color:var(--text);">Quản Lý Chi Tiêu v5.2 — PWA</strong> · Mobile-first · 60fps
+          <strong style="color:var(--text);">Quản Lý Chi Tiêu v5.4 — PWA</strong> · Mobile-first · 60fps
         </div>
       </div>
     </section>
@@ -2634,7 +2600,7 @@ svg { display: block; }
 
 <script>
 /* ==================================================================
-   PLATFORM + HAPTIC (deferred via rAF to avoid blocking)
+   PLATFORM + HAPTIC
    ================================================================== */
 const PLATFORM = (() => {
   const ua = navigator.userAgent || '';
@@ -2746,6 +2712,10 @@ let activeSmartFilter = 'all';
 let currentTab = 'dashboard';
 let barInteractionSetup = false;
 
+/* Cache cho detectAnomalies */
+let _anomalyCache = null;
+let _anomalyCacheDirty = true;
+
 /* ==================================================================
    STORAGE
    ================================================================== */
@@ -2765,8 +2735,12 @@ function loadState() {
     state.categories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
   }
 }
+
 function saveState() {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    _anomalyCacheDirty = true; // Xoá cache khi có thay đổi
+  }
   catch (e) { toast('Không lưu được dữ liệu', 'error'); }
 }
 
@@ -2853,6 +2827,8 @@ const AI = {
   },
   detectAnomalies() {
     if (!state.settings.anomalyEnabled) return [];
+    if (!_anomalyCacheDirty && _anomalyCache) return _anomalyCache;
+
     const byCat = {};
     state.expenses.forEach(e => {
       if (!byCat[e.categoryId]) byCat[e.categoryId] = [];
@@ -2866,6 +2842,9 @@ const AI = {
       const median = sorted[Math.floor(sorted.length / 2)];
       if (median > 0 && Number(e.amount) > median * 3) out.push({ ...e, median, ratio: Number(e.amount) / median });
     });
+
+    _anomalyCache = out;
+    _anomalyCacheDirty = false;
     return out;
   },
   isAnomalous(id) { return this.detectAnomalies().some(a => a.id === id); },
@@ -3084,7 +3063,7 @@ function renderSparkline(container, data, color = 'var(--primary)') {
 }
 
 /* ==================================================================
-   DONUT
+   DONUT (Chỉ dùng trong Reports)
    ================================================================== */
 function renderDonut(container, segments, total) {
   const size = 160, cx = 80, cy = 80, r = 58;
@@ -3253,31 +3232,8 @@ function renderDashboard() {
   renderHealthCard();
   renderAIAssistant();
   renderAccounting();
-  const today = new Date();
-  document.getElementById('todayDonutLabel').textContent = fmtDate(dayIso(today));
-  document.getElementById('monthDonutLabel').textContent = monthLabel(today);
-
-  const todayExp = getDayExpenses(today);
-  const todayTotal = calcSummary(todayExp).total;
-  const todayByCat = calcByCategory(todayExp);
-  renderDonut(document.getElementById('todayDonut'), todayByCat.map(b => ({ value: b.value, color: b.category.color })), todayTotal);
-  document.getElementById('todayLegend').innerHTML = todayByCat.length === 0
-    ? `<div style="text-align:center;padding:16px;color:var(--text-soft);font-size:11.5px;">Chưa có GD hôm nay</div>`
-    : todayByCat.map(b => {
-        const pct = todayTotal > 0 ? (b.value / todayTotal * 100) : 0;
-        return `<div class="legend-item"><span class="legend-dot" style="background:${b.category.color};"></span><span class="legend-name">${escapeHtml(b.category.name)}</span><span class="legend-value">${fmtMoney(b.value)}</span><span class="legend-pct">${pct.toFixed(0)}%</span></div>`;
-      }).join('');
-
-  const monthExp = getMonthExpenses(today);
-  const monthTotal = calcSummary(monthExp).total;
-  const monthByCat = calcByCategory(monthExp);
-  renderDonut(document.getElementById('monthDonut'), monthByCat.map(b => ({ value: b.value, color: b.category.color })), monthTotal);
-  document.getElementById('monthLegend').innerHTML = monthByCat.length === 0
-    ? `<div style="text-align:center;padding:16px;color:var(--text-soft);font-size:11.5px;">Chưa có GD tháng này</div>`
-    : monthByCat.map(b => {
-        const pct = monthTotal > 0 ? (b.value / monthTotal * 100) : 0;
-        return `<div class="legend-item"><span class="legend-dot" style="background:${b.category.color};"></span><span class="legend-name">${escapeHtml(b.category.name)}</span><span class="legend-value">${fmtMoney(b.value)}</span><span class="legend-pct">${pct.toFixed(0)}%</span></div>`;
-      }).join('');
+  
+  // Đã xoá phần render Donut & Legend tại đây.
 
   const recent = [...state.expenses].sort((a, b) => (b.date || '').localeCompare(a.date || '') || b.id.localeCompare(a.id)).slice(0, 6);
   document.getElementById('recentList').innerHTML = recent.length === 0
@@ -3979,7 +3935,7 @@ function buildPdfReport() {
   monthExp.forEach(e => { const d = parseInt(e.date.split('-')[2], 10); dailyMap.set(d, (dailyMap.get(d) || 0) + Number(e.amount)); });
   const maxDay = Math.max(...Array.from(dailyMap.values()), 1);
 
-  let h = `<div class="pdf-page"><div class="pdf-cover"><div class="pdf-cover-top"><div class="pdf-cover-brand"><div class="pdf-cover-logo">$</div><div><div class="pdf-cover-brand-name">Quản Lý Chi Tiêu</div><div class="pdf-cover-brand-sub">AI Tài chính · Kế toán</div></div></div><div class="pdf-cover-title">BÁO CÁO<br>CHI TIÊU CÁ NHÂN</div><div class="pdf-cover-subtitle">Phân tích tài chính chuyên sâu</div><div class="pdf-cover-period">${monthLabel(reportMonth)}</div></div><div><div class="pdf-cover-meta"><div class="pdf-cover-meta-item"><div class="pdf-cover-meta-label">Ngày tạo</div><div class="pdf-cover-meta-value">${dateStr}</div></div><div class="pdf-cover-meta-item"><div class="pdf-cover-meta-label">Kỳ báo cáo</div><div class="pdf-cover-meta-value">${monthLabel(reportMonth)}</div></div><div class="pdf-cover-meta-item"><div class="pdf-cover-meta-label">Số giao dịch</div><div class="pdf-cover-meta-value">${count}</div></div><div class="pdf-cover-meta-item"><div class="pdf-cover-meta-label">Tổng chi</div><div class="pdf-cover-meta-value">${fmtMoney(total)}</div></div></div><div class="pdf-cover-footer">Được tạo tự động bởi Quản Lý Chi Tiêu v5.2 · ${dateStr}</div></div></div></div>`;
+  let h = `<div class="pdf-page"><div class="pdf-cover"><div class="pdf-cover-top"><div class="pdf-cover-brand"><div class="pdf-cover-logo">$</div><div><div class="pdf-cover-brand-name">Quản Lý Chi Tiêu</div><div class="pdf-cover-brand-sub">AI Tài chính · Kế toán</div></div></div><div class="pdf-cover-title">BÁO CÁO<br>CHI TIÊU CÁ NHÂN</div><div class="pdf-cover-subtitle">Phân tích tài chính chuyên sâu</div><div class="pdf-cover-period">${monthLabel(reportMonth)}</div></div><div><div class="pdf-cover-meta"><div class="pdf-cover-meta-item"><div class="pdf-cover-meta-label">Ngày tạo</div><div class="pdf-cover-meta-value">${dateStr}</div></div><div class="pdf-cover-meta-item"><div class="pdf-cover-meta-label">Kỳ báo cáo</div><div class="pdf-cover-meta-value">${monthLabel(reportMonth)}</div></div><div class="pdf-cover-meta-item"><div class="pdf-cover-meta-label">Số giao dịch</div><div class="pdf-cover-meta-value">${count}</div></div><div class="pdf-cover-meta-item"><div class="pdf-cover-meta-label">Tổng chi</div><div class="pdf-cover-meta-value">${fmtMoney(total)}</div></div></div><div class="pdf-cover-footer">Được tạo tự động bởi Quản Lý Chi Tiêu v5.4 · ${dateStr}</div></div></div></div>`;
 
   h += `<div class="pdf-page"><div class="pdf-page-header"><div class="pdf-page-header-title">Tóm tắt tổng quan</div><div class="pdf-page-header-section">${monthLabel(reportMonth)}</div></div><div class="pdf-health-banner"><div class="pdf-health-score-big">${health}<span>/100</span></div><div style="flex:1;"><div class="pdf-health-label">Sức khoẻ tài chính</div><div class="pdf-health-status">${healthInfo.label}</div><div class="pdf-health-desc">${healthInfo.desc}</div></div></div><div class="pdf-kpi-grid"><div class="pdf-kpi"><div class="pdf-kpi-label">Tổng chi tiêu</div><div class="pdf-kpi-value">${fmtMoneyShort(total)}</div><div class="pdf-kpi-sub">${count} giao dịch</div></div><div class="pdf-kpi"><div class="pdf-kpi-label">TB/ngày</div><div class="pdf-kpi-value">${fmtMoneyShort(Math.round(avg))}</div><div class="pdf-kpi-sub">Trên ${days} ngày</div></div><div class="pdf-kpi"><div class="pdf-kpi-label">Chi lớn nhất</div><div class="pdf-kpi-value">${fmtMoneyShort(largest)}</div><div class="pdf-kpi-sub">Giao dịch đắt nhất</div></div><div class="pdf-kpi"><div class="pdf-kpi-label">So tháng trước</div><div class="pdf-kpi-value">${prevTotal > 0 ? (diffPct >= 0 ? '+' : '') + diffPct.toFixed(0) + '%' : '—'}</div><div class="pdf-kpi-sub">${prevTotal > 0 ? fmtMoneyShort(prevTotal) : 'Chưa có'}</div></div></div>`;
 
@@ -3987,11 +3943,11 @@ function buildPdfReport() {
 
   if (rule.income > 0) h += `<div class="pdf-section"><div class="pdf-section-title">Phân tích 50/30/20</div><table class="pdf-table"><thead><tr><th>Loại</th><th class="right">Số tiền</th><th class="right">% Thu nhập</th><th class="right">Mục tiêu</th><th class="right">ĐG</th></tr></thead><tbody><tr><td><strong>Thiết yếu</strong></td><td class="num">${fmtMoney(rule.needs)}</td><td class="num">${rule.needsPct.toFixed(1)}%</td><td class="num">≤50%</td><td class="num" style="color:${rule.needsOk ? '#10b981' : '#ef4444'};font-weight:800;">${rule.needsOk ? 'Đạt' : 'Vượt'}</td></tr><tr><td><strong>Mong muốn</strong></td><td class="num">${fmtMoney(rule.wants)}</td><td class="num">${rule.wantsPct.toFixed(1)}%</td><td class="num">≤30%</td><td class="num" style="color:${rule.wantsOk ? '#10b981' : '#ef4444'};font-weight:800;">${rule.wantsOk ? 'Đạt' : 'Vượt'}</td></tr><tr><td><strong>Tiết kiệm</strong></td><td class="num">${fmtMoney(rule.savings)}</td><td class="num">${rule.savingsPct.toFixed(1)}%</td><td class="num">≥20%</td><td class="num" style="color:${rule.savingsOk ? '#10b981' : '#ef4444'};font-weight:800;">${rule.savingsOk ? 'Đạt' : 'Chưa'}</td></tr></tbody></table></div>`;
 
-  h += `<div class="pdf-page-footer"><span>Quản Lý Chi Tiêu v5.2</span><span>Trang 2</span></div></div>`;
+  h += `<div class="pdf-page-footer"><span>Quản Lý Chi Tiêu v5.4</span><span>Trang 2</span></div></div>`;
 
-  h += `<div class="pdf-page"><div class="pdf-page-header"><div class="pdf-page-header-title">Phân tích chi tiết</div><div class="pdf-page-header-section">${monthLabel(reportMonth)}</div></div><div class="pdf-section"><div class="pdf-section-title">Chi tiêu theo danh mục</div>${byCat.length === 0 ? '<div style="padding:20px;text-align:center;color:#94a3b8;">Chưa có dữ liệu</div>' : `<table class="pdf-table"><thead><tr><th>#</th><th>Danh mục</th><th class="right">Số tiền</th><th class="right">Tỷ trọng</th></tr></thead><tbody>${byCat.map((b, i) => `<tr><td>${i + 1}</td><td><span class="dot" style="background:${b.category.color};"></span>${escapeHtml(b.category.name)}</td><td class="num">${fmtMoney(b.value)}</td><td class="num">${total > 0 ? (b.value / total * 100).toFixed(1) : 0}%</td></tr>`).join('')}</tbody></table>`}</div><div class="pdf-section"><div class="pdf-section-title">Chi tiêu theo ngày</div>${buildPdfChartSVG(dailyMap, days, maxDay)}</div><div class="pdf-2col"><div class="pdf-section"><div class="pdf-section-title">Phương thức</div>${byPay.length === 0 ? '' : `<table class="pdf-table"><thead><tr><th>Loại</th><th class="right">Số tiền</th><th class="right">%</th></tr></thead><tbody>${byPay.map(p => `<tr><td><span class="dot" style="background:${p.payment.color};"></span>${escapeHtml(p.payment.name)}</td><td class="num">${fmtMoney(p.value)}</td><td class="num">${total > 0 ? (p.value / total * 100).toFixed(1) : 0}%</td></tr>`).join('')}</tbody></table>`}</div><div class="pdf-section"><div class="pdf-section-title">Theo tuần</div><table class="pdf-table"><thead><tr><th>Tuần</th><th class="right">Số tiền</th><th class="right">GD</th></tr></thead><tbody>${weekly.map(w => `<tr><td>${w.label} <span style="color:#94a3b8;font-size:8pt;">(${w.days})</span></td><td class="num">${fmtMoney(w.total)}</td><td class="num">${w.count}</td></tr>`).join('')}</tbody></table></div></div><div class="pdf-page-footer"><span>Quản Lý Chi Tiêu v5.2</span><span>Trang 3</span></div></div>`;
+  h += `<div class="pdf-page"><div class="pdf-page-header"><div class="pdf-page-header-title">Phân tích chi tiết</div><div class="pdf-page-header-section">${monthLabel(reportMonth)}</div></div><div class="pdf-section"><div class="pdf-section-title">Chi tiêu theo danh mục</div>${byCat.length === 0 ? '<div style="padding:20px;text-align:center;color:#94a3b8;">Chưa có dữ liệu</div>' : `<table class="pdf-table"><thead><tr><th>#</th><th>Danh mục</th><th class="right">Số tiền</th><th class="right">Tỷ trọng</th></tr></thead><tbody>${byCat.map((b, i) => `<tr><td>${i + 1}</td><td><span class="dot" style="background:${b.category.color};"></span>${escapeHtml(b.category.name)}</td><td class="num">${fmtMoney(b.value)}</td><td class="num">${total > 0 ? (b.value / total * 100).toFixed(1) : 0}%</td></tr>`).join('')}</tbody></table>`}</div><div class="pdf-section"><div class="pdf-section-title">Chi tiêu theo ngày</div>${buildPdfChartSVG(dailyMap, days, maxDay)}</div><div class="pdf-2col"><div class="pdf-section"><div class="pdf-section-title">Phương thức</div>${byPay.length === 0 ? '' : `<table class="pdf-table"><thead><tr><th>Loại</th><th class="right">Số tiền</th><th class="right">%</th></tr></thead><tbody>${byPay.map(p => `<tr><td><span class="dot" style="background:${p.payment.color};"></span>${escapeHtml(p.payment.name)}</td><td class="num">${fmtMoney(p.value)}</td><td class="num">${total > 0 ? (p.value / total * 100).toFixed(1) : 0}%</td></tr>`).join('')}</tbody></table>`}</div><div class="pdf-section"><div class="pdf-section-title">Theo tuần</div><table class="pdf-table"><thead><tr><th>Tuần</th><th class="right">Số tiền</th><th class="right">GD</th></tr></thead><tbody>${weekly.map(w => `<tr><td>${w.label} <span style="color:#94a3b8;font-size:8pt;">(${w.days})</span></td><td class="num">${fmtMoney(w.total)}</td><td class="num">${w.count}</td></tr>`).join('')}</tbody></table></div></div><div class="pdf-page-footer"><span>Quản Lý Chi Tiêu v5.4</span><span>Trang 3</span></div></div>`;
 
-  h += `<div class="pdf-page"><div class="pdf-page-header"><div class="pdf-page-header-title">Nhận xét & Khuyến nghị</div><div class="pdf-page-header-section">${monthLabel(reportMonth)}</div></div>${insights.length > 0 ? `<div class="pdf-section"><div class="pdf-section-title">Phân tích thông minh</div><div class="pdf-insight-list">${insights.map(i => `<div class="pdf-insight">${i.html}</div>`).join('')}</div></div>` : ''}<div class="pdf-section"><div class="pdf-section-title">Top 10 chi tiêu</div>${top.length === 0 ? '' : `<table class="pdf-table"><thead><tr><th>#</th><th>Danh mục</th><th>Ghi chú</th><th class="right">Số tiền</th><th class="right">Ngày</th></tr></thead><tbody>${top.map((e, i) => { const c = getCategory(e.categoryId); return `<tr><td>${i + 1}</td><td><span class="dot" style="background:${c.color};"></span>${escapeHtml(c.name)}</td><td>${escapeHtml(e.note || '—')}</td><td class="num">${fmtMoney(e.amount)}</td><td class="num">${fmtDate(e.date)}</td></tr>`; }).join('')}</tbody></table>`}</div><div class="pdf-section"><div class="pdf-section-title">Khuyến nghị</div><div class="pdf-insight-list">${budget > 0 && budgetPct > 100 ? `<div class="pdf-insight danger"><strong>Cảnh báo:</strong> Vượt NS ${fmtMoney(total - budget)}. Cần cắt giảm chi tiêu.</div>` : budget > 0 && budgetPct > 80 ? `<div class="pdf-insight warning">Đã dùng ${budgetPct.toFixed(0)}% ngân sách. Chú ý chi tiêu.</div>` : budget > 0 ? `<div class="pdf-insight success">Chi tiêu trong tầm kiểm soát. Duy trì thói quen tốt.</div>` : `<div class="pdf-insight"><strong>Gợi ý:</strong> Đặt ngân sách để AI phân tích chính xác hơn.</div>`}${rule.income > 0 && !rule.savingsOk ? `<div class="pdf-insight warning">Tỷ lệ tiết kiệm (${rule.savingsPct.toFixed(1)}%) thấp hơn mục tiêu 20%.</div>` : rule.income > 0 ? `<div class="pdf-insight success">Tỷ lệ tiết kiệm đạt mục tiêu!</div>` : ''}</div></div><div class="pdf-sign"><div class="pdf-sign-block"><div class="pdf-sign-label">Người lập</div><div class="pdf-sign-line">${dateStr}</div></div><div class="pdf-sign-block"><div class="pdf-sign-label">Kiểm tra</div><div class="pdf-sign-line">${dateStr}</div></div><div class="pdf-sign-block"><div class="pdf-sign-label">Phê duyệt</div><div class="pdf-sign-line">${dateStr}</div></div></div><div class="pdf-page-footer"><span>Quản Lý Chi Tiêu v5.2 · Báo cáo tự động</span><span>Trang 4</span></div></div>`;
+  h += `<div class="pdf-page"><div class="pdf-page-header"><div class="pdf-page-header-title">Nhận xét & Khuyến nghị</div><div class="pdf-page-header-section">${monthLabel(reportMonth)}</div></div>${insights.length > 0 ? `<div class="pdf-section"><div class="pdf-section-title">Phân tích thông minh</div><div class="pdf-insight-list">${insights.map(i => `<div class="pdf-insight">${i.html}</div>`).join('')}</div></div>` : ''}<div class="pdf-section"><div class="pdf-section-title">Top 10 chi tiêu</div>${top.length === 0 ? '' : `<table class="pdf-table"><thead><tr><th>#</th><th>Danh mục</th><th>Ghi chú</th><th class="right">Số tiền</th><th class="right">Ngày</th></tr></thead><tbody>${top.map((e, i) => { const c = getCategory(e.categoryId); return `<tr><td>${i + 1}</td><td><span class="dot" style="background:${c.color};"></span>${escapeHtml(c.name)}</td><td>${escapeHtml(e.note || '—')}</td><td class="num">${fmtMoney(e.amount)}</td><td class="num">${fmtDate(e.date)}</td></tr>`; }).join('')}</tbody></table>`}</div><div class="pdf-section"><div class="pdf-section-title">Khuyến nghị</div><div class="pdf-insight-list">${budget > 0 && budgetPct > 100 ? `<div class="pdf-insight danger"><strong>Cảnh báo:</strong> Vượt NS ${fmtMoney(total - budget)}. Cần cắt giảm chi tiêu.</div>` : budget > 0 && budgetPct > 80 ? `<div class="pdf-insight warning">Đã dùng ${budgetPct.toFixed(0)}% ngân sách. Chú ý chi tiêu.</div>` : budget > 0 ? `<div class="pdf-insight success">Chi tiêu trong tầm kiểm soát. Duy trì thói quen tốt.</div>` : `<div class="pdf-insight"><strong>Gợi ý:</strong> Đặt ngân sách để AI phân tích chính xác hơn.</div>`}${rule.income > 0 && !rule.savingsOk ? `<div class="pdf-insight warning">Tỷ lệ tiết kiệm (${rule.savingsPct.toFixed(1)}%) thấp hơn mục tiêu 20%.</div>` : rule.income > 0 ? `<div class="pdf-insight success">Tỷ lệ tiết kiệm đạt mục tiêu!</div>` : ''}</div></div><div class="pdf-sign"><div class="pdf-sign-block"><div class="pdf-sign-label">Người lập</div><div class="pdf-sign-line">${dateStr}</div></div><div class="pdf-sign-block"><div class="pdf-sign-label">Kiểm tra</div><div class="pdf-sign-line">${dateStr}</div></div><div class="pdf-sign-block"><div class="pdf-sign-label">Phê duyệt</div><div class="pdf-sign-line">${dateStr}</div></div></div><div class="pdf-page-footer"><span>Quản Lý Chi Tiêu v5.4 · Báo cáo tự động</span><span>Trang 4</span></div></div>`;
 
   return h;
 }
@@ -4251,7 +4207,7 @@ function init() {
     lastTouchEnd = now;
   }, { passive: false });
 
-  console.log(`%cQuản Lý Chi Tiêu v5.2 — ${PLATFORM.toUpperCase()} PWA`, 'color:#4f46e5;font-weight:bold;font-size:14px;');
+  console.log(`%cQuản Lý Chi Tiêu v5.4 — ${PLATFORM.toUpperCase()} PWA`, 'color:#4f46e5;font-weight:bold;font-size:14px;');
 
   // PWA: đăng ký service worker (chỉ chạy trên HTTPS hoặc localhost)
   if ('serviceWorker' in navigator) {
