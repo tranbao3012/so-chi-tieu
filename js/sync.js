@@ -1,25 +1,20 @@
-/* js/sync.js — V1.3
-   Đồng bộ dữ liệu qua GitHub Gist sử dụng @repus/gist-sync.
-   V1.3: Sửa cấu hình brokerPath, bọc try/catch chống sập app, thêm UI Toast. */
+/* js/sync.js — V1.4
+   V1.4: Tự động xoá ?code= khỏi URL SAU KHI handleOAuthCallback chạy xong. */
 
 import { createGistSync } from 'https://esm.sh/@repus/gist-sync@0.2.2';
 import { toast } from './core.js';
 
 // ==== CẤU HÌNH ====
 const CONFIG = {
-  // BẮT BUỘC: Dán Client ID của OAuth App (không phải GitHub App) vào đây
-  clientId: 'Ov23li9f3mWd0uDSxiL0', 
+  // Điền Client ID OAuth App của bạn vào đây
+  clientId: 'Ov23li9f3mWdOuDSxiL0', 
   
-  // URL Worker Cloudflare (giữ nguyên /token ở cuối)
   brokerPath: 'https://gist-sync-broker.baobao-tran.workers.dev/token',
   
-  // Tên file lưu trữ trên Gist
   filename: 'so-chi-tieu-data.json'
 };
 
 // ==== SCHEMA ĐỒNG BỘ ====
-// expenses & categories: merge dựa trên trường 'id' (thêm/sửa không đè lên nhau)
-// settings: merge từng key (ví dụ thiết bị A đổi theme, B đổi ngân sách -> giữ cả 2)
 const schema = {
   collections: {
     expenses: { kind: 'idKeyed', key: 'id' },
@@ -38,7 +33,6 @@ export function bindState(getStateFn, setStateFn) {
   _setState = setStateFn;
 }
 
-// Đóng gói dữ liệu để đẩy lên Gist
 function serialize() {
   const state = _getState();
   return {
@@ -48,7 +42,6 @@ function serialize() {
   };
 }
 
-// Nhận dữ liệu đã merge từ Gist và cập nhật lại app
 function apply(bundle) {
   if (!bundle) return;
   _setState({
@@ -86,8 +79,19 @@ export function initSync(ports = {}) {
       }
     });
 
-    // Tự động xử lý callback nếu URL có ?code=... sau khi GitHub redirect về
+    // 1. Để thư viện đọc ?code= trên URL và lấy Token
     sync.handleOAuthCallback();
+
+    // 2. SAU KHI thư viện xử lý xong, mới xoá ?code= khỏi URL để F5 không bị lỗi
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('code')) {
+      try {
+        const cleanUrl = window.location.pathname + window.location.hash;
+        history.replaceState({}, '', cleanUrl);
+      } catch (e) {
+        console.warn('[Sync] Không thể xoá ?code khỏi URL', e);
+      }
+    }
     
     return sync;
   } catch (err) {
@@ -103,8 +107,7 @@ export function login() {
     alert('Tính năng đồng bộ chưa sẵn sàng. Vui lòng tải lại trang.');
     return;
   }
-  // Kiểm tra xem đã điền Client ID chưa
-  if (CONFIG.clientId === 'YOUR_OAUTH_APP_CLIENT_ID') {
+  if (CONFIG.clientId === 'YOUR_OAUTH_APP_CLIENT_ID' || CONFIG.clientId === '') {
     alert('Lỗi: Bạn chưa điền Client ID vào file sync.js!');
     return;
   }
