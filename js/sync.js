@@ -11,7 +11,7 @@ const CONFIG = {
   clientId: 'Ov23li9f3mWd0uDSxiL0', 
   
   // URL Worker Cloudflare (giữ nguyên /token ở cuối)
-  brokerPath: 'https://gist-sync-broker.baobao-tran.workers.dev/',
+  brokerPath: 'https://gist-sync-broker.baobao-tran.workers.dev/token',
   
   // Tên file lưu trữ trên Gist
   filename: 'so-chi-tieu-data.json'
