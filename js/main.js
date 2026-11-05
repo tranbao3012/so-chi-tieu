@@ -1,7 +1,5 @@
-/* js/main.js — V1.4
-   Entry point: bootstrap app, bind global events, điều phối render,
-   đăng ký service worker.
-   V1.4: Xoá mã ?code= thừa trên URL sau khi đăng nhập OAuth. */
+/* js/main.js — V1.5
+   V1.5: Bỏ logic xoá ?code= quá sớm, nhường quyền xử lý cho sync.js. */
 
 import {
   state, saveState, toast,
@@ -13,51 +11,23 @@ import {
 } from './core.js';
 
 import { renderDashboard } from './dashboard.js';
-
-import {
-  renderExpensesTab, openExpenseModal, closeExpenseModal,
-  bindExpenseTabEvents, bindExpenseFormEvents
-} from './expenses.js';
-
-import {
-  renderCategoriesTab, openCategoryModal, closeCategoryModal,
-  bindCategoryTabEvents, bindCategoryFormEvents
-} from './categories.js';
-
+import { renderExpensesTab, openExpenseModal, closeExpenseModal, bindExpenseTabEvents, bindExpenseFormEvents } from './expenses.js';
+import { renderCategoriesTab, openCategoryModal, closeCategoryModal, bindCategoryTabEvents, bindCategoryFormEvents } from './categories.js';
 import { renderReportsTab, bindReportTabEvents } from './reports.js';
-
 import { renderSettings, bindSettingsTabEvents } from './settings.js';
 
-/* ==================================================================
-   Platform attribute
-   ================================================================== */
 document.documentElement.setAttribute('data-platform', PLATFORM);
 
-/* ==================================================================
-   Tab metadata
-   ================================================================== */
 const TAB_TITLES = {
-  dashboard: 'Tổng quan',
-  expenses: 'Giao dịch',
-  categories: 'Danh mục',
-  reports: 'Báo cáo',
-  settings: 'Cài đặt'
+  dashboard: 'Tổng quan', expenses: 'Giao dịch', categories: 'Danh mục', reports: 'Báo cáo', settings: 'Cài đặt'
 };
-
 const TAB_SUBTITLES = {
-  dashboard: 'Quản lý chi tiêu',
-  expenses: 'Danh sách giao dịch',
-  categories: 'Phân loại chi tiêu',
-  reports: 'Phân tích chi tiết',
-  settings: 'Tuỳ chỉnh'
+  dashboard: 'Quản lý chi tiêu', expenses: 'Danh sách giao dịch', categories: 'Phân loại chi tiêu', reports: 'Phân tích chi tiết', settings: 'Tuỳ chỉnh'
 };
 
 let currentTab = 'dashboard';
 let syncModule = null;
 
-/* ==================================================================
-   Render dispatcher
-   ================================================================== */
 function renderTab(tabId) {
   if (tabId === 'dashboard') renderDashboard();
   else if (tabId === 'expenses') renderExpensesTab();
@@ -67,39 +37,25 @@ function renderTab(tabId) {
   fillIcons();
 }
 
-/* ==================================================================
-   Tab switching
-   ================================================================== */
 function switchTab(tabId) {
   if (currentTab === tabId) return;
   currentTab = tabId;
 
-  document.querySelectorAll('.tab-btn').forEach(t =>
-    t.classList.toggle('active', t.dataset.tab === tabId)
-  );
-  document.querySelectorAll('.panel').forEach(p =>
-    p.classList.toggle('active', p.id === 'panel-' + tabId)
-  );
+  document.querySelectorAll('.tab-btn').forEach(t => t.classList.toggle('active', t.dataset.tab === tabId));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + tabId));
 
   document.getElementById('appBarTitle').textContent = TAB_TITLES[tabId] || '';
   document.getElementById('appBarSubtitle').textContent = TAB_SUBTITLES[tabId] || '';
-
   document.getElementById('appContent').scrollTop = 0;
   document.getElementById('appBar').classList.remove('scrolled');
-
-  document.getElementById('fab').style.display =
-    (tabId === 'settings') ? 'none' : 'flex';
+  document.getElementById('fab').style.display = (tabId === 'settings') ? 'none' : 'flex';
 
   renderTab(tabId);
 }
 
 function bindTabs() {
-  document.querySelectorAll('.tab-btn').forEach(t => {
-    t.addEventListener('click', () => switchTab(t.dataset.tab));
-  });
-  document.querySelectorAll('[data-goto]').forEach(b => {
-    b.addEventListener('click', () => switchTab(b.dataset.goto));
-  });
+  document.querySelectorAll('.tab-btn').forEach(t => t.addEventListener('click', () => switchTab(t.dataset.tab)));
+  document.querySelectorAll('[data-goto]').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.goto)));
 }
 
 function closeSheetById(id) {
@@ -109,19 +65,13 @@ function closeSheetById(id) {
 }
 
 function bindSheets() {
-  document.querySelectorAll('[data-close]').forEach(b => {
-    b.addEventListener('click', () => closeSheetById(b.dataset.close));
-  });
+  document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => closeSheetById(b.dataset.close)));
   document.querySelectorAll('.sheet-overlay').forEach(o => {
-    o.addEventListener('click', (e) => {
-      if (e.target === o) closeSheetById(o.id);
-    });
+    o.addEventListener('click', (e) => { if (e.target === o) closeSheetById(o.id); });
   });
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
-    document.querySelectorAll('.sheet-overlay.active').forEach(o => {
-      closeSheetById(o.id);
-    });
+    document.querySelectorAll('.sheet-overlay.active').forEach(o => closeSheetById(o.id));
   });
 }
 
@@ -146,16 +96,13 @@ function setupScrollBehavior() {
 }
 
 function bindStateChanged() {
-  document.addEventListener('state:changed', () => {
-    renderTab(currentTab);
-  });
+  document.addEventListener('state:changed', () => renderTab(currentTab));
 }
 
 function handleQueryParams() {
   const params = new URLSearchParams(window.location.search);
   const tabParam = params.get('tab');
   const actionParam = params.get('action');
-  const oauthCode = params.get('code'); // Bắt mã code của GitHub OAuth
 
   let handled = false;
   let pendingOpenAdd = false;
@@ -169,8 +116,8 @@ function handleQueryParams() {
     handled = true;
   }
 
-  // Nếu có mã code (vừa đăng nhập xong), hoặc có tab/action -> Xoá sạch URL
-  if (handled || oauthCode) {
+  // CHỈ xoá URL nếu là tab/action. KHÔNG xoá nếu có ?code= (để sync.js tự xử lý)
+  if (handled && !params.has('code')) {
     try {
       const cleanUrl = window.location.pathname + window.location.hash;
       history.replaceState({}, '', cleanUrl);
@@ -183,20 +130,14 @@ function handleQueryParams() {
 function registerSW() {
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js').catch((err) => {
-        console.warn('SW registration failed:', err);
-      });
+      navigator.serviceWorker.register('sw.js').catch((err) => console.warn('SW registration failed:', err));
     });
   }
 }
 
-/* ==================================================================
-   SYNC ENGINE (Dynamic Import)
-   ================================================================== */
 async function setupSync() {
   try {
     syncModule = await import('./sync.js');
-    
     syncModule.bindState(
       () => state, 
       (newState) => { 
@@ -210,29 +151,20 @@ async function setupSync() {
 
     syncModule.initSync({
       onStatus: (status) => {
-        console.log('[Sync Status]:', status);
         if (status === 'syncing') toast('Đang đồng bộ...', 'info');
         if (status === 'error') toast('Lỗi đồng bộ dữ liệu', 'error');
       },
       onToast: (msg) => toast(msg, 'success'),
       onUser: (user) => {
-        console.log('[Sync User]:', user);
         document.dispatchEvent(new CustomEvent('sync:user', { detail: { user } }));
       },
-      onConflict: (conflict) => {
-        console.warn('[Sync Conflict]:', conflict);
-        toast('Đã giải quyết xung đột dữ liệu', 'warning');
-      }
+      onConflict: () => toast('Đã giải quyết xung đột dữ liệu', 'warning')
     });
-    console.log('[Sync] Khởi tạo thành công');
   } catch (err) {
-    console.warn('[Sync] Lỗi tải module sync (App vẫn chạy bình thường):', err);
+    console.warn('[Sync] Lỗi tải module sync:', err);
   }
 }
 
-/* ==================================================================
-   Init
-   ================================================================== */
 function init() {
   loadState();
   applyTheme();
@@ -250,12 +182,12 @@ function init() {
   bindStateChanged();
   setupScrollBehavior();
 
-  // Render tab ngay lập tức, không chờ Sync
   renderTab('dashboard');
-  handleQueryParams();
-
-  // Kích hoạt Sync chạy ngầm
-  setupSync();
+  
+  // Gọi setupSync TRƯỚC khi xử lý QueryParams
+  setupSync().then(() => {
+    handleQueryParams();
+  });
 
   registerSW();
 }
