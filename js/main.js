@@ -1,7 +1,7 @@
-/* js/main.js — V1.3
+/* js/main.js — V1.4
    Entry point: bootstrap app, bind global events, điều phối render,
    đăng ký service worker.
-   V1.3: Dùng Dynamic Import cho sync.js để tránh crash app nếu CDN lỗi. */
+   V1.4: Xoá mã ?code= thừa trên URL sau khi đăng nhập OAuth. */
 
 import {
   state, saveState, toast,
@@ -155,6 +155,8 @@ function handleQueryParams() {
   const params = new URLSearchParams(window.location.search);
   const tabParam = params.get('tab');
   const actionParam = params.get('action');
+  const oauthCode = params.get('code'); // Bắt mã code của GitHub OAuth
+
   let handled = false;
   let pendingOpenAdd = false;
 
@@ -166,12 +168,15 @@ function handleQueryParams() {
     pendingOpenAdd = true;
     handled = true;
   }
-  if (handled) {
+
+  // Nếu có mã code (vừa đăng nhập xong), hoặc có tab/action -> Xoá sạch URL
+  if (handled || oauthCode) {
     try {
       const cleanUrl = window.location.pathname + window.location.hash;
       history.replaceState({}, '', cleanUrl);
     } catch (e) {}
   }
+
   if (pendingOpenAdd) setTimeout(() => openExpenseModal(), 80);
 }
 
@@ -190,7 +195,6 @@ function registerSW() {
    ================================================================== */
 async function setupSync() {
   try {
-    // Import động: Nếu CDN sập, app vẫn chạy, không bị trắng trang
     syncModule = await import('./sync.js');
     
     syncModule.bindState(
