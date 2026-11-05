@@ -1,13 +1,12 @@
-/* js/sync.js — V1.7
-   Dọn dẹp URL trước khi login để tránh lỗi 404 Redirect URI. */
+/* js/sync.js — V1.8 (Dựa trên V1.7, đã fix cấu hình chuẩn) */
 
 import { createGistSync } from 'https://esm.sh/@repus/gist-sync@0.2.2';
 import { toast } from './core.js';
 
 const CONFIG = {
   clientId: 'Ov23li9f3mWdOuDSxiL0', 
-  brokerPath: 'https://gist-sync-broker.baobao-tran.workers.dev/token',
-  filename: 'so-chi-tieu-data.json'
+  // Sửa brokerPath thành brokerUrl theo đúng chuẩn thư viện
+  brokerUrl: 'https://gist-sync-broker.baobao-tran.workers.dev/token'
 };
 
 const schema = {
@@ -44,6 +43,8 @@ function apply(bundle) {
 export function initSync(ports = {}) {
   try {
     sync = createGistSync({
+      // Đưa filename ra ngoài CONFIG để không bị lỗi undefined
+      filename: 'so-chi-tieu-data.json',
       config: CONFIG,
       schema,
       ports: {
@@ -74,8 +75,7 @@ export function initSync(ports = {}) {
 export function login() {
   if (!sync) return alert('Tính năng đồng bộ chưa sẵn sàng.');
   
-  // BƯỚC QUAN TRỌNG: Dọn dẹp URL về đúng đường dẫn gốc của GitHub Pages
-  // Ví dụ: xoá các tham số như ?tab=settings hay ?code=...
+  // Giữ nguyên logic dọn dẹp URL của bạn
   if (window.location.search !== '') {
     window.history.replaceState({}, document.title, window.location.pathname);
   }
