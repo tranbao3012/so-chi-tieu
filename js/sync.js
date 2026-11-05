@@ -1,5 +1,5 @@
-/* js/sync.js — V1.9
-   Sửa lỗi filename bị undefined bằng cách đưa filename ra ngoài CONFIG. */
+/* js/sync.js — V2.0
+   Ép buộc dọn dẹp URL và trạng thái cũ trước khi gọi login(). */
 
 import { createGistSync } from 'https://esm.sh/@repus/gist-sync@0.2.2';
 import { toast } from './core.js';
@@ -47,7 +47,6 @@ function apply(bundle) {
 export function initSync(ports = {}) {
   try {
     sync = createGistSync({
-      // ĐÃ ĐƯA FILENAME RA NGOÀI NÀY
       filename: 'so-chi-tieu-data.json', 
       config: CONFIG,
       schema,
@@ -78,14 +77,27 @@ export function initSync(ports = {}) {
 
 export function login() {
   if (!sync) return alert('Tính năng đồng bộ chưa sẵn sàng.');
-  if (window.location.search !== '') {
-    window.history.replaceState({}, document.title, window.location.pathname);
+
+  // Xoá sạch token cũ và mã code nếu có để tránh xung đột
+  if (sync.logout) {
+    try { sync.logout(); } catch(e) {}
   }
+  localStorage.removeItem('app_sync_logged_in');
+
+  // CƯỠNG CHẾ ĐƯA URL VỀ ĐÚNG ĐƯỜNG DẪN GỐC
+  // Xoá bỏ mọi tham số thừa (?tab, ?code, v.v...)
+  const baseUrl = window.location.origin + window.location.pathname;
+  window.history.replaceState(null, '', baseUrl);
+
+  console.log("[Sync] Đã làm sạch URL. Bắt đầu đăng nhập với gốc:", baseUrl);
+  
   return sync.login();
 }
 
 export function logout() {
-  if (sync && sync.logout) sync.logout();
+  if (sync && sync.logout) {
+    try { sync.logout(); } catch(e) {}
+  }
   localStorage.removeItem('app_sync_logged_in');
   document.dispatchEvent(new CustomEvent('sync:logout'));
   toast('Đã ngắt kết nối GitHub', 'info');
