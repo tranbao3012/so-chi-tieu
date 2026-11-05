@@ -1,10 +1,10 @@
-/* js/sync.js — V1.5 */
+/* js/sync.js — V1.6 */
 
 import { createGistSync } from 'https://esm.sh/@repus/gist-sync@0.2.2';
 import { toast } from './core.js';
 
 const CONFIG = {
-  clientId: 'Ov23li9f3mWdOuDSxiL0', // Mã của bạn
+  clientId: 'Ov23li9f3mWdOuDSxiL0', // Mã OAuth App của bạn
   brokerPath: 'https://gist-sync-broker.baobao-tran.workers.dev/token',
   filename: 'so-chi-tieu-data.json'
 };
@@ -54,17 +54,19 @@ export function initSync(ports = {}) {
           if (ports.onStatus) ports.onStatus(status);
         },
         onToast: (msg) => { toast(msg, 'success'); if (ports.onToast) ports.onToast(msg); },
-        onUser: (user) => { if (ports.onUser) ports.onUser(user); },
+        onUser: (user) => { 
+          // Đánh dấu đã đăng nhập thành công vào bộ nhớ máy
+          localStorage.setItem('app_sync_logged_in', 'true');
+          if (ports.onUser) ports.onUser(user); 
+        },
         onConflict: (conflict) => { toast('Đã giải quyết xung đột', 'warning'); if (ports.onConflict) ports.onConflict(conflict); }
       }
     });
 
-    // Thư viện tự xử lý code trên URL và xoá nó đi
     sync.handleOAuthCallback();
     return sync;
   } catch (err) {
     console.error('[Sync] Lỗi khởi tạo thư viện:', err);
-    toast('Không thể khởi tạo đồng bộ', 'error');
     return null;
   }
 }
@@ -72,6 +74,15 @@ export function initSync(ports = {}) {
 export function login() {
   if (!sync) return alert('Tính năng đồng bộ chưa sẵn sàng.');
   return sync.login();
+}
+
+export function logout() {
+  if (sync && sync.logout) {
+    sync.logout();
+  }
+  localStorage.removeItem('app_sync_logged_in');
+  document.dispatchEvent(new CustomEvent('sync:logout'));
+  toast('Đã ngắt kết nối GitHub', 'info');
 }
 
 export function syncNow() {
