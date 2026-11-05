@@ -1,8 +1,8 @@
-// sw.js — V1.1 (modular structure)
-// Cập nhật cache cho cấu trúc file mới (tách css/ và js/)
+// sw.js — V1.3
+// Fix: Không cache HTML navigation nếu URL chứa ?code= (tránh lỗi đăng xuất OAuth)
 // Bắt buộc tăng CACHE_VERSION để trình duyệt xoá cache cũ
 
-const CACHE_VERSION = 'expense-tracker-v2.0.0';
+const CACHE_VERSION = 'expense-tracker-v2.2.0';
 
 const APP_SHELL = [
   './',
@@ -21,6 +21,7 @@ const APP_SHELL = [
   './js/categories.js',
   './js/reports.js',
   './js/settings.js',
+  './js/sync.js',
 
   // Icons
   './icons/icon-192.png',
@@ -31,6 +32,14 @@ const APP_SHELL = [
   './icons/favicon-32.png'
 ];
 
+function offlineResponse() {
+  return new Response('Offline — nội dung chưa được cache.', {
+    status: 503,
+    statusText: 'Offline',
+    headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+  });
+}
+
 /* ==================================================================
    INSTALL — precache app shell
    ================================================================== */
@@ -38,7 +47,6 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_VERSION)
       .then((cache) => {
-        // addAll fail nếu bất kỳ file nào 404 → catch để SW vẫn cài được
         return cache.addAll(APP_SHELL).catch((err) => {
           console.warn('Precache warning:', err);
         });
@@ -68,31 +76,36 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const req = event.request;
 
-  // Chỉ xử lý GET
   if (req.method !== 'GET') return;
 
-  // Bỏ qua cross-origin
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
 
-  // HTML navigation: network-first → cache fallback khi offline
+  // HTML navigation: network-first → cache fallback → index.html → 503
   if (req.mode === 'navigate' || (req.headers.get('accept') || '').includes('text/html')) {
     event.respondWith(
       fetch(req)
         .then((res) => {
           if (res && res.ok) {
-            const copy = res.clone();
-            caches.open(CACHE_VERSION).then((c) => c.put(req, copy));
+            // CHỈ CACHE NẾU URL KHÔNG CHỨA MÃ CODE OAUTH (?code=)
+            // Tránh việc Service Worker cache lại URL có mã code đã hết hạn
+            if (!req.url.includes('code=')) {
+              const copy = res.clone();
+              caches.open(CACHE_VERSION).then((c) => c.put(req, copy));
+            }
           }
           return res;
         })
-        .catch(() => caches.match(req).then((cached) => cached || caches.match('./index.html')))
+        .catch(() =>
+          caches.match(req)
+            .then((cached) => cached || caches.match('./index.html'))
+        )
+        .then((res) => res || offlineResponse())
     );
     return;
   }
 
-  // JS/CSS modules: network-first (luôn cập nhật khi có mạng, fallback cache khi offline)
-  // Lý do: file JS/CSS thay đổi thường xuyên khi dev; cache-first sẽ giữ bản cũ
+  // JS/CSS modules: network-first
   const isCode = /\.(js|css|mjs)$/.test(url.pathname);
   if (isCode) {
     event.respondWith(
@@ -104,12 +117,14 @@ self.addEventListener('fetch', (event) => {
           }
           return res;
         })
-        .catch(() => caches.match(req))
+        .catch(() =>
+          caches.match(req).then((cached) => cached || offlineResponse())
+        )
     );
     return;
   }
 
-  // Static assets (manifest, icon): cache-first + revalidate ngầm
+  // Static assets: cache-first + revalidate ngầm
   event.respondWith(
     caches.match(req).then((cached) => {
       const networkFetch = fetch(req)
@@ -120,8 +135,14 @@ self.addEventListener('fetch', (event) => {
           }
           return res;
         })
-        .catch(() => cached);
-      return cached || networkFetch;
+        .catch(() => null);
+
+      if (cached) {
+        networkFetch.catch(() => {});
+        return cached;
+      }
+
+      return networkFetch.then((res) => res || offlineResponse());
     })
   );
 });
