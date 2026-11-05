@@ -1,5 +1,5 @@
-/* js/sync.js — V2.0
-   Ép buộc dọn dẹp URL và trạng thái cũ trước khi gọi login(). */
+/* js/sync.js — V3.0
+   Bản tinh gọn, loại bỏ mọi can thiệp vào URL. */
 
 import { createGistSync } from 'https://esm.sh/@repus/gist-sync@0.2.2';
 import { toast } from './core.js';
@@ -75,22 +75,9 @@ export function initSync(ports = {}) {
   }
 }
 
+// Giữ nguyên hàm login() đơn giản nhất, không can thiệp URL
 export function login() {
   if (!sync) return alert('Tính năng đồng bộ chưa sẵn sàng.');
-
-  // Xoá sạch token cũ và mã code nếu có để tránh xung đột
-  if (sync.logout) {
-    try { sync.logout(); } catch(e) {}
-  }
-  localStorage.removeItem('app_sync_logged_in');
-
-  // CƯỠNG CHẾ ĐƯA URL VỀ ĐÚNG ĐƯỜNG DẪN GỐC
-  // Xoá bỏ mọi tham số thừa (?tab, ?code, v.v...)
-  const baseUrl = window.location.origin + window.location.pathname;
-  window.history.replaceState(null, '', baseUrl);
-
-  console.log("[Sync] Đã làm sạch URL. Bắt đầu đăng nhập với gốc:", baseUrl);
-  
   return sync.login();
 }
 
