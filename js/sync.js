@@ -1,10 +1,10 @@
-/* js/sync.js — V3.0
-   Bản tinh gọn, loại bỏ mọi can thiệp vào URL. */
+/* js/sync.js — V3.1 */
 
 import { createGistSync } from 'https://esm.sh/@repus/gist-sync@0.2.2';
 import { toast } from './core.js';
 
 const CONFIG = {
+  // THAY MÃ CLIENT ID MỚI VÀO ĐÂY NẾU BÀI TEST BÁO 404
   clientId: 'Ov23li9f3mWdOuDSxiL0', 
   brokerPath: 'https://gist-sync-broker.baobao-tran.workers.dev/token',
 };
@@ -75,7 +75,6 @@ export function initSync(ports = {}) {
   }
 }
 
-// Giữ nguyên hàm login() đơn giản nhất, không can thiệp URL
 export function login() {
   if (!sync) return alert('Tính năng đồng bộ chưa sẵn sàng.');
   return sync.login();
