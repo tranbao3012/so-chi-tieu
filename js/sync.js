@@ -5,7 +5,7 @@ import { toast } from './core.js';
 
 const CONFIG = {
   // THAY MÃ CLIENT ID MỚI VÀO ĐÂY NẾU BÀI TEST BÁO 404
-  clientId: 'Ov23li9f3mWdOuDSxiL0', 
+  clientId: 'Ov23li9f3mWd0uDSxiL0', 
   brokerPath: 'https://gist-sync-broker.baobao-tran.workers.dev/token',
 };
 
