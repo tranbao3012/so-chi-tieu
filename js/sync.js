@@ -4,7 +4,7 @@ import { createGistSync } from 'https://esm.sh/@repus/gist-sync@0.2.2';
 import { toast } from './core.js';
 
 const CONFIG = {
-  clientId: 'Ov23li9f3mWdOuDSxiL0', // Mã OAuth App của bạn
+  clientId: 'Ov23li9f3mWd0uDSxiL0', // Mã OAuth App của bạn
   brokerPath: 'https://gist-sync-broker.baobao-tran.workers.dev/token',
   filename: 'so-chi-tieu-data.json'
 };
