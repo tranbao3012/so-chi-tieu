@@ -1,10 +1,11 @@
-/* js/sync.js — V1.6 */
+/* js/sync.js — V1.7
+   Dọn dẹp URL trước khi login để tránh lỗi 404 Redirect URI. */
 
 import { createGistSync } from 'https://esm.sh/@repus/gist-sync@0.2.2';
 import { toast } from './core.js';
 
 const CONFIG = {
-  clientId: 'Ov23li9f3mWd0uDSxiL0', // Mã OAuth App của bạn
+  clientId: 'Ov23li9f3mWdOuDSxiL0', 
   brokerPath: 'https://gist-sync-broker.baobao-tran.workers.dev/token',
   filename: 'so-chi-tieu-data.json'
 };
@@ -55,7 +56,6 @@ export function initSync(ports = {}) {
         },
         onToast: (msg) => { toast(msg, 'success'); if (ports.onToast) ports.onToast(msg); },
         onUser: (user) => { 
-          // Đánh dấu đã đăng nhập thành công vào bộ nhớ máy
           localStorage.setItem('app_sync_logged_in', 'true');
           if (ports.onUser) ports.onUser(user); 
         },
@@ -73,6 +73,15 @@ export function initSync(ports = {}) {
 
 export function login() {
   if (!sync) return alert('Tính năng đồng bộ chưa sẵn sàng.');
+  
+  // BƯỚC QUAN TRỌNG: Dọn dẹp URL về đúng đường dẫn gốc của GitHub Pages
+  // Ví dụ: xoá các tham số như ?tab=settings hay ?code=...
+  if (window.location.search !== '') {
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+
+  console.log("[Sync] Đang gọi đăng nhập với URL gốc:", window.location.href);
+  
   return sync.login();
 }
 
