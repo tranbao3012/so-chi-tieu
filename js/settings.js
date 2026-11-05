@@ -1,6 +1,6 @@
-/* js/settings.js — V1.2
-   V1.2: Tự động kiểm tra trạng thái đăng nhập (Token) mỗi khi render tab Cài đặt,
-   giúp khắc phục lỗi F5 bị mất trạng thái đăng nhập trên UI. */
+/* js/settings.js — V1.3
+   V1.3: Sửa lỗi F5 bị mất trạng thái Sync bằng cách dùng cờ app_sync_logged_in.
+   Thêm nút Ngắt kết nối (Logout). */
 
 import {
   state,
@@ -12,7 +12,7 @@ import {
   saveState, applyTheme
 } from './core.js';
 
-import { login, syncNow, markLocalChange, getSync } from './sync.js';
+import { login, syncNow, logout, markLocalChange } from './sync.js';
 
 /* ==================================================================
    RENDER — sync UI với state hiện tại
@@ -32,37 +32,50 @@ export function renderSettings() {
   document.getElementById('toggleSuggest').classList.toggle('on', state.settings.suggestEnabled);
   document.getElementById('toggleAccounting').classList.toggle('on', state.settings.accountingEnabled);
 
-  // === KIỂM TRA TRẠNG THÁI ĐỒNG BỘ (SYNC UI) ===
+  // === CẬP NHẬT TRẠNG THÁI ĐỒNG BỘ ===
   updateSyncUI();
 }
 
 /* ==================================================================
-   HÀM CẬP NHẬT GIAO DIỆN SYNC
+   HÀM CẬP NHẬT GIAO DIỆN SYNC (Chống lỗi F5)
    ================================================================== */
 function updateSyncUI() {
   const loginRow = document.getElementById('syncLoginRow');
   const actionRow = document.getElementById('syncActionRow');
   const statusText = document.getElementById('syncStatus');
+  const syncBtn = document.getElementById('syncNowBtn');
   
-  if (!loginRow || !actionRow || !statusText) return;
+  if (!loginRow || !actionRow || !statusText || !syncBtn) return;
 
-  const sync = getSync();
-  // Lấy thông tin user nếu thư viện đã đăng nhập thành công
-  const user = sync && (sync.user || (sync.getUser ? sync.getUser() : null));
-  
-  // Cách dự phòng: Kiểm tra xem có Token lưu trong máy không (nếu thư viện không trả về user)
-  const hasToken = localStorage.getItem('gist-sync-token') || localStorage.getItem('gistSyncToken');
+  // Đọc cờ đăng nhập đã lưu trong bộ nhớ máy
+  const isLoggedIn = localStorage.getItem('app_sync_logged_in') === 'true';
 
-  if (user || hasToken) {
-    // Đã đăng nhập
+  if (isLoggedIn) {
     loginRow.style.display = 'none';
     actionRow.style.display = 'flex';
-    statusText.textContent = `Đã kết nối: ${user ? (user.login || 'GitHub') : 'GitHub'}`;
+    statusText.textContent = 'Đã kết nối tài khoản GitHub';
+
+    // Thêm nút Đăng xuất nếu chưa có
+    if (!document.getElementById('syncLogoutBtn')) {
+      const btn = document.createElement('button');
+      btn.id = 'syncLogoutBtn';
+      btn.className = 'btn btn-sm';
+      btn.style.cssText = 'margin-left: 6px; color: var(--danger); border-color: var(--danger);';
+      btn.textContent = 'Ngắt kết nối';
+      btn.onclick = () => {
+        hapticTap();
+        logout();
+      };
+      syncBtn.parentNode.appendChild(btn);
+    }
   } else {
-    // Chưa đăng nhập
     loginRow.style.display = 'flex';
     actionRow.style.display = 'none';
     statusText.textContent = 'Chưa kết nối';
+    
+    // Xoá nút Đăng xuất nếu đang có
+    const logoutBtn = document.getElementById('syncLogoutBtn');
+    if (logoutBtn) logoutBtn.remove();
   }
 }
 
@@ -162,7 +175,7 @@ export function bindSettingsTabEvents() {
     });
   });
 
-  /* -------- Budget -------- */
+  /* -------- Budget / Income / Currency -------- */
   document.getElementById('setBudget').addEventListener('change', (e) => {
     state.settings.monthlyBudget = Math.max(0, Number(e.target.value) || 0);
     saveState();
@@ -170,7 +183,6 @@ export function bindSettingsTabEvents() {
     document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'budget' } }));
   });
 
-  /* -------- Income -------- */
   document.getElementById('setIncome').addEventListener('change', (e) => {
     state.settings.monthlyIncome = Math.max(0, Number(e.target.value) || 0);
     saveState();
@@ -178,7 +190,6 @@ export function bindSettingsTabEvents() {
     document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'income' } }));
   });
 
-  /* -------- Currency -------- */
   document.getElementById('setCurrency').addEventListener('change', (e) => {
     state.settings.currency = e.target.value.trim() || 'đ';
     saveState();
@@ -232,8 +243,7 @@ export function bindSettingsTabEvents() {
     syncNow();
   });
 
-  // Lắng nghe sự kiện đăng nhập thành công ngay lập tức (không cần F5)
-  document.addEventListener('sync:user', () => {
-    updateSyncUI();
-  });
+  // Lắng nghe sự kiện đăng nhập/đăng xuất để cập nhật UI ngay lập tức
+  document.addEventListener('sync:user', updateSyncUI);
+  document.addEventListener('sync:logout', updateSyncUI);
 }
