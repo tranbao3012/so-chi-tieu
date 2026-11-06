@@ -1,10 +1,12 @@
+/* js/sync.js — V2.0 (Bản chuẩn hoàn chỉnh) */
+
 import { createGistSync } from 'https://esm.sh/@repus/gist-sync@0.2.2';
 import { toast } from './core.js';
 
 const CONFIG = {
-  clientId: 'Ov23li1iJnTOm48YtHg4U', 
+  clientId: 'Ov23li1iJnTOm48YtHg4U', // Mã OAuth App của bạn
   brokerPath: 'https://gist-sync-broker.baobao-tran.workers.dev/token',
-  gistFilename: 'so-chi-tieu-data.json', 
+  gistFilename: 'so-chi-tieu-data.json', // Tên file chuẩn trên Gist
   appMarker: 'quan-ly-chi-tieu'
 };
 
@@ -42,7 +44,7 @@ function apply(bundle) {
 export function initSync(ports = {}) {
   try {
     sync = createGistSync({
-      config: CONFIG,
+      config: CONFIG, // Toàn bộ cấu hình nằm trong đây
       schema,
       ports: {
         serialize,
@@ -72,11 +74,12 @@ export function initSync(ports = {}) {
 export function login() {
   if (!sync) return alert('Tính năng đồng bộ chưa sẵn sàng.');
 
+  // Đảm bảo URL gửi lên GitHub chính xác 100%
   let path = window.location.pathname.replace('index.html', '');
   if (!path.endsWith('/')) path += '/';
   const cleanUrl = window.location.origin + path;
 
-  console.log("[Sync] Đang làm sạch URL trước khi đăng nhập:", cleanUrl);
+  // Ghi đè URL sạch lên thanh địa chỉ trước khi gọi OAuth
   window.history.replaceState({}, document.title, cleanUrl);
 
   return sync.login();
