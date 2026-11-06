@@ -1,6 +1,6 @@
-/* js/expenses.js — V1.0
-   Render tab Giao dịch: smart filter, filter bar, expense list (swipe edit/delete),
-   và form thêm/sửa chi tiêu (bottom sheet) với AI suggestions */
+/* js/expenses.js — V1.2
+   Render tab Giao dịch và xử lý form thêm/sửa chi tiêu.
+   V1.2: Bổ sung markLocalChange() khi thêm/xoá giao dịch để tự động đồng bộ Gist. */
 
 import {
   state, formState, PAYMENT_METHODS,
@@ -11,6 +11,9 @@ import {
   hapticTap, hapticSuccess, hapticWarning,
   uid, saveState
 } from './core.js';
+
+// BỔ SUNG IMPORT NÀY ĐỂ GỌI ĐỒNG BỘ
+import { markLocalChange } from './sync.js';
 
 /* ==================================================================
    STATE (module-private)
@@ -344,9 +347,9 @@ function saveExpense() {
 
   hapticSuccess();
   saveState();
+  markLocalChange(); // <--- KÍCH HOẠT ĐỒNG BỘ NGẦM
   closeExpenseModal();
 
-  // Notify main.js to re-render current tab
   document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'expense' } }));
 }
 
@@ -354,6 +357,7 @@ function deleteExpense(id) {
   showConfirm('Xoá giao dịch', 'Bạn có chắc muốn xoá giao dịch này?', () => {
     state.expenses = state.expenses.filter(e => e.id !== id);
     saveState();
+    markLocalChange(); // <--- KÍCH HOẠT ĐỒNG BỘ NGẦM
     document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'expense-deleted' } }));
     toast('Đã xoá giao dịch');
     hapticSuccess();
@@ -373,7 +377,6 @@ export function renderExpensesTab() {
    BIND EVENTS (called once by main.js)
    ================================================================== */
 export function bindExpenseTabEvents() {
-  // Smart filter chip clicks
   document.getElementById('smartFilters').addEventListener('click', (e) => {
     const btn = e.target.closest('[data-smart-filter]');
     if (!btn) return;
@@ -385,13 +388,11 @@ export function bindExpenseTabEvents() {
     renderExpenses();
   });
 
-  // Filter inputs
   ['filterFrom', 'filterTo', 'filterCategory', 'filterSearch'].forEach(id => {
     document.getElementById(id).addEventListener('input', renderExpenses);
     document.getElementById(id).addEventListener('change', renderExpenses);
   });
 
-  // Reset filter
   document.getElementById('filterReset').addEventListener('click', () => {
     hapticTap();
     ['filterFrom', 'filterTo', 'filterCategory', 'filterSearch'].forEach(id => {
@@ -402,7 +403,6 @@ export function bindExpenseTabEvents() {
     renderExpenses();
   });
 
-  // Edit / Delete buttons in expense list
   document.getElementById('expenseList').addEventListener('click', (e) => {
     const editBtn = e.target.closest('[data-edit-expense]');
     if (editBtn) { openExpenseModal(editBtn.dataset.editExpense); return; }
@@ -412,7 +412,6 @@ export function bindExpenseTabEvents() {
 }
 
 export function bindExpenseFormEvents() {
-  // Category picker (delegated on container)
   document.getElementById('formCategories').addEventListener('click', (e) => {
     const btn = e.target.closest('[data-cat-id]');
     if (!btn) return;
@@ -424,7 +423,6 @@ export function bindExpenseFormEvents() {
     updateAISuggestions();
   });
 
-  // Payment picker (delegated)
   document.getElementById('formPayments').addEventListener('click', (e) => {
     const btn = e.target.closest('[data-pay-id]');
     if (!btn) return;
@@ -434,7 +432,6 @@ export function bindExpenseFormEvents() {
     updateSummaryPreview();
   });
 
-  // Amount input
   document.getElementById('formAmount').addEventListener('input', () => {
     updateSummaryPreview();
     updateAISuggestions();
@@ -443,14 +440,11 @@ export function bindExpenseFormEvents() {
     if (e.key === 'Enter') saveExpense();
   });
 
-  // Date + Note
   document.getElementById('formDate').addEventListener('change', updateSummaryPreview);
   document.getElementById('formNote').addEventListener('input', updateAISuggestions);
 
-  // Save button
   document.getElementById('saveExpenseBtn').addEventListener('click', saveExpense);
 
-  // AI "Áp dụng" button (delegated on banner container)
   document.getElementById('aiHintBanner').addEventListener('click', (e) => {
     const btn = e.target.closest('#applyAiCat');
     if (!btn) return;
