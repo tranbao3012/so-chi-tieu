@@ -1,12 +1,15 @@
+/* js/sync.js — V1.9
+   Fix lỗi 404 trên mobile: Ép URL về đúng đường dẫn gốc (xoá index.html, tham số thừa)
+   trước khi gọi OAuth. */
+
 import { createGistSync } from 'https://esm.sh/@repus/gist-sync@0.2.2';
 import { toast } from './core.js';
 
-// ⚠️ TOÀN BỘ CẤU HÌNH PHẢI NẰM TRONG OBJECT CONFIG
 const CONFIG = {
   clientId: 'Ov23li1iJnTOm48YtHg4U', // Mã OAuth App mới của bạn
   brokerPath: 'https://gist-sync-broker.baobao-tran.workers.dev/token',
-  gistFilename: 'so-chi-tieu-data.json', // ⚠️ BẮT BUỘC: Tên biến phải là gistFilename
-  appMarker: 'quan-ly-chi-tieu' // ⚠️ BẮT BUỘC: Phải có appMarker
+  gistFilename: 'so-chi-tieu-data.json', 
+  appMarker: 'quan-ly-chi-tieu'
 };
 
 const schema = {
@@ -28,7 +31,11 @@ export function bindState(getStateFn, setStateFn) {
 
 function serialize() {
   const state = _getState();
-  return { expenses: state.expenses, categories: state.categories, settings: state.settings };
+  return { 
+    expenses: state.expenses || [], 
+    categories: state.categories || [], 
+    settings: state.settings || {} 
+  };
 }
 
 function apply(bundle) {
@@ -43,7 +50,7 @@ function apply(bundle) {
 export function initSync(ports = {}) {
   try {
     sync = createGistSync({
-      config: CONFIG, // ⚠️ Truyền CONFIG vào đây
+      config: CONFIG,
       schema,
       ports: {
         serialize,
@@ -73,9 +80,26 @@ export function initSync(ports = {}) {
 export function login() {
   if (!sync) return alert('Tính năng đồng bộ chưa sẵn sàng.');
   
-  if (window.location.search !== '') {
-    window.history.replaceState({}, document.title, window.location.pathname);
+  // XỬ LÝ URL CHUẨN XÁC CHO CẢ MOBILE VÀ DESKTOP
+  let path = window.location.pathname;
+  
+  // 1. Xoá đuôi index.html nếu có
+  if (path.endsWith('index.html')) {
+    path = path.replace('index.html', '');
   }
+  
+  // 2. Đảm bảo có dấu / ở cuối
+  if (!path.endsWith('/')) {
+    path += '/';
+  }
+  
+  // 3. Tạo URL sạch (không có ?code=, ?tab=...)
+  const cleanUrl = window.location.origin + path;
+  
+  console.log("[Sync] Dọn dẹp URL trước khi đăng nhập:", cleanUrl);
+  
+  // 4. Ghi đè thanh địa chỉ thành URL sạch
+  window.history.replaceState({}, document.title, cleanUrl);
   
   return sync.login();
 }
