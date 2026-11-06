@@ -1,9 +1,9 @@
 import { createGistSync } from 'https://esm.sh/@repus/gist-sync@0.2.2';
 import { toast } from './core.js';
 
+// ⚠️ CHÚ Ý: CHỈ ĐỂ clientId VÀ brokerPath TRONG NÀY
 const CONFIG = {
-  // Dán mã Client ID mới của bạn vào đây
-  clientId: 'Ov23li54TiSHI9x5LsAV', 
+  clientId: 'Ov23li1iJnTOm48YtHg4U', // Mã OAuth App mới của bạn
   brokerPath: 'https://gist-sync-broker.baobao-tran.workers.dev/token'
 };
 
@@ -41,7 +41,10 @@ function apply(bundle) {
 export function initSync(ports = {}) {
   try {
     sync = createGistSync({
+      // ⚠️ FILENAME VÀ DESCRIPTION BẮT BUỘC PHẢI NẰM Ở ĐÂY (CẤP NGOÀI CÙNG)
       filename: 'so-chi-tieu-data.json', 
+      description: 'Quan Ly Chi Tieu Data',
+      
       config: CONFIG,
       schema,
       ports: {
@@ -71,18 +74,11 @@ export function initSync(ports = {}) {
 
 export function login() {
   if (!sync) return alert('Tính năng đồng bộ chưa sẵn sàng.');
-
-  // SỬA LỖI 404: Ép URL về đúng đường dẫn gốc, xóa mọi đuôi thừa (index.html, ?tab=...)
-  const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
   
-  // Nếu đường dẫn bị thiếu dấu / ở cuối, tự động thêm vào
-  const cleanUrl = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
-
-  console.log("[Sync] Đang làm sạch URL trước khi đăng nhập. URL gốc:", cleanUrl);
-
-  // Ghi đè URL hiện tại trên thanh địa chỉ thành URL chuẩn
-  window.history.replaceState({}, document.title, cleanUrl);
-
+  if (window.location.search !== '') {
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+  
   return sync.login();
 }
 
