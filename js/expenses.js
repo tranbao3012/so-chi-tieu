@@ -1,6 +1,6 @@
-/* js/expenses.js — V1.2
+/* js/expenses.js — V1.3
    Render tab Giao dịch và xử lý form thêm/sửa chi tiêu.
-   V1.2: Bổ sung markLocalChange() khi thêm/xoá giao dịch để tự động đồng bộ Gist. */
+   Tự động gọi markLocalChange() khi dữ liệu thay đổi để đồng bộ Gist. */
 
 import {
   state, formState, PAYMENT_METHODS,
@@ -12,7 +12,7 @@ import {
   uid, saveState
 } from './core.js';
 
-// BỔ SUNG IMPORT NÀY ĐỂ GỌI ĐỒNG BỘ
+// KÍCH HOẠT ĐỒNG BỘ
 import { markLocalChange } from './sync.js';
 
 /* ==================================================================
@@ -347,7 +347,7 @@ function saveExpense() {
 
   hapticSuccess();
   saveState();
-  markLocalChange(); // <--- KÍCH HOẠT ĐỒNG BỘ NGẦM
+  markLocalChange(); // Kích hoạt đồng bộ Gist
   closeExpenseModal();
 
   document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'expense' } }));
@@ -357,7 +357,7 @@ function deleteExpense(id) {
   showConfirm('Xoá giao dịch', 'Bạn có chắc muốn xoá giao dịch này?', () => {
     state.expenses = state.expenses.filter(e => e.id !== id);
     saveState();
-    markLocalChange(); // <--- KÍCH HOẠT ĐỒNG BỘ NGẦM
+    markLocalChange(); // Kích hoạt đồng bộ Gist
     document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'expense-deleted' } }));
     toast('Đã xoá giao dịch');
     hapticSuccess();
