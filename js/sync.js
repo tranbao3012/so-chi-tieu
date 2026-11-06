@@ -1,10 +1,12 @@
 import { createGistSync } from 'https://esm.sh/@repus/gist-sync@0.2.2';
 import { toast } from './core.js';
 
-// ⚠️ CHÚ Ý: CHỈ ĐỂ clientId VÀ brokerPath TRONG NÀY
+// ⚠️ CHÚ Ý: CÁC THAM SỐ PHẢI NẰM TRONG CONFIG
 const CONFIG = {
   clientId: 'Ov23li1iJnTOm48YtHg4U', // Mã OAuth App mới của bạn
-  brokerPath: 'https://gist-sync-broker.baobao-tran.workers.dev/token'
+  brokerPath: 'https://gist-sync-broker.baobao-tran.workers.dev/token',
+  gistFilename: 'so-chi-tieu-data.json', // Tên file chuẩn
+  appMarker: 'quan-ly-chi-tieu' // Đánh dấu ứng dụng (có thể giữ nguyên)
 };
 
 const schema = {
@@ -41,11 +43,7 @@ function apply(bundle) {
 export function initSync(ports = {}) {
   try {
     sync = createGistSync({
-      // ⚠️ FILENAME VÀ DESCRIPTION BẮT BUỘC PHẢI NẰM Ở ĐÂY (CẤP NGOÀI CÙNG)
-      filename: 'so-chi-tieu-data.json', 
-      description: 'Quan Ly Chi Tieu Data',
-      
-      config: CONFIG,
+      config: CONFIG, // Toàn bộ cấu hình nằm trong đây
       schema,
       ports: {
         serialize,
