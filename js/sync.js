@@ -1,7 +1,3 @@
-/* js/sync.js — V1.9
-   Fix lỗi 404 trên mobile: Ép URL về đúng đường dẫn gốc (xoá index.html, tham số thừa)
-   trước khi gọi OAuth. */
-
 import { createGistSync } from 'https://esm.sh/@repus/gist-sync@0.2.2';
 import { toast } from './core.js';
 
@@ -31,11 +27,7 @@ export function bindState(getStateFn, setStateFn) {
 
 function serialize() {
   const state = _getState();
-  return { 
-    expenses: state.expenses || [], 
-    categories: state.categories || [], 
-    settings: state.settings || {} 
-  };
+  return { expenses: state.expenses, categories: state.categories, settings: state.settings };
 }
 
 function apply(bundle) {
@@ -50,6 +42,7 @@ function apply(bundle) {
 export function initSync(ports = {}) {
   try {
     sync = createGistSync({
+      filename: 'so-chi-tieu-data.json', 
       config: CONFIG,
       schema,
       ports: {
@@ -79,28 +72,18 @@ export function initSync(ports = {}) {
 
 export function login() {
   if (!sync) return alert('Tính năng đồng bộ chưa sẵn sàng.');
+
+  // SỬA LỖI 404: Ép URL về đúng đường dẫn gốc, xóa mọi đuôi thừa (index.html, ?tab=...)
+  const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
   
-  // XỬ LÝ URL CHUẨN XÁC CHO CẢ MOBILE VÀ DESKTOP
-  let path = window.location.pathname;
-  
-  // 1. Xoá đuôi index.html nếu có
-  if (path.endsWith('index.html')) {
-    path = path.replace('index.html', '');
-  }
-  
-  // 2. Đảm bảo có dấu / ở cuối
-  if (!path.endsWith('/')) {
-    path += '/';
-  }
-  
-  // 3. Tạo URL sạch (không có ?code=, ?tab=...)
-  const cleanUrl = window.location.origin + path;
-  
-  console.log("[Sync] Dọn dẹp URL trước khi đăng nhập:", cleanUrl);
-  
-  // 4. Ghi đè thanh địa chỉ thành URL sạch
+  // Nếu đường dẫn bị thiếu dấu / ở cuối, tự động thêm vào
+  const cleanUrl = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
+
+  console.log("[Sync] Đang làm sạch URL trước khi đăng nhập. URL gốc:", cleanUrl);
+
+  // Ghi đè URL hiện tại trên thanh địa chỉ thành URL chuẩn
   window.history.replaceState({}, document.title, cleanUrl);
-  
+
   return sync.login();
 }
 
