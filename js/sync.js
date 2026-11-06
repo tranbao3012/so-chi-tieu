@@ -3,7 +3,7 @@ import { toast } from './core.js';
 
 const CONFIG = {
   // Dán mã Client ID mới của bạn vào đây
-  clientId: 'DÁN_MÃ_CLIENT_ID_MỚI_VÀO_ĐÂY', 
+  clientId: 'Ov23li54TiSHI9x5LsAV', 
   brokerPath: 'https://gist-sync-broker.baobao-tran.workers.dev/token'
 };
 
