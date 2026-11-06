@@ -1,6 +1,6 @@
-/* js/categories.js — V1.0
-   Render tab Danh mục: grid category + mini bar, so sánh tháng trước,
-   CRUD category (thêm/sửa/xoá), form sheet với color picker */
+/* js/categories.js — V1.2
+   Render tab Danh mục và xử lý CRUD.
+   V1.2: Bổ sung markLocalChange() khi thêm/sửa/xoá danh mục để tự động đồng bộ Gist. */
 
 import {
   state, formState, COLOR_PALETTE,
@@ -11,6 +11,9 @@ import {
   hapticTap, hapticSuccess, hapticWarning,
   uid, saveState
 } from './core.js';
+
+// BỔ SUNG IMPORT NÀY ĐỂ GỌI ĐỒNG BỘ
+import { markLocalChange } from './sync.js';
 
 /* ==================================================================
    CATEGORY GRID
@@ -143,6 +146,7 @@ function saveCategory() {
 
   hapticSuccess();
   saveState();
+  markLocalChange(); // <--- KÍCH HOẠT ĐỒNG BỘ NGẦM
   closeCategoryModal();
   document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'category' } }));
 }
@@ -164,6 +168,7 @@ function deleteCategory(id) {
         });
         state.categories = state.categories.filter(c => c.id !== id);
         saveState();
+        markLocalChange(); // <--- KÍCH HOẠT ĐỒNG BỘ NGẦM
         toast('Đã xoá danh mục');
         hapticSuccess();
         document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'category-deleted' } }));
@@ -173,6 +178,7 @@ function deleteCategory(id) {
     showConfirm('Xoá danh mục', 'Bạn có chắc muốn xoá danh mục này?', () => {
       state.categories = state.categories.filter(c => c.id !== id);
       saveState();
+      markLocalChange(); // <--- KÍCH HOẠT ĐỒNG BỘ NGẦM
       toast('Đã xoá danh mục');
       hapticSuccess();
       document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'category-deleted' } }));
