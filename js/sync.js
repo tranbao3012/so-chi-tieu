@@ -1,11 +1,9 @@
-/* js/sync.js — Bản chuẩn V2 */
-
 import { createGistSync } from 'https://esm.sh/@repus/gist-sync@0.2.2';
 import { toast } from './core.js';
 
 const CONFIG = {
-  // Đã điền sẵn Client ID mới của bạn
-  clientId: 'Ov23li1iJnTOm48YtHg4U', 
+  // Dán mã Client ID mới của bạn vào đây
+  clientId: 'DÁN_MÃ_CLIENT_ID_MỚI_VÀO_ĐÂY', 
   brokerPath: 'https://gist-sync-broker.baobao-tran.workers.dev/token'
 };
 
