@@ -42,7 +42,6 @@ function apply(bundle) {
 export function initSync(ports = {}) {
   try {
     sync = createGistSync({
-      // Đã xoá filename bị thừa ở đây
       config: CONFIG,
       schema,
       ports: {
