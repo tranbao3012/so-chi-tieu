@@ -71,11 +71,18 @@ export function initSync(ports = {}) {
 
 export function login() {
   if (!sync) return alert('Tính năng đồng bộ chưa sẵn sàng.');
+
+  // SỬA LỖI 404: Ép URL về đúng đường dẫn gốc, xóa mọi đuôi thừa (index.html, ?tab=...)
+  const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
   
-  if (window.location.search !== '') {
-    window.history.replaceState({}, document.title, window.location.pathname);
-  }
-  
+  // Nếu đường dẫn bị thiếu dấu / ở cuối, tự động thêm vào
+  const cleanUrl = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
+
+  console.log("[Sync] Đang làm sạch URL trước khi đăng nhập. URL gốc:", cleanUrl);
+
+  // Ghi đè URL hiện tại trên thanh địa chỉ thành URL chuẩn
+  window.history.replaceState({}, document.title, cleanUrl);
+
   return sync.login();
 }
 
