@@ -1,11 +1,10 @@
-/* js/sync.js — V2.1 (Bản chuẩn hoàn chỉnh - Đã cập nhật Client ID mới) */
+/* js/sync.js — V2.2 (Fix lỗi Already up to date & dọn dẹp URL) */
 
 import { createGistSync } from 'https://esm.sh/@repus/gist-sync@0.2.2';
 import { toast } from './core.js';
 
 const CONFIG = {
-  // Đã cập nhật Client ID mới của bạn
-  clientId: 'Ov23ligb7N6U10aeb3AN', 
+  clientId: 'Ov23ligb7N6U10aeb3AN', // Mã OAuth App mới của bạn
   brokerPath: 'https://gist-sync-broker.baobao-tran.workers.dev/token',
   gistFilename: 'so-chi-tieu-data.json', 
   appMarker: 'quan-ly-chi-tieu'
@@ -28,13 +27,15 @@ export function bindState(getStateFn, setStateFn) {
   _setState = setStateFn;
 }
 
+// HÀM SERIALIZE: Ép clone dữ liệu để thư viện nhận diện được thay đổi
 function serialize() {
   const state = _getState();
-  return { 
+  const data = { 
     expenses: state.expenses || [], 
     categories: state.categories || [], 
     settings: state.settings || {} 
   };
+  return JSON.parse(JSON.stringify(data));
 }
 
 function apply(bundle) {
@@ -78,18 +79,11 @@ export function initSync(ports = {}) {
 
 export function login() {
   if (!sync) return alert('Tính năng đồng bộ chưa sẵn sàng.');
-
-  // XỬ LÝ URL CHUẨN XÁC CHO CẢ MOBILE VÀ DESKTOP
-  // Xoá đuôi index.html và đảm bảo có dấu / ở cuối
+  
   let path = window.location.pathname.replace('index.html', '');
   if (!path.endsWith('/')) path += '/';
-  const cleanUrl = window.location.origin + path;
-
-  console.log("[Sync] Đang làm sạch URL trước khi đăng nhập:", cleanUrl);
+  window.history.replaceState({}, document.title, window.location.origin + path);
   
-  // Ghi đè URL sạch lên thanh địa chỉ trước khi gọi OAuth
-  window.history.replaceState({}, document.title, cleanUrl);
-
   return sync.login();
 }
 
