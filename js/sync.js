@@ -1,4 +1,4 @@
-/* js/sync.js — V2.2 (Fix lỗi Already up to date & dọn dẹp URL) */
+/* js/sync.js — V3.0 (Ép buộc đẩy dữ liệu) */
 
 import { createGistSync } from 'https://esm.sh/@repus/gist-sync@0.2.2';
 import { toast } from './core.js';
@@ -27,14 +27,19 @@ export function bindState(getStateFn, setStateFn) {
   _setState = setStateFn;
 }
 
-// HÀM SERIALIZE: Ép clone dữ liệu để thư viện nhận diện được thay đổi
+// HÀM SERIALIZE ĐÃ ĐƯỢC FIX: Thêm timestamp để ép buộc tạo sự khác biệt
 function serialize() {
   const state = _getState();
   const data = { 
     expenses: state.expenses || [], 
     categories: state.categories || [], 
-    settings: state.settings || {} 
+    settings: { 
+      ...state.settings, 
+      // Dấu thời gian này đảm bảo dữ liệu luôn thay đổi, phá vỡ trạng thái "Already up to date"
+      _lastSync: Date.now() 
+    } 
   };
+  // Deep clone để đảm bảo thư viện nhận diện là object mới
   return JSON.parse(JSON.stringify(data));
 }
 
@@ -79,11 +84,14 @@ export function initSync(ports = {}) {
 
 export function login() {
   if (!sync) return alert('Tính năng đồng bộ chưa sẵn sàng.');
-  
+
+  // Dọn dẹp URL chuẩn xác cho mọi thiết bị
   let path = window.location.pathname.replace('index.html', '');
   if (!path.endsWith('/')) path += '/';
-  window.history.replaceState({}, document.title, window.location.origin + path);
-  
+  const cleanUrl = window.location.origin + path;
+
+  window.history.replaceState({}, document.title, cleanUrl);
+
   return sync.login();
 }
 
@@ -96,6 +104,12 @@ export function logout() {
 
 export function syncNow() {
   if (!sync) return;
+  
+  console.log("[Sync] Đang ép buộc đồng bộ...");
+  
+  // Ép thư viện đánh dấu có thay đổi cục bộ trước khi gọi syncNow
+  sync.markLocalChange(); 
+  
   return sync.syncNow();
 }
 
