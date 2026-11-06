@@ -1,6 +1,6 @@
-/* js/settings.js — V1.3
-   V1.3: Sửa lỗi F5 bị mất trạng thái Sync bằng cách dùng cờ app_sync_logged_in.
-   Thêm nút Ngắt kết nối (Logout). */
+/* js/settings.js — V1.4
+   Render tab Cài đặt.
+   V1.4: Bổ sung markLocalChange() vào mọi thay đổi cài đặt và nhập liệu để tự động đồng bộ. */
 
 import {
   state,
@@ -144,7 +144,7 @@ function importJson(file) {
             : JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
           state.settings = Object.assign({}, state.settings, data.settings || {});
           saveState();
-          markLocalChange(); 
+          markLocalChange(); // <--- KÍCH HOẠT ĐỒNG BỘ
           applyTheme();
           
           document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'import-full' } }));
@@ -170,7 +170,8 @@ export function bindSettingsTabEvents() {
       state.settings[key] = !state.settings[key];
       t.classList.toggle('on', state.settings[key]);
       saveState();
-      markLocalChange(); 
+      markLocalChange(); // <--- KÍCH HOẠT ĐỒNG BỘ
+      
       document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'toggle', key } }));
     });
   });
@@ -179,21 +180,21 @@ export function bindSettingsTabEvents() {
   document.getElementById('setBudget').addEventListener('change', (e) => {
     state.settings.monthlyBudget = Math.max(0, Number(e.target.value) || 0);
     saveState();
-    markLocalChange();
+    markLocalChange(); // <--- KÍCH HOẠT ĐỒNG BỘ
     document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'budget' } }));
   });
 
   document.getElementById('setIncome').addEventListener('change', (e) => {
     state.settings.monthlyIncome = Math.max(0, Number(e.target.value) || 0);
     saveState();
-    markLocalChange();
+    markLocalChange(); // <--- KÍCH HOẠT ĐỒNG BỘ
     document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'income' } }));
   });
 
   document.getElementById('setCurrency').addEventListener('change', (e) => {
     state.settings.currency = e.target.value.trim() || 'đ';
     saveState();
-    markLocalChange();
+    markLocalChange(); // <--- KÍCH HOẠT ĐỒNG BỘ
     document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'currency' } }));
   });
 
@@ -221,7 +222,7 @@ export function bindSettingsTabEvents() {
         state.settings.monthlyBudget = 0;
         state.settings.monthlyIncome = 0;
         saveState();
-        markLocalChange();
+        markLocalChange(); // <--- KÍCH HOẠT ĐỒNG BỘ
         document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'reset-full' } }));
         toast('Đã xoá toàn bộ dữ liệu');
       }
