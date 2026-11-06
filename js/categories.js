@@ -1,6 +1,6 @@
-/* js/categories.js — V1.2
+/* js/categories.js — V1.3
    Render tab Danh mục và xử lý CRUD.
-   V1.2: Bổ sung markLocalChange() khi thêm/sửa/xoá danh mục để tự động đồng bộ Gist. */
+   Tự động gọi markLocalChange() khi dữ liệu thay đổi để đồng bộ Gist. */
 
 import {
   state, formState, COLOR_PALETTE,
@@ -12,7 +12,7 @@ import {
   uid, saveState
 } from './core.js';
 
-// BỔ SUNG IMPORT NÀY ĐỂ GỌI ĐỒNG BỘ
+// KÍCH HOẠT ĐỒNG BỘ
 import { markLocalChange } from './sync.js';
 
 /* ==================================================================
@@ -146,7 +146,7 @@ function saveCategory() {
 
   hapticSuccess();
   saveState();
-  markLocalChange(); // <--- KÍCH HOẠT ĐỒNG BỘ NGẦM
+  markLocalChange(); // Kích hoạt đồng bộ Gist
   closeCategoryModal();
   document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'category' } }));
 }
@@ -168,7 +168,7 @@ function deleteCategory(id) {
         });
         state.categories = state.categories.filter(c => c.id !== id);
         saveState();
-        markLocalChange(); // <--- KÍCH HOẠT ĐỒNG BỘ NGẦM
+        markLocalChange(); // Kích hoạt đồng bộ Gist
         toast('Đã xoá danh mục');
         hapticSuccess();
         document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'category-deleted' } }));
@@ -178,7 +178,7 @@ function deleteCategory(id) {
     showConfirm('Xoá danh mục', 'Bạn có chắc muốn xoá danh mục này?', () => {
       state.categories = state.categories.filter(c => c.id !== id);
       saveState();
-      markLocalChange(); // <--- KÍCH HOẠT ĐỒNG BỘ NGẦM
+      markLocalChange(); // Kích hoạt đồng bộ Gist
       toast('Đã xoá danh mục');
       hapticSuccess();
       document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'category-deleted' } }));
