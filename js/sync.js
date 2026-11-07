@@ -1,117 +1,35 @@
-/* js/sync.js — V3.1 (Sửa lỗi Merge Conflict Gist) */
+/* js/main.js — Trích đoạn hàm setupSync */
 
-import { createGistSync } from 'https://esm.sh/@repus/gist-sync@0.2.2';
-import { toast } from './core.js';
-
-const CONFIG = {
-  clientId: 'Ov23ligb7N6U10aeb3AN', 
-  brokerPath: 'https://gist-sync-broker.baobao-tran.workers.dev/token',
-  gistFilename: 'so-chi-tieu-data.json', 
-  appMarker: 'quan-ly-chi-tieu'
-};
-
-const schema = {
-  collections: {
-    // [FIX] Thêm updatedAtKey để thư viện biết cách merge dữ liệu mới/cũ
-    expenses: { kind: 'idKeyed', key: 'id', updatedAtKey: 'updatedAt' },
-    categories: { kind: 'idKeyed', key: 'id', updatedAtKey: 'updatedAt' },
-    settings: { kind: 'scalarMap' }
-  }
-};
-
-let _getState = null;
-let _setState = null;
-let sync = null;
-
-export function bindState(getStateFn, setStateFn) {
-  _getState = getStateFn;
-  _setState = setStateFn;
-}
-
-// [FIX] Xoá bỏ _lastSync, trả về dữ liệu nguyên bản
-function serialize() {
-  const state = _getState();
-  const data = { 
-    expenses: state.expenses || [], 
-    categories: state.categories || [], 
-    settings: state.settings || {}
-  };
-  return JSON.parse(JSON.stringify(data));
-}
-
-function apply(bundle) {
-  if (!bundle) return;
-  _setState({
-    expenses: bundle.expenses || [],
-    categories: bundle.categories || [],
-    settings: bundle.settings || {}
-  });
-}
-
-export function initSync(ports = {}) {
+async function setupSync() {
   try {
-    sync = createGistSync({
-      config: CONFIG,
-      schema,
-      ports: {
-        serialize,
-        apply,
-        onStatus: (status) => {
-          if (status === 'syncing') toast('Đang đồng bộ...', 'info');
-          if (status === 'error') toast('Lỗi đồng bộ dữ liệu', 'error');
-          if (ports.onStatus) ports.onStatus(status);
-        },
-        onToast: (msg) => { toast(msg, 'success'); if (ports.onToast) ports.onToast(msg); },
-        onUser: (user) => { 
-          localStorage.setItem('app_sync_logged_in', 'true');
-          if (ports.onUser) ports.onUser(user); 
-        },
-        onConflict: (conflict) => { toast('Đã giải quyết xung đột', 'warning'); if (ports.onConflict) ports.onConflict(conflict); }
+    syncModule = await import('./sync.js');
+    
+    syncModule.bindState(
+      () => state, 
+      (newState) => { 
+        state.expenses = newState.expenses;
+        state.categories = newState.categories;
+        state.settings = newState.settings;
+        saveState(); 
+        document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'sync' } }));
+      }
+    );
+
+    // [FIX] Thêm await ở đây để chờ thư viện từ CDN tải xong
+    await syncModule.initSync({
+      onStatus: (status) => {
+        if (status === 'syncing') toast('Đang đồng bộ...', 'info');
+        if (status === 'error') toast('Lỗi đồng bộ dữ liệu', 'error');
+      },
+      onToast: (msg) => toast(msg, 'success'),
+      onUser: (user) => {
+        document.dispatchEvent(new CustomEvent('sync:user', { detail: { user } }));
+      },
+      onConflict: (conflict) => {
+        toast('Đã giải quyết xung đột dữ liệu', 'warning');
       }
     });
-
-    sync.handleOAuthCallback();
-    return sync;
   } catch (err) {
-    console.error('[Sync] Lỗi khởi tạo thư viện:', err);
-    return null;
+    console.warn('[Sync] Lỗi tải module sync (App vẫn chạy bình thường):', err);
   }
-}
-
-export function login() {
-  if (!sync) return alert('Tính năng đồng bộ chưa sẵn sàng.');
-
-  let path = window.location.pathname.replace('index.html', '');
-  if (!path.endsWith('/')) path += '/';
-  const cleanUrl = window.location.origin + path;
-
-  window.history.replaceState({}, document.title, cleanUrl);
-
-  return sync.login();
-}
-
-export function logout() {
-  if (sync && sync.logout) sync.logout();
-  localStorage.removeItem('app_sync_logged_in');
-  document.dispatchEvent(new CustomEvent('sync:logout'));
-  toast('Đã ngắt kết nối GitHub', 'info');
-}
-
-export function syncNow() {
-  if (!sync) return;
-  
-  console.log("[Sync] Đang ép buộc đồng bộ...");
-  
-  // Ép thư viện đánh dấu có thay đổi cục bộ trước khi gọi syncNow
-  sync.markLocalChange(); 
-  
-  return sync.syncNow();
-}
-
-export function markLocalChange() {
-  if (sync) sync.markLocalChange();
-}
-
-export function getSync() {
-  return sync;
 }
