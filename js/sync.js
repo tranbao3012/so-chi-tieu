@@ -1,10 +1,10 @@
-/* js/sync.js — V3.0 (Ép buộc đẩy dữ liệu) */
+/* js/sync.js — V3.1 (Sửa lỗi Merge Conflict Gist) */
 
 import { createGistSync } from 'https://esm.sh/@repus/gist-sync@0.2.2';
 import { toast } from './core.js';
 
 const CONFIG = {
-  clientId: 'Ov23ligb7N6U10aeb3AN', // Mã OAuth App mới của bạn
+  clientId: 'Ov23ligb7N6U10aeb3AN', 
   brokerPath: 'https://gist-sync-broker.baobao-tran.workers.dev/token',
   gistFilename: 'so-chi-tieu-data.json', 
   appMarker: 'quan-ly-chi-tieu'
@@ -12,8 +12,9 @@ const CONFIG = {
 
 const schema = {
   collections: {
-    expenses: { kind: 'idKeyed', key: 'id' },
-    categories: { kind: 'idKeyed', key: 'id' },
+    // [FIX] Thêm updatedAtKey để thư viện biết cách merge dữ liệu mới/cũ
+    expenses: { kind: 'idKeyed', key: 'id', updatedAtKey: 'updatedAt' },
+    categories: { kind: 'idKeyed', key: 'id', updatedAtKey: 'updatedAt' },
     settings: { kind: 'scalarMap' }
   }
 };
@@ -27,19 +28,14 @@ export function bindState(getStateFn, setStateFn) {
   _setState = setStateFn;
 }
 
-// HÀM SERIALIZE ĐÃ ĐƯỢC FIX: Thêm timestamp để ép buộc tạo sự khác biệt
+// [FIX] Xoá bỏ _lastSync, trả về dữ liệu nguyên bản
 function serialize() {
   const state = _getState();
   const data = { 
     expenses: state.expenses || [], 
     categories: state.categories || [], 
-    settings: { 
-      ...state.settings, 
-      // Dấu thời gian này đảm bảo dữ liệu luôn thay đổi, phá vỡ trạng thái "Already up to date"
-      _lastSync: Date.now() 
-    } 
+    settings: state.settings || {}
   };
-  // Deep clone để đảm bảo thư viện nhận diện là object mới
   return JSON.parse(JSON.stringify(data));
 }
 
@@ -85,7 +81,6 @@ export function initSync(ports = {}) {
 export function login() {
   if (!sync) return alert('Tính năng đồng bộ chưa sẵn sàng.');
 
-  // Dọn dẹp URL chuẩn xác cho mọi thiết bị
   let path = window.location.pathname.replace('index.html', '');
   if (!path.endsWith('/')) path += '/';
   const cleanUrl = window.location.origin + path;
