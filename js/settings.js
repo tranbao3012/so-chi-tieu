@@ -1,6 +1,6 @@
-/* js/settings.js — V1.5
+/* js/settings.js — V1.6
    Render tab Cài đặt.
-   Tự động gọi markLocalChange() khi thay đổi cài đặt để đồng bộ Gist. */
+   V1.6: Thêm updatedAt vào settings khi có bất kỳ thay đổi nào để đồng bộ Gist chính xác. */
 
 import {
   state,
@@ -143,6 +143,7 @@ function importJson(file) {
             ? data.categories
             : JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
           state.settings = Object.assign({}, state.settings, data.settings || {});
+          state.settings.updatedAt = Date.now(); // [FIX] Cập nhật updatedAt khi import
           saveState();
           markLocalChange(); // Kích hoạt đồng bộ
           applyTheme();
@@ -168,6 +169,7 @@ export function bindSettingsTabEvents() {
       hapticTap();
       const key = t.dataset.setting;
       state.settings[key] = !state.settings[key];
+      state.settings.updatedAt = Date.now(); // [FIX] Cập nhật updatedAt
       t.classList.toggle('on', state.settings[key]);
       saveState();
       markLocalChange(); // Kích hoạt đồng bộ
@@ -179,6 +181,7 @@ export function bindSettingsTabEvents() {
   /* -------- Budget / Income / Currency -------- */
   document.getElementById('setBudget').addEventListener('change', (e) => {
     state.settings.monthlyBudget = Math.max(0, Number(e.target.value) || 0);
+    state.settings.updatedAt = Date.now(); // [FIX] Cập nhật updatedAt
     saveState();
     markLocalChange(); // Kích hoạt đồng bộ
     document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'budget' } }));
@@ -186,6 +189,7 @@ export function bindSettingsTabEvents() {
 
   document.getElementById('setIncome').addEventListener('change', (e) => {
     state.settings.monthlyIncome = Math.max(0, Number(e.target.value) || 0);
+    state.settings.updatedAt = Date.now(); // [FIX] Cập nhật updatedAt
     saveState();
     markLocalChange(); // Kích hoạt đồng bộ
     document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'income' } }));
@@ -193,6 +197,7 @@ export function bindSettingsTabEvents() {
 
   document.getElementById('setCurrency').addEventListener('change', (e) => {
     state.settings.currency = e.target.value.trim() || 'đ';
+    state.settings.updatedAt = Date.now(); // [FIX] Cập nhật updatedAt
     saveState();
     markLocalChange(); // Kích hoạt đồng bộ
     document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'currency' } }));
@@ -221,6 +226,7 @@ export function bindSettingsTabEvents() {
         state.categories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
         state.settings.monthlyBudget = 0;
         state.settings.monthlyIncome = 0;
+        state.settings.updatedAt = Date.now(); // [FIX] Cập nhật updatedAt khi reset
         saveState();
         markLocalChange(); // Kích hoạt đồng bộ
         document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'reset-full' } }));
