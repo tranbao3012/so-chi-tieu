@@ -1,6 +1,6 @@
-/* js/categories.js — V1.3
+/* js/categories.js — V1.4
    Render tab Danh mục và xử lý CRUD.
-   Tự động gọi markLocalChange() khi dữ liệu thay đổi để đồng bộ Gist. */
+   V1.4: Thêm trường updatedAt để thư viện Gist-Sync phân giải xung đột (merge) chính xác. */
 
 import {
   state, formState, COLOR_PALETTE,
@@ -132,6 +132,7 @@ function saveCategory() {
     if (idx !== -1) {
       state.categories[idx].name = name;
       state.categories[idx].color = formState.editingCatColor;
+      state.categories[idx].updatedAt = Date.now(); // [FIX] Thêm updatedAt khi sửa
     }
     toast('Đã cập nhật');
   } else {
@@ -139,7 +140,8 @@ function saveCategory() {
       id: uid(),
       name,
       color: formState.editingCatColor,
-      type: 'discretionary'
+      type: 'discretionary',
+      updatedAt: Date.now() // [FIX] Thêm updatedAt khi tạo mới
     });
     toast('Đã thêm danh mục');
   }
@@ -164,7 +166,10 @@ function deleteCategory(id) {
       () => {
         const fb = state.categories.find(c => c.id === 'other') || state.categories[0];
         state.expenses.forEach(e => {
-          if (e.categoryId === id) e.categoryId = fb ? fb.id : 'other';
+          if (e.categoryId === id) {
+            e.categoryId = fb ? fb.id : 'other';
+            e.updatedAt = Date.now(); // [FIX] Cập nhật thời gian cho giao dịch bị ảnh hưởng
+          }
         });
         state.categories = state.categories.filter(c => c.id !== id);
         saveState();
