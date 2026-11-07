@@ -1,6 +1,6 @@
-/* js/expenses.js — V1.3
+/* js/expenses.js — V1.4
    Render tab Giao dịch và xử lý form thêm/sửa chi tiêu.
-   Tự động gọi markLocalChange() khi dữ liệu thay đổi để đồng bộ Gist. */
+   V1.4: Thêm trường updatedAt để thư viện Gist-Sync phân giải xung đột (merge) chính xác. */
 
 import {
   state, formState, PAYMENT_METHODS,
@@ -331,7 +331,8 @@ function saveExpense() {
     if (idx !== -1) {
       state.expenses[idx] = {
         ...state.expenses[idx],
-        amount, categoryId: formState.formCategory, paymentMethod: formState.formPayment, date, note
+        amount, categoryId: formState.formCategory, paymentMethod: formState.formPayment, date, note,
+        updatedAt: Date.now() // [FIX] Thêm updatedAt khi sửa
       };
     }
     toast('Đã cập nhật');
@@ -340,7 +341,8 @@ function saveExpense() {
       id: uid(), amount,
       categoryId: formState.formCategory,
       paymentMethod: formState.formPayment,
-      date, note, createdAt: Date.now()
+      date, note, createdAt: Date.now(),
+      updatedAt: Date.now() // [FIX] Thêm updatedAt khi tạo mới
     });
     toast('Đã thêm giao dịch');
   }
