@@ -1,4 +1,5 @@
-/* js/sync.js — V4.2 (Chống lag, chống cache, khóa click) */
+/* js/sync.js — V4.3 (Tự động đồng bộ - Auto Sync)
+   Tự động kích hoạt đồng bộ sau 2 giây kể từ khi có thay đổi dữ liệu. */
 
 import { toast } from './core.js';
 import { encryptData, decryptData } from './crypto.js';
@@ -8,7 +9,8 @@ const GIST_DESC = 'So Chi Tieu Encrypted Backup';
 
 let _getState = null;
 let _setState = null;
-let isSyncing = false; // [FIX] Khóa chống bấm nhiều lần
+let isSyncing = false; 
+let autoSyncTimer = null; // [MỚI] Bộ đếm thời gian cho Auto Sync
 
 export function bindState(getStateFn, setStateFn) {
   _getState = getStateFn;
@@ -16,7 +18,7 @@ export function bindState(getStateFn, setStateFn) {
 }
 
 export function initSync() {
-  console.log('[Sync] Custom Sync Engine V4.2 đã sẵn sàng.');
+  console.log('[Sync] Custom Sync Engine V4.3 (Auto Sync) đã sẵn sàng.');
 }
 
 function getConfig() {
@@ -40,11 +42,24 @@ export function logout() {
   toast('Đã ngắt kết nối đồng bộ', 'info');
 }
 
+/* ==================================================================
+   HÀM ĐÁNH DẤU THAY ĐỔI VÀ KÍCH HOẠT AUTO SYNC
+   ================================================================== */
 export function markLocalChange() {
   if (!_getState) return;
   const state = _getState();
   state._lastUpdated = Date.now();
   localStorage.setItem('expense_tracker_v1', JSON.stringify(state));
+
+  // Kích hoạt Auto Sync nếu đã cấu hình Token và PIN
+  const { pat, pin } = getConfig();
+  if (pat && pin) {
+    if (autoSyncTimer) clearTimeout(autoSyncTimer);
+    autoSyncTimer = setTimeout(() => {
+      console.log('[Sync] Tự động đồng bộ sau khi có thay đổi...');
+      syncNow(true); // Gọi sync với cờ isAuto = true
+    }, 2000); // Đợi 2 giây sau thao tác cuối cùng
+  }
 }
 
 async function githubApi(endpoint, method = 'GET', body = null) {
@@ -57,14 +72,13 @@ async function githubApi(endpoint, method = 'GET', body = null) {
     'Content-Type': 'application/json'
   };
 
-  // [FIX] Thêm timestamp vào URL để đánh bại bộ nhớ đệm của GitHub API
   const url = `https://api.github.com${endpoint}${method === 'GET' ? (endpoint.includes('?') ? '&' : '?') + 't=' + Date.now() : ''}`;
 
   const res = await fetch(url, {
     method,
     headers,
     body: body ? JSON.stringify(body) : null,
-    cache: 'no-store' // [FIX] Trình duyệt không lưu cache request này
+    cache: 'no-store'
   });
 
   if (!res.ok) {
@@ -76,7 +90,6 @@ async function githubApi(endpoint, method = 'GET', body = null) {
 
 function apply(bundle) {
   if (!bundle) return;
-  // [FIX] Truyền cả _lastUpdated sang cho main.js
   _setState({
     expenses: bundle.expenses || [],
     categories: bundle.categories || [],
@@ -85,35 +98,42 @@ function apply(bundle) {
   });
 }
 
-export async function syncNow() {
-  if (isSyncing) return toast('Đang đồng bộ, vui lòng đợi...', 'info'); // [FIX] Khóa
+export async function syncNow(isAuto = false) {
+  if (isSyncing) return; // Nếu đang đồng bộ (do bấm tay hoặc auto trước đó) thì bỏ qua
 
   let { pat, gistId, pin } = getConfig();
 
-  if (!pat) return toast('Vui lòng nhập GitHub Token trong Cài đặt', 'error');
-  if (!pin) return toast('Vui lòng nhập Mã PIN trong Cài đặt', 'error');
+  if (!pat) {
+    if (!isAuto) toast('Vui lòng nhập GitHub Token trong Cài đặt', 'error');
+    return;
+  }
+  if (!pin) {
+    if (!isAuto) toast('Vui lòng nhập Mã PIN trong Cài đặt', 'error');
+    return;
+  }
   if (!_getState || !_setState) return;
 
-  isSyncing = true; // Bật khóa
+  isSyncing = true; 
   const state = _getState();
   const localTimestamp = state._lastUpdated || 0;
 
   try {
-    toast('Đang kiểm tra dữ liệu...', 'info');
+    // Chỉ hiển thị thông báo "Đang kiểm tra" nếu là bấm thủ công
+    if (!isAuto) toast('Đang kiểm tra dữ liệu...', 'info');
 
     if (!gistId) {
-      toast('Đang tìm Gist cũ trên tài khoản...', 'info');
+      if (!isAuto) toast('Đang tìm Gist cũ trên tài khoản...', 'info');
       const gists = await githubApi('/gists?per_page=100');
       const existingGist = gists.find(g => g.description === GIST_DESC);
       
       if (existingGist) {
         gistId = existingGist.id;
         localStorage.setItem('sync_gh_gist_id', gistId);
-        toast('Đã tìm thấy Gist cũ!', 'success');
+        if (!isAuto) toast('Đã tìm thấy Gist cũ!', 'success');
       } else {
-        toast('Không tìm thấy Gist cũ. Đang tạo Gist mới...', 'info');
+        if (!isAuto) toast('Không tìm thấy Gist cũ. Đang tạo Gist mới...', 'info');
         state._lastUpdated = Date.now();
-        localStorage.setItem('expense_tracker_v1', JSON.stringify(state)); // Lưu lại
+        localStorage.setItem('expense_tracker_v1', JSON.stringify(state)); 
         const encrypted = await encryptData(state, pin);
 
         const newGist = await githubApi('/gists', 'POST', {
@@ -125,7 +145,7 @@ export async function syncNow() {
         localStorage.setItem('sync_gh_gist_id', newGist.id);
         document.dispatchEvent(new CustomEvent('sync:user', { detail: { user: 'GitHub User' } }));
         toast('Đã tạo Gist và đồng bộ thành công!', 'success');
-        isSyncing = false; // Mở khóa
+        isSyncing = false;
         return;
       }
     }
@@ -141,16 +161,18 @@ export async function syncNow() {
     try {
       remoteState = await decryptData(remoteEncryptedStr, pin);
     } catch (e) {
-      isSyncing = false; // Mở khóa
-      return toast('Sai Mã PIN hoặc dữ liệu Gist bị hỏng!', 'error');
+      isSyncing = false; 
+      if (!isAuto) toast('Sai Mã PIN hoặc dữ liệu Gist bị hỏng!', 'error');
+      return;
     }
 
     const remoteTimestamp = remoteState._lastUpdated || 0;
 
     if (localTimestamp > remoteTimestamp) {
-      toast('Máy bạn có dữ liệu mới hơn. Đang đẩy lên Gist...', 'info');
+      // Đẩy lên
+      if (!isAuto) toast('Máy bạn có dữ liệu mới hơn. Đang đẩy lên Gist...', 'info');
       state._lastUpdated = Date.now();
-      localStorage.setItem('expense_tracker_v1', JSON.stringify(state)); // [FIX] Lưu lại mốc thời gian mới
+      localStorage.setItem('expense_tracker_v1', JSON.stringify(state)); 
       
       const encrypted = await encryptData(state, pin);
       await githubApi(`/gists/${gistId}`, 'PATCH', {
@@ -159,20 +181,27 @@ export async function syncNow() {
       toast('Đã đẩy dữ liệu mới lên Gist thành công!', 'success');
 
     } else if (remoteTimestamp > localTimestamp) {
-      toast('Gist có dữ liệu mới hơn. Đang tải về máy...', 'info');
+      // Kéo về
+      if (!isAuto) toast('Gist có dữ liệu mới hơn. Đang tải về máy...', 'info');
       _setState(remoteState);
       toast('Đã tải dữ liệu mới từ Gist thành công!', 'success');
     } else {
-      toast('Dữ liệu 2 bên đã đồng bộ (Không có gì mới)', 'info');
+      // Nếu tự động mà không có gì mới, im lặng không báo gì cả
+      if (!isAuto) toast('Dữ liệu 2 bên đã đồng bộ (Không có gì mới)', 'info');
     }
 
     document.dispatchEvent(new CustomEvent('sync:user', { detail: { user: 'GitHub User' } }));
 
   } catch (err) {
     console.error('[Sync Error]', err);
-    toast(err.message || 'Lỗi đồng bộ', 'error');
+    
+    // Nếu là Auto sync mà bị lỗi mạng, không hiện Toast để tránh làm phiền
+    const isNetworkError = err.message.includes('Failed to fetch') || err.message.includes('NetworkError');
+    if (!isAuto || !isNetworkError) {
+      toast(err.message || 'Lỗi đồng bộ', 'error');
+    }
   } finally {
-    isSyncing = false; // [FIX] Luôn mở khóa dù thành công hay thất bại
+    isSyncing = false; 
   }
 }
 
