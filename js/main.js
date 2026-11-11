@@ -1,4 +1,4 @@
-/* js/main.js — V1.7
+/* js/main.js — V1.8 (Đã xóa tab Danh mục)
    Entry point: bootstrap app, bind global events, điều phối render,
    đăng ký service worker, khởi tạo Sync Engine (E2EE). */
 
@@ -18,11 +18,6 @@ import {
   bindExpenseTabEvents, bindExpenseFormEvents
 } from './expenses.js';
 
-import {
-  renderCategoriesTab, openCategoryModal, closeCategoryModal,
-  bindCategoryTabEvents, bindCategoryFormEvents
-} from './categories.js';
-
 import { renderReportsTab, bindReportTabEvents } from './reports.js';
 
 import { renderSettings, bindSettingsTabEvents } from './settings.js';
@@ -38,7 +33,6 @@ document.documentElement.setAttribute('data-platform', PLATFORM);
 const TAB_TITLES = {
   dashboard: 'Tổng quan',
   expenses: 'Giao dịch',
-  categories: 'Danh mục',
   reports: 'Báo cáo',
   settings: 'Cài đặt'
 };
@@ -46,7 +40,6 @@ const TAB_TITLES = {
 const TAB_SUBTITLES = {
   dashboard: 'Quản lý chi tiêu',
   expenses: 'Danh sách giao dịch',
-  categories: 'Phân loại chi tiêu',
   reports: 'Phân tích chi tiết',
   settings: 'Tuỳ chỉnh'
 };
@@ -60,7 +53,6 @@ let syncModule = null;
 function renderTab(tabId) {
   if (tabId === 'dashboard') renderDashboard();
   else if (tabId === 'expenses') renderExpensesTab();
-  else if (tabId === 'categories') renderCategoriesTab();
   else if (tabId === 'reports') renderReportsTab();
   else if (tabId === 'settings') renderSettings();
   fillIcons();
@@ -103,7 +95,6 @@ function bindTabs() {
 
 function closeSheetById(id) {
   if (id === 'expenseModal') closeExpenseModal();
-  else if (id === 'categoryModal') closeCategoryModal();
   else closeSheet(id);
 }
 
@@ -203,7 +194,7 @@ async function setupSync() {
         state.categories = newState.categories || [];
         state.settings = newState.settings || {};
         
-        // [FIX] Cập nhật lại mốc thời gian để đồng bộ chính xác
+        // Cập nhật lại mốc thời gian để đồng bộ chính xác
         if (newState._lastUpdated) {
           state._lastUpdated = newState._lastUpdated;
         }
@@ -233,8 +224,6 @@ function init() {
   bindAppBar();
   bindExpenseTabEvents();
   bindExpenseFormEvents();
-  bindCategoryTabEvents();
-  bindCategoryFormEvents();
   bindReportTabEvents();
   bindSettingsTabEvents();
   bindConfirmOK();
