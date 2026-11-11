@@ -1,9 +1,8 @@
-/* js/expenses.js — V1.3
-   Render tab Giao dịch và xử lý form thêm/sửa chi tiêu.
-   Tự động gọi markLocalChange() khi dữ liệu thay đổi để đồng bộ Gist. */
+/* js/expenses.js — V1.6
+   V1.6: Tự động format tiền tệ khi nhập (100.000đ). Thêm nút tạo danh mục nhanh (+). */
 
 import {
-  state, formState, PAYMENT_METHODS,
+  state, formState, PAYMENT_METHODS, COLOR_PALETTE,
   ic, escapeHtml,
   fmtMoney, fmtMoneyShort, fmtDate, todayIso, dayIso, monthKey,
   getCategory, getPayment,
@@ -202,7 +201,10 @@ export function openExpenseModal(id = null) {
   document.getElementById('formAmount').value = '';
   document.getElementById('formDate').value = todayIso();
   document.getElementById('formNote').value = '';
-  document.getElementById('amountCurrencyPrefix').textContent = state.settings.currency;
+  
+  // Mặc định là "đ" theo yêu cầu
+  document.getElementById('amountCurrencyPrefix').textContent = state.settings.currency || 'đ';
+  
   formState.formCategory = null;
   formState.formPayment = 'cash';
   document.getElementById('errAmount').classList.remove('show');
@@ -211,7 +213,8 @@ export function openExpenseModal(id = null) {
   if (id) {
     const e = state.expenses.find(x => x.id === id);
     if (e) {
-      document.getElementById('formAmount').value = e.amount;
+      // Format số tiền khi mở form sửa
+      document.getElementById('formAmount').value = Number(e.amount).toLocaleString('vi-VN');
       document.getElementById('formDate').value = e.date;
       document.getElementById('formNote').value = e.note || '';
       formState.formCategory = e.categoryId;
@@ -234,12 +237,22 @@ export function closeExpenseModal() {
 }
 
 function renderFormChips(suggestedCat = null) {
-  document.getElementById('formCategories').innerHTML = state.categories.map(c => 
+  let html = state.categories.map(c => 
     `<button class="cat-option ${formState.formCategory === c.id ? 'active' : ''} ${suggestedCat === c.id ? 'suggested' : ''}" data-cat-id="${c.id}">
       <div class="cat-option-icon" style="background:${c.color};">${escapeHtml(c.name.charAt(0).toUpperCase())}</div>
       <div class="cat-option-name">${escapeHtml(c.name)}</div>
     </button>`
   ).join('');
+
+  // Thêm nút tạo danh mục mới (+)
+  html += `
+    <button class="cat-option" id="btnAddQuickCat" style="border-style: dashed; justify-content: center; background: var(--surface-2);">
+      <div class="cat-option-icon" style="background: transparent; color: var(--text-muted); font-size: 24px; font-weight: 400; line-height: 1;">+</div>
+      <div class="cat-option-name" style="color: var(--text-muted);">Mới</div>
+    </button>
+  `;
+
+  document.getElementById('formCategories').innerHTML = html;
 
   document.getElementById('formPayments').innerHTML = PAYMENT_METHODS.map(p => 
     `<button class="payment-option ${formState.formPayment === p.id ? 'active' : ''}" data-pay-id="${p.id}">
@@ -250,7 +263,9 @@ function renderFormChips(suggestedCat = null) {
 }
 
 function updateSummaryPreview() {
-  const amount = Number(document.getElementById('formAmount').value) || 0;
+  // Xóa dấu chấm để parse số
+  const rawAmount = document.getElementById('formAmount').value.replace(/\./g, '');
+  const amount = Number(rawAmount) || 0;
   const date = document.getElementById('formDate').value;
   const cat = formState.formCategory ? getCategory(formState.formCategory) : null;
 
@@ -264,7 +279,8 @@ function updateSummaryPreview() {
 
 function updateAISuggestions() {
   const note = document.getElementById('formNote').value;
-  const amount = Number(document.getElementById('formAmount').value);
+  const rawAmount = document.getElementById('formAmount').value.replace(/\./g, '');
+  const amount = Number(rawAmount);
   const banner = document.getElementById('aiHintBanner');
   const chips = document.getElementById('aiAmountChips');
   const warn = document.getElementById('anomalyWarn');
@@ -286,7 +302,8 @@ function updateAISuggestions() {
     }
     chips.querySelectorAll('[data-amt]').forEach(b => {
       b.onclick = () => {
-        document.getElementById('formAmount').value = b.dataset.amt;
+        // Format số tiền khi click gợi ý
+        document.getElementById('formAmount').value = Number(b.dataset.amt).toLocaleString('vi-VN');
         updateSummaryPreview();
         updateAISuggestions();
       };
@@ -305,7 +322,8 @@ function updateAISuggestions() {
 }
 
 function saveExpense() {
-  const amountRaw = document.getElementById('formAmount').value;
+  // Lấy giá trị đã xóa dấu chấm
+  const amountRaw = document.getElementById('formAmount').value.replace(/\./g, '');
   const amount = Number(amountRaw);
   const date = document.getElementById('formDate').value;
   const note = document.getElementById('formNote').value.trim();
@@ -331,7 +349,8 @@ function saveExpense() {
     if (idx !== -1) {
       state.expenses[idx] = {
         ...state.expenses[idx],
-        amount, categoryId: formState.formCategory, paymentMethod: formState.formPayment, date, note
+        amount, categoryId: formState.formCategory, paymentMethod: formState.formPayment, date, note,
+        updatedAt: Date.now()
       };
     }
     toast('Đã cập nhật');
@@ -340,14 +359,15 @@ function saveExpense() {
       id: uid(), amount,
       categoryId: formState.formCategory,
       paymentMethod: formState.formPayment,
-      date, note, createdAt: Date.now()
+      date, note, createdAt: Date.now(),
+      updatedAt: Date.now()
     });
     toast('Đã thêm giao dịch');
   }
 
   hapticSuccess();
   saveState();
-  markLocalChange(); // Kích hoạt đồng bộ Gist
+  markLocalChange();
   closeExpenseModal();
 
   document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'expense' } }));
@@ -357,11 +377,54 @@ function deleteExpense(id) {
   showConfirm('Xoá giao dịch', 'Bạn có chắc muốn xoá giao dịch này?', () => {
     state.expenses = state.expenses.filter(e => e.id !== id);
     saveState();
-    markLocalChange(); // Kích hoạt đồng bộ Gist
+    markLocalChange();
     document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'expense-deleted' } }));
     toast('Đã xoá giao dịch');
     hapticSuccess();
   });
+}
+
+/* ==================================================================
+   QUICK CATEGORY (NEW)
+   ================================================================== */
+function openQuickCatModal() {
+  document.getElementById('quickCatName').value = '';
+  openSheet('quickCatModal');
+  setTimeout(() => document.getElementById('quickCatName').focus(), 300);
+}
+
+function saveQuickCat() {
+  const name = document.getElementById('quickCatName').value.trim();
+  if (!name) {
+    hapticWarning();
+    return;
+  }
+
+  // Chọn ngẫu nhiên 1 màu từ bảng màu
+  const randomColor = COLOR_PALETTE[Math.floor(Math.random() * COLOR_PALETTE.length)];
+  const newId = uid();
+
+  const newCat = {
+    id: newId,
+    name: name,
+    color: randomColor,
+    type: 'discretionary',
+    updatedAt: Date.now()
+  };
+
+  state.categories.push(newCat);
+  saveState();
+  markLocalChange();
+
+  hapticSuccess();
+  toast('Đã tạo danh mục mới');
+  closeSheet('quickCatModal');
+
+  // Tự động chọn danh mục vừa tạo trong form chi tiêu
+  formState.formCategory = newId;
+  renderFormChips();
+  updateSummaryPreview();
+  updateAISuggestions();
 }
 
 /* ==================================================================
@@ -413,6 +476,14 @@ export function bindExpenseTabEvents() {
 
 export function bindExpenseFormEvents() {
   document.getElementById('formCategories').addEventListener('click', (e) => {
+    // Nếu bấm vào nút Tạo danh mục mới (+)
+    if (e.target.closest('#btnAddQuickCat')) {
+      hapticTap();
+      openQuickCatModal();
+      return;
+    }
+    
+    // Nếu chọn danh mục có sẵn
     const btn = e.target.closest('[data-cat-id]');
     if (!btn) return;
     hapticTap();
@@ -432,10 +503,19 @@ export function bindExpenseFormEvents() {
     updateSummaryPreview();
   });
 
-  document.getElementById('formAmount').addEventListener('input', () => {
+  // Sự kiện TỰ ĐỘNG THÊM DẤU CHẤM khi nhập số tiền
+  document.getElementById('formAmount').addEventListener('input', (e) => {
+    let raw = e.target.value.replace(/\D/g, ''); // Chỉ lấy số
+    if (raw) {
+      // Format theo chuẩn Việt Nam (dấu chấm ngăn cách hàng nghìn)
+      e.target.value = Number(raw).toLocaleString('vi-VN');
+    } else {
+      e.target.value = '';
+    }
     updateSummaryPreview();
     updateAISuggestions();
   });
+
   document.getElementById('formAmount').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') saveExpense();
   });
@@ -457,5 +537,11 @@ export function bindExpenseFormEvents() {
       updateSummaryPreview();
       updateAISuggestions();
     }
+  });
+
+  // Sự kiện cho Modal tạo Danh mục nhanh
+  document.getElementById('quickSaveCatBtn').addEventListener('click', saveQuickCat);
+  document.getElementById('quickCatName').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') saveQuickCat();
   });
 }
