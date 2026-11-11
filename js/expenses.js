@@ -1,5 +1,5 @@
-/* js/expenses.js — V1.7
-   V1.7: Thêm tính năng nhấn giữ (long-press) vào danh mục để Sửa/Xóa.
+/* js/expenses.js — V1.8
+   V1.8: Fix triệt để lỗi nhấn giữ trên cả Mobile và PC (chặn menu hệ thống, chống nhầm click).
    V1.6: Tự động format tiền tệ khi nhập (100.000đ). Thêm nút tạo danh mục nhanh (+). */
 
 import {
@@ -402,7 +402,6 @@ function saveQuickCat() {
   }
 
   if (editingCatId) {
-    // Chế độ Sửa
     const idx = state.categories.findIndex(c => c.id === editingCatId);
     if (idx !== -1) {
       state.categories[idx].name = name;
@@ -410,7 +409,6 @@ function saveQuickCat() {
     }
     toast('Đã cập nhật danh mục');
   } else {
-    // Chế độ Tạo mới
     const randomColor = COLOR_PALETTE[Math.floor(Math.random() * COLOR_PALETTE.length)];
     const newId = uid();
     state.categories.push({
@@ -420,7 +418,7 @@ function saveQuickCat() {
       type: 'discretionary',
       updatedAt: Date.now()
     });
-    formState.formCategory = newId; // Tự động chọn danh mục vừa tạo
+    formState.formCategory = newId;
     toast('Đã tạo danh mục mới');
   }
 
@@ -429,7 +427,6 @@ function saveQuickCat() {
   hapticSuccess();
   closeSheet('quickCatModal');
 
-  // Reset state
   editingCatId = null;
   document.getElementById('quickCatTitle').textContent = 'Tạo danh mục mới';
 
@@ -489,35 +486,75 @@ export function bindExpenseFormEvents() {
   const catGrid = document.getElementById('formCategories');
 
   // --- XỬ LÝ NHẤN GIỮ (LONG PRESS) ---
+  
+  // Chặn menu mặc định của trình duyệt khi nhấn giữ trên mobile
+  catGrid.addEventListener('contextmenu', (e) => {
+    if (e.target.closest('[data-cat-id]')) {
+      e.preventDefault();
+    }
+  });
+
+  let startX = 0, startY = 0;
+  let isDragging = false;
+
   const startPress = (e) => {
     const btn = e.target.closest('[data-cat-id]');
     if (!btn) return;
+    
+    if (e.type === 'touchstart') {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+    } else {
+      startX = e.clientX;
+      startY = e.clientY;
+    }
+    
+    isDragging = false;
     isLongPress = false;
+
     pressTimer = setTimeout(() => {
-      isLongPress = true;
-      hapticTap();
-      actionTargetCatId = btn.dataset.catId;
-      const cat = state.categories.find(c => c.id === actionTargetCatId);
-      document.getElementById('catActionTitle').textContent = cat ? cat.name : 'Danh mục';
-      openSheet('catActionModal');
+      if (!isDragging) {
+        isLongPress = true;
+        hapticTap();
+        actionTargetCatId = btn.dataset.catId;
+        const cat = state.categories.find(c => c.id === actionTargetCatId);
+        document.getElementById('catActionTitle').textContent = cat ? cat.name : 'Danh mục';
+        openSheet('catActionModal');
+      }
     }, 600); // 600ms
   };
 
-  const cancelPress = () => {
-    if (pressTimer) clearTimeout(pressTimer);
+  const cancelPress = (e) => {
+    if (e.type === 'touchmove' || e.type === 'mousemove') {
+      let curX, curY;
+      if (e.type === 'touchmove') {
+        curX = e.touches[0].clientX;
+        curY = e.touches[0].clientY;
+      } else {
+        curX = e.clientX;
+        curY = e.clientY;
+      }
+      // Nếu di chuyển quá 10px (vuốt) thì hủy nhấn giữ
+      if (Math.abs(curX - startX) > 10 || Math.abs(curY - startY) > 10) {
+        isDragging = true;
+        clearTimeout(pressTimer);
+      }
+    } else {
+      clearTimeout(pressTimer);
+    }
   };
 
   catGrid.addEventListener('touchstart', startPress, { passive: true });
-  catGrid.addEventListener('touchend', cancelPress);
   catGrid.addEventListener('touchmove', cancelPress, { passive: true });
-  
+  catGrid.addEventListener('touchend', cancelPress);
+
   catGrid.addEventListener('mousedown', startPress);
+  catGrid.addEventListener('mousemove', cancelPress);
   catGrid.addEventListener('mouseup', cancelPress);
   catGrid.addEventListener('mouseleave', cancelPress);
 
   // --- XỬ LÝ CLICK CHỌN DANH MỤC ---
   catGrid.addEventListener('click', (e) => {
-    // Nếu vừa nhấn giữ xong thì bỏ qua click
     if (isLongPress) {
       isLongPress = false;
       return;
