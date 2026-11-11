@@ -1,4 +1,4 @@
-/* js/main.js — V1.8 (Đã xóa tab Danh mục)
+/* js/main.js — V1.9
    Entry point: bootstrap app, bind global events, điều phối render,
    đăng ký service worker, khởi tạo Sync Engine (E2EE). */
 
@@ -95,7 +95,7 @@ function bindTabs() {
 
 function closeSheetById(id) {
   if (id === 'expenseModal') closeExpenseModal();
-  else closeSheet(id);
+  else closeSheet(id); // Xử lý đóng các modal còn lại (bao gồm quickCatModal và confirmModal)
 }
 
 function bindSheets() {
