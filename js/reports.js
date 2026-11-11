@@ -1,6 +1,6 @@
-/* js/reports.js — V1.1
-   V1.1: Cập nhật Ngày có chi theo lịch tháng, sửa tooltip biểu đồ cột (nhấn giữ/buông ra), 
-   xóa báo cáo theo tuần, đổi Top 10 chi tiêu thành Top danh mục. */
+/* js/reports.js — V1.2
+   V1.2: Sửa lỗi nhấn giữ biểu đồ cột (dùng Pointer Events). 
+   Đổi Top 10 thành liệt kê toàn bộ danh mục chi tiêu. */
 
 import {
   state, reportState,
@@ -32,7 +32,7 @@ export function renderReports() {
   const { total, count } = calcSummary(monthExp);
   const prevTotal = calcSummary(prevExp).total;
   
-  // [FIX 1] Tính số ngày thực tế của tháng (28, 30, 31...)
+  // Tính số ngày thực tế của tháng
   const days = daysInMonth(reportMonth.getFullYear(), reportMonth.getMonth());
   const uniqueDays = new Set(monthExp.map(e => e.date)).size;
   
@@ -65,7 +65,6 @@ export function renderReports() {
   document.getElementById('reportKpis').innerHTML = `
     <div class="kpi"><div class="kpi-label">${ic('trendUp')} Lớn nhất</div><div class="kpi-value">${fmtMoneyShort(largest)}</div><div class="kpi-sub">Giao dịch đắt nhất</div></div>
     <div class="kpi kpi-${diffPct > 0 ? 'danger' : 'success'}"><div class="kpi-label">${diffPct > 0 ? ic('arrowUp') : ic('arrowDown')} So tháng trước</div><div class="kpi-value">${prevTotal > 0 ? (diffPct >= 0 ? '+' : '') + diffPct.toFixed(0) + '%' : '—'}</div><div class="kpi-sub">${prevTotal > 0 ? fmtMoneyShort(prevTotal) : 'Chưa có'}</div></div>
-    <!-- [FIX 1] Hiển thị Ngày có chi / Tổng số ngày của tháng -->
     <div class="kpi kpi-warning"><div class="kpi-label">${ic('calendar')} Ngày có chi</div><div class="kpi-value">${uniqueDays}/${days}</div><div class="kpi-sub">Ngày phát sinh</div></div>
     <div class="kpi ${budget > 0 && budgetPct > 100 ? 'kpi-danger' : 'kpi-success'}"><div class="kpi-label">${ic('target')} Ngân sách</div><div class="kpi-value">${budget > 0 ? budgetPct.toFixed(0) + '%' : '—'}</div><div class="kpi-sub">${budget > 0 ? (budgetPct > 100 ? 'Vượt ' + fmtMoneyShort(total - budget) : 'Còn ' + fmtMoneyShort(budget - total)) : 'Chưa đặt'}</div></div>`;
 
@@ -117,24 +116,26 @@ export function renderReports() {
         return `<div class="payment-row"><div class="payment-head"><span class="payment-label"><span class="payment-dot" style="background:${p.payment.color};"></span>${escapeHtml(p.payment.name)}</span><span class="payment-value">${fmtMoney(p.value)} (${pct.toFixed(0)}%)</span></div><div class="payment-track"><div class="payment-fill" style="width:${widthPct}%;background:${p.payment.color};"></div></div></div>`;
       }).join('');
 
-  /* ---------- [FIX 4] Top Danh Mục (thay vì Top 10 giao dịch) ---------- */
-  const topCats = calcByCategory(monthExp).slice(0, 10);
-  document.getElementById('reportTopLabel').textContent = `${topCats.length} danh mục`;
-  document.getElementById('reportTop').innerHTML = topCats.length === 0
+  /* ---------- [FIX] Liệt kê toàn bộ Danh Mục (Không xếp hạng) ---------- */
+  const allCats = calcByCategory(monthExp);
+  document.getElementById('reportTopLabel').textContent = `${allCats.length} danh mục`;
+  document.getElementById('reportTop').innerHTML = allCats.length === 0
     ? `<div style="text-align:center;padding:24px;color:var(--text-soft);font-size:12px;">Chưa có chi tiêu</div>`
-    : `<div class="top-table-wrap"><table class="top-table"><thead><tr><th>#</th><th>Danh mục</th><th class="right">Số tiền</th><th class="right">Tỷ trọng</th></tr></thead><tbody>${topCats.map((b, i) => {
-        const pct = total > 0 ? (b.value / total * 100) : 0;
-        return `<tr>
-          <td><span class="rank-badge">${i + 1}</span></td>
-          <td><div class="top-cat-cell"><span class="top-cat-dot" style="background:${b.category.color};"></span>${escapeHtml(b.category.name)}</div></td>
-          <td class="amount-cell">${fmtMoney(b.value)}</td>
-          <td class="amount-cell" style="color:var(--text-muted);font-weight:600;">${pct.toFixed(1)}%</td>
-        </tr>`;
-      }).join('')}</tbody></table></div>`;
+    : `<div class="top-table-wrap"><table class="top-table">
+        <thead><tr><th>Danh mục</th><th class="right">Số tiền</th><th class="right">Tỷ trọng</th></tr></thead>
+        <tbody>${allCats.map(b => {
+          const pct = total > 0 ? (b.value / total * 100) : 0;
+          return `<tr>
+            <td><div class="top-cat-cell"><span class="top-cat-dot" style="background:${b.category.color};"></span>${escapeHtml(b.category.name)}</div></td>
+            <td class="amount-cell">${fmtMoney(b.value)}</td>
+            <td class="amount-cell" style="color:var(--text-muted);font-weight:600;">${pct.toFixed(1)}%</td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table></div>`;
 }
 
 /* ==================================================================
-   [FIX 2] BAR CHART TOOLTIP (Hiện khi nhấn, ẩn khi buông)
+   BAR CHART TOOLTIP (Pointer Events — Nhấn giữ/Buông ra)
    ================================================================== */
 function showBarTooltip(el) {
   const day = el.dataset.day;
@@ -178,26 +179,20 @@ function setupBarInteraction() {
   if (!chart) return;
   barInteractionSetup = true;
 
-  // Sự kiện cho Mobile (Touch)
-  chart.addEventListener('touchstart', (e) => {
+  // Dùng Pointer Events để hỗ trợ cảm ứng và chuột cùng lúc
+  chart.addEventListener('pointerdown', (e) => {
     const bar = e.target.closest('.bar-col');
     if (bar) {
-      e.preventDefault(); // Chặn cuộn trang khi đang xem tooltip
+      // Ngăn trình duyệt cuộn trang khi đang xem tooltip
+      e.preventDefault(); 
       showBarTooltip(bar);
     }
-  }, { passive: false });
-
-  chart.addEventListener('touchend', hideBarTooltip);
-  chart.addEventListener('touchcancel', hideBarTooltip);
-  chart.addEventListener('touchmove', hideBarTooltip, { passive: true });
-
-  // Sự kiện cho PC (Mouse)
-  chart.addEventListener('mousedown', (e) => {
-    const bar = e.target.closest('.bar-col');
-    if (bar) showBarTooltip(bar);
   });
-  chart.addEventListener('mouseup', hideBarTooltip);
-  chart.addEventListener('mouseleave', hideBarTooltip);
+
+  // Nhả tay (hoặc nhả chuột) là ẩn ngay
+  chart.addEventListener('pointerup', hideBarTooltip);
+  chart.addEventListener('pointercancel', hideBarTooltip);
+  chart.addEventListener('pointerleave', hideBarTooltip);
 }
 
 /* ==================================================================
