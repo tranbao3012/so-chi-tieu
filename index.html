@@ -61,9 +61,7 @@
 
   <main class="app-content" id="appContent">
 
-    <!-- ============================================================
-         PANEL — TỔNG QUAN
-         ============================================================ -->
+    <!-- PANEL — TỔNG QUAN -->
     <section class="panel active" id="panel-dashboard">
       <div class="overview-grid">
         <div class="overview-card today" id="todayOverview"></div>
@@ -82,9 +80,7 @@
       </div>
     </section>
 
-    <!-- ============================================================
-         PANEL — GIAO DỊCH
-         ============================================================ -->
+    <!-- PANEL — GIAO DỊCH -->
     <section class="panel" id="panel-expenses">
       <div class="smart-filters" id="smartFilters"></div>
       <div class="filter-bar">
@@ -98,9 +94,7 @@
       <div id="expenseList"></div>
     </section>
 
-    <!-- ============================================================
-         PANEL — BÁO CÁO
-         ============================================================ -->
+    <!-- PANEL — BÁO CÁO -->
     <section class="panel" id="panel-reports">
       <div class="month-nav">
         <button class="month-nav-btn" id="prevMonth" aria-label="Tháng trước">
@@ -163,9 +157,7 @@
       </div>
     </section>
 
-    <!-- ============================================================
-         PANEL — CÀI ĐẶT
-         ============================================================ -->
+    <!-- PANEL — CÀI ĐẶT -->
     <section class="panel" id="panel-settings">
       <div class="settings-card">
         <div class="settings-title"><span data-icon="brain"></span>AI Tài chính</div>
@@ -199,7 +191,7 @@
         </div>
         <div class="settings-row">
           <div class="settings-meta"><div class="settings-label">Đơn vị tiền tệ</div><div class="settings-desc">Ký hiệu hiển thị</div></div>
-          <input type="text" class="form-input" id="setCurrency" maxlength="3" placeholder="đ" style="width:70px;text-align:center;font-weight:700;">
+          <input type="text" class="form-input" id="setCurrency" maxlength="3" placeholder="đ" style="width:70px;text-align:center;font-weight:700;" value="đ">
         </div>
       </div>
 
@@ -256,7 +248,7 @@
       <div class="settings-card">
         <div class="settings-title"><span data-icon="infoCircle"></span>Về ứng dụng</div>
         <div style="font-size:12px;color:var(--text-muted);line-height:1.65;">
-          <strong style="color:var(--text);">Quản Lý Chi Tiêu v6.3 — Module</strong> · Mobile-first · 60fps
+          <strong style="color:var(--text);">Quản Lý Chi Tiêu v6.4 — Module</strong> · Mobile-first · 60fps
         </div>
       </div>
     </section>
@@ -269,7 +261,6 @@
     </svg>
   </button>
 
-  <!-- ĐÃ XÓA TAB DANH MỤC TẠI ĐÂY -->
   <nav class="tab-bar">
     <button class="tab-btn active" data-tab="dashboard">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -321,7 +312,8 @@
         </div>
         <div class="amount-input-wrap">
           <span class="amount-currency-prefix" id="amountCurrencyPrefix">đ</span>
-          <input type="number" class="amount-input" id="formAmount" placeholder="0" min="0" step="1000" inputmode="numeric">
+          <!-- Đã đổi type="number" thành type="text" để chứa dấu chấm -->
+          <input type="text" class="amount-input" id="formAmount" placeholder="0" inputmode="numeric">
         </div>
         <div class="quick-amounts" id="aiAmountChips"></div>
         <div class="field-error" id="errAmount">Vui lòng nhập số tiền hợp lệ</div>
@@ -377,6 +369,28 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><polyline points="20 6 9 17 4 12"/></svg>
         Lưu
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- SHEET — THÊM DANH MỤC NHANH (TỪ FORM CHI TIÊU) -->
+<div class="sheet-overlay" id="quickCatModal">
+  <div class="sheet" style="max-height: 250px;">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title">Tạo danh mục mới</div>
+      <button class="sheet-close" data-close="quickCatModal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="sheet-body">
+      <div class="sheet-section">
+        <input type="text" class="field-input" id="quickCatName" placeholder="Tên danh mục (VD: Cafe, Mua sắm...)" maxlength="20" autocomplete="off">
+      </div>
+    </div>
+    <div class="sheet-footer">
+      <button class="btn btn-ghost" data-close="quickCatModal" style="flex:0 0 90px;">Huỷ</button>
+      <button class="btn btn-primary" id="quickSaveCatBtn">Tạo</button>
     </div>
   </div>
 </div>
