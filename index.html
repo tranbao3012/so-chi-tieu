@@ -62,17 +62,12 @@
   <main class="app-content" id="appContent">
 
     <!-- ============================================================
-         PANEL — TỔNG QUAN
+         PANEL — TỔNG QUAN (TỐI GIẢN)
          ============================================================ -->
     <section class="panel active" id="panel-dashboard">
       <div class="overview-grid">
         <div class="overview-card today" id="todayOverview"></div>
       </div>
-      <div class="ai-grid">
-        <div class="ai-card header-card" id="healthCard"></div>
-        <div class="ai-card" id="aiAssistant"></div>
-      </div>
-      <div class="acct-card" id="accountingCard"></div>
       <div class="card">
         <div class="section-title">
           <div class="section-title-left"><span class="section-title-icon" data-icon="clock"></span><span class="section-title-text">Gần đây</span></div>
@@ -217,7 +212,7 @@
         </div>
       </div>
 
-      <!-- SYNC SETTINGS CARD (MỚI - E2EE) -->
+      <!-- SYNC SETTINGS CARD -->
       <div class="settings-card">
         <div class="settings-title"><span data-icon="transfer"></span>Đồng bộ Gist (Mã hóa E2EE)</div>
         
@@ -270,7 +265,7 @@
       <div class="settings-card">
         <div class="settings-title"><span data-icon="infoCircle"></span>Về ứng dụng</div>
         <div style="font-size:12px;color:var(--text-muted);line-height:1.65;">
-          <strong style="color:var(--text);">Quản Lý Chi Tiêu v6.4 — E2EE Sync</strong> · Mobile-first · 60fps
+          <strong style="color:var(--text);">Quản Lý Chi Tiêu v6.5 — Minimal</strong> · Mobile-first · 60fps
         </div>
       </div>
     </section>
@@ -322,9 +317,7 @@
   </nav>
 </div>
 
-<!-- ============================================================
-     SHEET — THÊM/SỬA CHI TIÊU
-     ============================================================ -->
+<!-- SHEET — THÊM/SỬA CHI TIÊU -->
 <div class="sheet-overlay" id="expenseModal">
   <div class="sheet">
     <div class="sheet-handle"></div>
@@ -402,9 +395,7 @@
   </div>
 </div>
 
-<!-- ============================================================
-     SHEET — THÊM/SỬA DANH MỤC
-     ============================================================ -->
+<!-- SHEET — THÊM/SỬA DANH MỤC -->
 <div class="sheet-overlay" id="categoryModal">
   <div class="sheet">
     <div class="sheet-handle"></div>
@@ -432,9 +423,7 @@
   </div>
 </div>
 
-<!-- ============================================================
-     SHEET — XÁC NHẬN
-     ============================================================ -->
+<!-- SHEET — XÁC NHẬN -->
 <div class="sheet-overlay" id="confirmModal">
   <div class="sheet" style="max-height:340px;">
     <div class="sheet-handle"></div>
@@ -449,9 +438,7 @@
   </div>
 </div>
 
-<!-- ============================================================
-     MISC
-     ============================================================ -->
+<!-- MISC -->
 <div class="bar-tooltip" id="barTooltip"></div>
 <div id="pdfReport"></div>
 <div class="toast-container" id="toastContainer"></div>
