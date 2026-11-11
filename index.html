@@ -62,12 +62,17 @@
   <main class="app-content" id="appContent">
 
     <!-- ============================================================
-         PANEL — TỔNG QUAN (TỐI GIẢN)
+         PANEL — TỔNG QUAN
          ============================================================ -->
     <section class="panel active" id="panel-dashboard">
       <div class="overview-grid">
         <div class="overview-card today" id="todayOverview"></div>
       </div>
+      <div class="ai-grid">
+        <div class="ai-card header-card" id="healthCard"></div>
+        <div class="ai-card" id="aiAssistant"></div>
+      </div>
+      <div class="acct-card" id="accountingCard"></div>
       <div class="card">
         <div class="section-title">
           <div class="section-title-left"><span class="section-title-icon" data-icon="clock"></span><span class="section-title-text">Gần đây</span></div>
@@ -91,20 +96,6 @@
       </div>
       <div class="summary-bar" id="summaryBar"></div>
       <div id="expenseList"></div>
-    </section>
-
-    <!-- ============================================================
-         PANEL — DANH MỤC
-         ============================================================ -->
-    <section class="panel" id="panel-categories">
-      <div class="section-title">
-        <div class="section-title-left"><span class="section-title-icon" data-icon="tag"></span><span class="section-title-text">Danh mục</span></div>
-        <button class="btn btn-sm btn-primary" id="addCatBtn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;"><path d="M12 5v14M5 12h14"/></svg>
-          Thêm
-        </button>
-      </div>
-      <div class="cat-grid" id="catGrid"></div>
     </section>
 
     <!-- ============================================================
@@ -265,7 +256,7 @@
       <div class="settings-card">
         <div class="settings-title"><span data-icon="infoCircle"></span>Về ứng dụng</div>
         <div style="font-size:12px;color:var(--text-muted);line-height:1.65;">
-          <strong style="color:var(--text);">Quản Lý Chi Tiêu v6.5 — Minimal</strong> · Mobile-first · 60fps
+          <strong style="color:var(--text);">Quản Lý Chi Tiêu v6.3 — Module</strong> · Mobile-first · 60fps
         </div>
       </div>
     </section>
@@ -278,6 +269,7 @@
     </svg>
   </button>
 
+  <!-- ĐÃ XÓA TAB DANH MỤC TẠI ĐÂY -->
   <nav class="tab-bar">
     <button class="tab-btn active" data-tab="dashboard">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -294,12 +286,6 @@
         <circle cx="4" cy="6" r="1" fill="currentColor"/><circle cx="4" cy="12" r="1" fill="currentColor"/><circle cx="4" cy="18" r="1" fill="currentColor"/>
       </svg>
       <span>Giao dịch</span>
-    </button>
-    <button class="tab-btn" data-tab="categories">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>
-      </svg>
-      <span>Danh mục</span>
     </button>
     <button class="tab-btn" data-tab="reports">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -391,34 +377,6 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><polyline points="20 6 9 17 4 12"/></svg>
         Lưu
       </button>
-    </div>
-  </div>
-</div>
-
-<!-- SHEET — THÊM/SỬA DANH MỤC -->
-<div class="sheet-overlay" id="categoryModal">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-header">
-      <div class="sheet-title" id="categoryModalTitle">Thêm danh mục</div>
-      <button class="sheet-close" data-close="categoryModal">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>
-    <div class="sheet-body">
-      <div class="sheet-section">
-        <div class="sheet-section-label">Tên danh mục</div>
-        <input type="text" class="field-input" id="catName" placeholder="Ví dụ: Cà phê" maxlength="24">
-        <div class="field-error" id="errCatName">Tên không được để trống</div>
-      </div>
-      <div class="sheet-section">
-        <div class="sheet-section-label">Màu sắc</div>
-        <div class="color-grid" id="catColors"></div>
-      </div>
-    </div>
-    <div class="sheet-footer">
-      <button class="btn btn-ghost" data-close="categoryModal" style="flex:0 0 90px;">Huỷ</button>
-      <button class="btn btn-primary" id="saveCategoryBtn">Lưu</button>
     </div>
   </div>
 </div>
