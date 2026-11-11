@@ -1,7 +1,5 @@
-/* js/main.js — V2.0
-   Entry point: bootstrap app, bind global events, điều phối render,
-   đăng ký service worker, khởi tạo Sync Engine (E2EE).
-   V2.0: Thêm nút Đồng bộ nhanh trên Header. */
+/* js/main.js — V2.2
+   V2.2: Gia cố try/catch toàn bộ, đảm bảo nút Sync trên Header hoạt động độc lập 100%. */
 
 import {
   state, saveState, toast,
@@ -52,11 +50,15 @@ let syncModule = null;
    Render dispatcher
    ================================================================== */
 function renderTab(tabId) {
-  if (tabId === 'dashboard') renderDashboard();
-  else if (tabId === 'expenses') renderExpensesTab();
-  else if (tabId === 'reports') renderReportsTab();
-  else if (tabId === 'settings') renderSettings();
-  fillIcons();
+  try {
+    if (tabId === 'dashboard') renderDashboard();
+    else if (tabId === 'expenses') renderExpensesTab();
+    else if (tabId === 'reports') renderReportsTab();
+    else if (tabId === 'settings') renderSettings();
+    fillIcons();
+  } catch (err) {
+    console.error('Lỗi render tab:', err);
+  }
 }
 
 /* ==================================================================
@@ -120,23 +122,27 @@ function bindSheets() {
    Bind App Bar (Theme & Quick Sync)
    ================================================================== */
 function bindAppBar() {
-  document.getElementById('themeBtn').addEventListener('click', toggleTheme);
-  document.getElementById('fab').addEventListener('click', () => openExpenseModal());
+  const themeBtn = document.getElementById('themeBtn');
+  if (themeBtn) themeBtn.addEventListener('click', toggleTheme);
+  
+  const fab = document.getElementById('fab');
+  if (fab) fab.addEventListener('click', () => openExpenseModal());
   
   // Nút Đồng bộ nhanh trên Header
   const quickSyncBtn = document.getElementById('quickSyncBtn');
   if (quickSyncBtn) {
     quickSyncBtn.addEventListener('click', async () => {
-      if (syncModule && typeof syncModule.syncNow === 'function') {
-        syncModule.syncNow();
-      } else {
-        // Nếu module chưa tải xong (hiếm khi xảy ra), tải lại và gọi
-        try {
-          const mod = await import('./sync.js');
+      try {
+        // Dynamic import đảm bảo lấy được hàm mới nhất từ sync.js
+        const mod = await import('./sync.js');
+        if (mod && typeof mod.syncNow === 'function') {
           mod.syncNow();
-        } catch (e) {
-          toast('Lỗi tải module đồng bộ', 'error');
+        } else {
+          toast('Module đồng bộ chưa sẵn sàng', 'error');
         }
+      } catch (err) {
+        console.error('Lỗi đồng bộ nhanh:', err);
+        toast('Không thể kết nối module đồng bộ', 'error');
       }
     });
   }
@@ -180,7 +186,6 @@ function handleQueryParams() {
     handled = true;
   }
 
-  // Xoá URL rác nếu có tab/action
   if (handled) {
     try {
       const cleanUrl = window.location.pathname + window.location.hash;
@@ -202,13 +207,12 @@ function registerSW() {
 }
 
 /* ==================================================================
-   SYNC ENGINE (Dynamic Import)
+   SYNC ENGINE (Dynamic Import for initialization)
    ================================================================== */
 async function setupSync() {
   try {
     syncModule = await import('./sync.js');
     
-    // Gắn State vào Sync Engine
     syncModule.bindState(
       () => state, 
       (newState) => { 
@@ -216,7 +220,6 @@ async function setupSync() {
         state.categories = newState.categories || [];
         state.settings = newState.settings || {};
         
-        // Cập nhật lại mốc thời gian để đồng bộ chính xác
         if (newState._lastUpdated) {
           state._lastUpdated = newState._lastUpdated;
         }
@@ -226,7 +229,6 @@ async function setupSync() {
       }
     );
 
-    // Khởi tạo Sync Engine
     syncModule.initSync();
     
   } catch (err) {
@@ -241,21 +243,22 @@ function init() {
   loadState();
   applyTheme();
 
-  bindTabs();
-  bindSheets();
-  bindAppBar();
-  bindExpenseTabEvents();
-  bindExpenseFormEvents();
-  bindReportTabEvents();
-  bindSettingsTabEvents();
-  bindConfirmOK();
-  bindStateChanged();
-  setupScrollBehavior();
+  // Gia cố từng bước bind để nếu 1 file lỗi, App vẫn chạy
+  try { bindTabs(); } catch(e) { console.error('bindTabs', e); }
+  try { bindSheets(); } catch(e) { console.error('bindSheets', e); }
+  try { bindAppBar(); } catch(e) { console.error('bindAppBar', e); }
+  try { bindExpenseTabEvents(); } catch(e) { console.error('bindExpenseTabEvents', e); }
+  try { bindExpenseFormEvents(); } catch(e) { console.error('bindExpenseFormEvents', e); }
+  try { bindReportTabEvents(); } catch(e) { console.error('bindReportTabEvents', e); }
+  try { bindSettingsTabEvents(); } catch(e) { console.error('bindSettingsTabEvents', e); }
+  try { bindConfirmOK(); } catch(e) { console.error('bindConfirmOK', e); }
+  try { bindStateChanged(); } catch(e) { console.error('bindStateChanged', e); }
+  try { setupScrollBehavior(); } catch(e) { console.error('setupScrollBehavior', e); }
 
   renderTab('dashboard');
   
   setupSync().then(() => {
-    handleQueryParams();
+    try { handleQueryParams(); } catch(e) {}
   });
 
   registerSW();
