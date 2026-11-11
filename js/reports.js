@@ -1,14 +1,14 @@
-/* js/reports.js — V1.0
-   Render tab Báo cáo: month nav, hero KPI, insights, donut, bar chart (tooltip),
-   payment bars, weekly, top 10, và nút xuất PDF */
+/* js/reports.js — V1.1
+   V1.1: Cập nhật Ngày có chi theo lịch tháng, sửa tooltip biểu đồ cột (nhấn giữ/buông ra), 
+   xóa báo cáo theo tuần, đổi Top 10 chi tiêu thành Top danh mục. */
 
 import {
   state, reportState,
   ic, escapeHtml,
   fmtMoney, fmtMoneyShort, fmtDate, monthLabel,
   daysInMonth,
-  getMonthExpenses, getCategory,
-  calcSummary, calcByCategory, calcByPayment, calcWeekly,
+  getMonthExpenses, getCategory, calcByCategory,
+  calcSummary, calcByPayment,
   generateInsights, renderDonut, exportPDF,
   hapticTap
 } from './core.js';
@@ -16,9 +16,8 @@ import {
 /* ==================================================================
    MODULE STATE
    ================================================================== */
-let barTooltipTimeout = null;
-let currentBarActive = null;
 let barInteractionSetup = false;
+let currentBarActive = null;
 
 /* ==================================================================
    MAIN RENDER
@@ -32,7 +31,11 @@ export function renderReports() {
   const prevExp = getMonthExpenses(new Date(reportMonth.getFullYear(), reportMonth.getMonth() - 1, 1));
   const { total, count } = calcSummary(monthExp);
   const prevTotal = calcSummary(prevExp).total;
+  
+  // [FIX 1] Tính số ngày thực tế của tháng (28, 30, 31...)
   const days = daysInMonth(reportMonth.getFullYear(), reportMonth.getMonth());
+  const uniqueDays = new Set(monthExp.map(e => e.date)).size;
+  
   const avg = total / days;
   const largest = monthExp.reduce((m, e) => Math.max(m, Number(e.amount || 0)), 0);
   const diffPct = prevTotal > 0 ? ((total - prevTotal) / prevTotal * 100) : 0;
@@ -62,7 +65,8 @@ export function renderReports() {
   document.getElementById('reportKpis').innerHTML = `
     <div class="kpi"><div class="kpi-label">${ic('trendUp')} Lớn nhất</div><div class="kpi-value">${fmtMoneyShort(largest)}</div><div class="kpi-sub">Giao dịch đắt nhất</div></div>
     <div class="kpi kpi-${diffPct > 0 ? 'danger' : 'success'}"><div class="kpi-label">${diffPct > 0 ? ic('arrowUp') : ic('arrowDown')} So tháng trước</div><div class="kpi-value">${prevTotal > 0 ? (diffPct >= 0 ? '+' : '') + diffPct.toFixed(0) + '%' : '—'}</div><div class="kpi-sub">${prevTotal > 0 ? fmtMoneyShort(prevTotal) : 'Chưa có'}</div></div>
-    <div class="kpi kpi-warning"><div class="kpi-label">${ic('calendar')} Ngày có chi</div><div class="kpi-value">${new Set(monthExp.map(e => e.date)).size}/${days}</div><div class="kpi-sub">Ngày phát sinh</div></div>
+    <!-- [FIX 1] Hiển thị Ngày có chi / Tổng số ngày của tháng -->
+    <div class="kpi kpi-warning"><div class="kpi-label">${ic('calendar')} Ngày có chi</div><div class="kpi-value">${uniqueDays}/${days}</div><div class="kpi-sub">Ngày phát sinh</div></div>
     <div class="kpi ${budget > 0 && budgetPct > 100 ? 'kpi-danger' : 'kpi-success'}"><div class="kpi-label">${ic('target')} Ngân sách</div><div class="kpi-value">${budget > 0 ? budgetPct.toFixed(0) + '%' : '—'}</div><div class="kpi-sub">${budget > 0 ? (budgetPct > 100 ? 'Vượt ' + fmtMoneyShort(total - budget) : 'Còn ' + fmtMoneyShort(budget - total)) : 'Chưa đặt'}</div></div>`;
 
   /* ---------- Insights ---------- */
@@ -90,7 +94,7 @@ export function renderReports() {
   });
   const maxDay = Math.max(...Array.from(dailyMap.values()), 0);
   document.getElementById('reportBarsMax').textContent = maxDay > 0 ? 'Max: ' + fmtMoneyShort(maxDay) : '—';
-  document.getElementById('reportBarsLabel').textContent = `${new Set(monthExp.map(e => e.date)).size}/${days} ngày`;
+  document.getElementById('reportBarsLabel').textContent = `${uniqueDays}/${days} ngày`;
 
   let barsHtml = '';
   for (let d = 1; d <= days; d++) {
@@ -113,24 +117,26 @@ export function renderReports() {
         return `<div class="payment-row"><div class="payment-head"><span class="payment-label"><span class="payment-dot" style="background:${p.payment.color};"></span>${escapeHtml(p.payment.name)}</span><span class="payment-value">${fmtMoney(p.value)} (${pct.toFixed(0)}%)</span></div><div class="payment-track"><div class="payment-fill" style="width:${widthPct}%;background:${p.payment.color};"></div></div></div>`;
       }).join('');
 
-  /* ---------- Weekly ---------- */
-  const weekly = calcWeekly(monthExp, reportMonth.getFullYear(), reportMonth.getMonth());
-  document.getElementById('reportWeekly').innerHTML = weekly.map(w => 
-    `<div class="weekly-item"><div class="weekly-label">${w.label}</div><div class="weekly-days">${w.days}</div><div class="weekly-value">${fmtMoneyShort(w.total)}</div><div class="weekly-count">${w.count} GD</div></div>`
-  ).join('');
-
-  /* ---------- Top 10 ---------- */
-  const top = [...monthExp].sort((a, b) => Number(b.amount) - Number(a.amount)).slice(0, 10);
-  document.getElementById('reportTopLabel').textContent = `${top.length}/${monthExp.length}`;
-  document.getElementById('reportTop').innerHTML = top.length === 0
+  /* ---------- [FIX 4] Top Danh Mục (thay vì Top 10 giao dịch) ---------- */
+  const topCats = calcByCategory(monthExp).slice(0, 10);
+  document.getElementById('reportTopLabel').textContent = `${topCats.length} danh mục`;
+  document.getElementById('reportTop').innerHTML = topCats.length === 0
     ? `<div style="text-align:center;padding:24px;color:var(--text-soft);font-size:12px;">Chưa có chi tiêu</div>`
-    : `<div class="top-table-wrap"><table class="top-table"><thead><tr><th>#</th><th>Danh mục</th><th>Ghi chú</th><th class="right">Số tiền</th></tr></thead><tbody>${top.map((e, i) => { const cat = getCategory(e.categoryId); return `<tr><td><span class="rank-badge">${i + 1}</span></td><td><div class="top-cat-cell"><span class="top-cat-dot" style="background:${cat.color};"></span>${escapeHtml(cat.name)}</div></td><td class="top-note-cell">${escapeHtml(e.note || '—')}</td><td class="amount-cell">${fmtMoney(e.amount)}</td></tr>`; }).join('')}</tbody></table></div>`;
+    : `<div class="top-table-wrap"><table class="top-table"><thead><tr><th>#</th><th>Danh mục</th><th class="right">Số tiền</th><th class="right">Tỷ trọng</th></tr></thead><tbody>${topCats.map((b, i) => {
+        const pct = total > 0 ? (b.value / total * 100) : 0;
+        return `<tr>
+          <td><span class="rank-badge">${i + 1}</span></td>
+          <td><div class="top-cat-cell"><span class="top-cat-dot" style="background:${b.category.color};"></span>${escapeHtml(b.category.name)}</div></td>
+          <td class="amount-cell">${fmtMoney(b.value)}</td>
+          <td class="amount-cell" style="color:var(--text-muted);font-weight:600;">${pct.toFixed(1)}%</td>
+        </tr>`;
+      }).join('')}</tbody></table></div>`;
 }
 
 /* ==================================================================
-   BAR CHART TOOLTIP
+   [FIX 2] BAR CHART TOOLTIP (Hiện khi nhấn, ẩn khi buông)
    ================================================================== */
-function showBarTooltip(el, cx, cy) {
+function showBarTooltip(el) {
   const day = el.dataset.day;
   const amount = Number(el.dataset.amount || 0);
   const count = Number(el.dataset.count || 0);
@@ -141,24 +147,29 @@ function showBarTooltip(el, cx, cy) {
   currentBarActive = el;
 
   tt.innerHTML = `<div class="bar-tooltip-label">Ngày ${day}/${reportState.month.getMonth() + 1}</div><div class="bar-tooltip-value">${fmtMoney(amount)}</div><div class="bar-tooltip-sub">${count} giao dịch</div>`;
+  
   const rect = el.getBoundingClientRect();
   tt.classList.add('show');
   const ttR = tt.getBoundingClientRect();
 
-  let left = cx - ttR.width / 2;
+  let left = rect.left + rect.width / 2 - ttR.width / 2;
   let top = rect.top - ttR.height - 10;
   if (left < 10) left = 10;
   if (left + ttR.width > window.innerWidth - 10) left = window.innerWidth - ttR.width - 10;
   if (top < 10) top = rect.bottom + 10;
+  
   tt.style.left = left + 'px';
   tt.style.top = top + 'px';
-
-  if (barTooltipTimeout) clearTimeout(barTooltipTimeout);
-  barTooltipTimeout = setTimeout(() => {
-    tt.classList.remove('show');
-    if (currentBarActive) { currentBarActive.classList.remove('active'); currentBarActive = null; }
-  }, 2500);
   hapticTap();
+}
+
+function hideBarTooltip() {
+  const tt = document.getElementById('barTooltip');
+  if (tt) tt.classList.remove('show');
+  if (currentBarActive) {
+    currentBarActive.classList.remove('active');
+    currentBarActive = null;
+  }
 }
 
 function setupBarInteraction() {
@@ -167,22 +178,26 @@ function setupBarInteraction() {
   if (!chart) return;
   barInteractionSetup = true;
 
-  chart.addEventListener('click', (e) => {
-    const bar = e.target.closest('.bar-col');
-    if (bar) showBarTooltip(bar, e.clientX || bar.getBoundingClientRect().left + bar.getBoundingClientRect().width / 2, e.clientY);
-  });
-
-  let pressTimer = null;
+  // Sự kiện cho Mobile (Touch)
   chart.addEventListener('touchstart', (e) => {
     const bar = e.target.closest('.bar-col');
-    if (!bar) return;
-    pressTimer = setTimeout(() => {
-      const t = e.touches[0];
-      showBarTooltip(bar, t.clientX, t.clientY);
-    }, 300);
-  }, { passive: true });
-  chart.addEventListener('touchend', () => { if (pressTimer) clearTimeout(pressTimer); });
-  chart.addEventListener('touchmove', () => { if (pressTimer) clearTimeout(pressTimer); }, { passive: true });
+    if (bar) {
+      e.preventDefault(); // Chặn cuộn trang khi đang xem tooltip
+      showBarTooltip(bar);
+    }
+  }, { passive: false });
+
+  chart.addEventListener('touchend', hideBarTooltip);
+  chart.addEventListener('touchcancel', hideBarTooltip);
+  chart.addEventListener('touchmove', hideBarTooltip, { passive: true });
+
+  // Sự kiện cho PC (Mouse)
+  chart.addEventListener('mousedown', (e) => {
+    const bar = e.target.closest('.bar-col');
+    if (bar) showBarTooltip(bar);
+  });
+  chart.addEventListener('mouseup', hideBarTooltip);
+  chart.addEventListener('mouseleave', hideBarTooltip);
 }
 
 /* ==================================================================
