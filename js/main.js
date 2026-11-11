@@ -1,4 +1,4 @@
-/* js/main.js — V1.6
+/* js/main.js — V1.7
    Entry point: bootstrap app, bind global events, điều phối render,
    đăng ký service worker, khởi tạo Sync Engine (E2EE). */
 
@@ -195,13 +195,19 @@ async function setupSync() {
   try {
     syncModule = await import('./sync.js');
     
-    // Gắn State vào Sync Engine để lấy dữ liệu và cập nhật ngược lại
+    // Gắn State vào Sync Engine
     syncModule.bindState(
       () => state, 
       (newState) => { 
         state.expenses = newState.expenses || [];
         state.categories = newState.categories || [];
         state.settings = newState.settings || {};
+        
+        // [FIX] Cập nhật lại mốc thời gian để đồng bộ chính xác
+        if (newState._lastUpdated) {
+          state._lastUpdated = newState._lastUpdated;
+        }
+        
         saveState(); 
         document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'sync' } }));
       }
