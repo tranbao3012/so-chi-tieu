@@ -1,5 +1,4 @@
-/* css/app.css — V1.4
-   V1.4: Fix lỗi hiển thị nút FAB trên Android (bo tròn hoàn toàn).
+/* css/app.css — V1.4 (Full - Tương thích iOS & Android)
    Toàn bộ CSS layout + components (đã trừ theme/reset)
    Thứ tự load: theme.css → app.css */
 
@@ -240,7 +239,7 @@
   height: 50px;
 }
 [data-platform="android"] .fab {
-  border-radius: 50%; /* Fix Android hiển thị chuẩn Material */
+  border-radius: 50%;
   right: 20px;
 }
 
@@ -378,7 +377,7 @@
 }
 
 /* ==================================================================
-   AI CARDS (dashboard) - Giữ lại để dùng cho tab khác nếu cần
+   AI CARDS (dashboard)
    ================================================================== */
 .ai-grid {
   display: grid;
