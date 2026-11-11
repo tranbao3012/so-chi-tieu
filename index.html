@@ -248,7 +248,7 @@
       <div class="settings-card">
         <div class="settings-title"><span data-icon="infoCircle"></span>Về ứng dụng</div>
         <div style="font-size:12px;color:var(--text-muted);line-height:1.65;">
-          <strong style="color:var(--text);">Quản Lý Chi Tiêu v6.4 — Module</strong> · Mobile-first · 60fps
+          <strong style="color:var(--text);">Quản Lý Chi Tiêu v6.5 — Module</strong> · Mobile-first · 60fps
         </div>
       </div>
     </section>
@@ -312,7 +312,6 @@
         </div>
         <div class="amount-input-wrap">
           <span class="amount-currency-prefix" id="amountCurrencyPrefix">đ</span>
-          <!-- Đã đổi type="number" thành type="text" để chứa dấu chấm -->
           <input type="text" class="amount-input" id="formAmount" placeholder="0" inputmode="numeric">
         </div>
         <div class="quick-amounts" id="aiAmountChips"></div>
@@ -378,19 +377,36 @@
   <div class="sheet" style="max-height: 250px;">
     <div class="sheet-handle"></div>
     <div class="sheet-header">
-      <div class="sheet-title">Tạo danh mục mới</div>
+      <div class="sheet-title" id="quickCatTitle">Tạo danh mục mới</div>
       <button class="sheet-close" data-close="quickCatModal">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
     <div class="sheet-body">
       <div class="sheet-section">
-        <input type="text" class="field-input" id="quickCatName" placeholder="Tên danh mục (VD: Cafe, Mua sắm...)" maxlength="20" autocomplete="off">
+        <input type="text" class="field-input" id="quickCatName" placeholder="Tên danh mục..." maxlength="20" autocomplete="off">
       </div>
     </div>
     <div class="sheet-footer">
       <button class="btn btn-ghost" data-close="quickCatModal" style="flex:0 0 90px;">Huỷ</button>
-      <button class="btn btn-primary" id="quickSaveCatBtn">Tạo</button>
+      <button class="btn btn-primary" id="quickSaveCatBtn">Lưu</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHEET — HÀNH ĐỘNG DANH MỤC (MỚI) -->
+<div class="sheet-overlay" id="catActionModal">
+  <div class="sheet" style="max-height: 250px;">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title" id="catActionTitle">Tuỳ chọn danh mục</div>
+      <button class="sheet-close" data-close="catActionModal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="sheet-body" style="padding: 10px 20px;">
+      <button class="btn btn-block" id="catActionEdit" style="margin-bottom: 8px; justify-content: flex-start; padding-left: 16px;">✏️ Sửa tên danh mục</button>
+      <button class="btn btn-block btn-danger" id="catActionDelete" style="justify-content: flex-start; padding-left: 16px;">🗑️ Xoá danh mục</button>
     </div>
   </div>
 </div>
