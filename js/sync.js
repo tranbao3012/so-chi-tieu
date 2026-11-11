@@ -1,5 +1,6 @@
-/* js/sync.js — V4.4 (Tự động đồng bộ - Fix lỗi kẹt trạng thái)
-   Thêm Timeout 10s cho fetch, đảm bảo không bao giờ bị treo isSyncing. */
+/* js/sync.js — V4.5 (Auto Push & Auto Pull)
+   Tự động đẩy dữ liệu lên Gist khi có thay đổi (sau 2s).
+   Tự động kéo dữ liệu từ Gist về mỗi 60s hoặc khi mở lại app. */
 
 import { toast } from './core.js';
 import { encryptData, decryptData } from './crypto.js';
@@ -11,6 +12,7 @@ let _getState = null;
 let _setState = null;
 let isSyncing = false; 
 let autoSyncTimer = null;
+let pullInterval = null;
 
 export function bindState(getStateFn, setStateFn) {
   _getState = getStateFn;
@@ -18,7 +20,23 @@ export function bindState(getStateFn, setStateFn) {
 }
 
 export function initSync() {
-  console.log('[Sync] Custom Sync Engine V4.4 (Auto Sync Fix) đã sẵn sàng.');
+  console.log('[Sync] Custom Sync Engine V4.5 (Auto Pull & Push) đã sẵn sàng.');
+  
+  // 1. Quét ngầm định kỳ mỗi 60 giây (60,000 ms)
+  if (pullInterval) clearInterval(pullInterval);
+  pullInterval = setInterval(() => {
+    // Chỉ quét khi tab đang mở (tránh hao pin/rate limit khi tab ẩn)
+    if (document.visibilityState === 'visible') {
+      syncNow(true);
+    }
+  }, 60000);
+
+  // 2. Quét ngay lập tức khi người dùng mở lại app (chuyển tab)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      syncNow(true);
+    }
+  });
 }
 
 function getConfig() {
@@ -43,7 +61,7 @@ export function logout() {
 }
 
 /* ==================================================================
-   HÀM ĐÁNH DẤU THAY ĐỔI VÀ KÍCH HOẠT AUTO SYNC
+   HÀM ĐÁNH DẤU THAY ĐỔI VÀ KÍCH HOẠT AUTO PUSH
    ================================================================== */
 export function markLocalChange() {
   if (!_getState) return;
@@ -54,16 +72,13 @@ export function markLocalChange() {
   const { pat, pin } = getConfig();
   if (pat && pin) {
     if (autoSyncTimer) clearTimeout(autoSyncTimer);
-    
-    // Đợi 2 giây sau thao tác cuối cùng rồi mới đồng bộ
     autoSyncTimer = setTimeout(() => {
-      console.log('[Sync] Kích hoạt tự động đồng bộ sau 2s...');
+      console.log('[Sync] Kích hoạt tự động ĐẨY dữ liệu lên Gist...');
       syncNow(true); 
     }, 2000); 
   }
 }
 
-// Bọc fetch với Timeout 10 giây để chống treo
 async function githubApi(endpoint, method = 'GET', body = null) {
   const { pat } = getConfig();
   if (!pat) throw new Error('Chưa cấu hình GitHub Token');
@@ -113,9 +128,7 @@ function apply(bundle) {
 }
 
 export async function syncNow(isAuto = false) {
-  // Nếu đang kẹt trạng thái đồng bộ quá lâu (do lỗi trước đó), giải phóng nó
   if (isSyncing) {
-    if (isAuto) console.log('[Sync] Bỏ qua tự động đồng bộ vì đang có tiến trình khác chạy.');
     return; 
   }
 
@@ -162,7 +175,7 @@ export async function syncNow(isAuto = false) {
         localStorage.setItem('sync_gh_gist_id', newGist.id);
         document.dispatchEvent(new CustomEvent('sync:user', { detail: { user: 'GitHub User' } }));
         toast('Đã tạo Gist và đồng bộ thành công!', 'success');
-        return; // Kết thúc
+        return; 
       }
     }
 
@@ -184,7 +197,7 @@ export async function syncNow(isAuto = false) {
     const remoteTimestamp = remoteState._lastUpdated || 0;
 
     if (localTimestamp > remoteTimestamp) {
-      // Đẩy lên
+      // ĐẨY LÊN (Máy hiện tại có dữ liệu mới hơn)
       if (!isAuto) toast('Máy bạn có dữ liệu mới hơn. Đang đẩy lên Gist...', 'info');
       state._lastUpdated = Date.now();
       localStorage.setItem('expense_tracker_v1', JSON.stringify(state)); 
@@ -193,14 +206,20 @@ export async function syncNow(isAuto = false) {
       await githubApi(`/gists/${gistId}`, 'PATCH', {
         files: { [GIST_FILENAME]: { content: encrypted } }
       });
+      
+      // Báo cho người dùng biết dữ liệu vừa được đẩy lên (dù là Auto hay Thủ công)
       toast('Đã đẩy dữ liệu mới lên Gist thành công!', 'success');
 
     } else if (remoteTimestamp > localTimestamp) {
-      // Kéo về
+      // KÉO VỀ (Máy khác vừa đẩy dữ liệu mới lên)
       if (!isAuto) toast('Gist có dữ liệu mới hơn. Đang tải về máy...', 'info');
-      _setState(remoteState);
-      toast('Đã tải dữ liệu mới từ Gist thành công!', 'success');
+      
+      _setState(remoteState); // Cập nhật state, giao diện sẽ tự render lại
+      
+      // Báo cho người dùng biết có dữ liệu mới từ máy khác vừa được tải về
+      toast('Đã tải dữ liệu mới từ thiết bị khác!', 'success');
     } else {
+      // Bằng nhau, không làm gì cả
       if (!isAuto) toast('Dữ liệu 2 bên đã đồng bộ (Không có gì mới)', 'info');
     }
 
@@ -209,13 +228,11 @@ export async function syncNow(isAuto = false) {
   } catch (err) {
     console.error('[Sync Error]', err);
     
-    // Nếu là Auto sync mà bị lỗi mạng, chỉ log ra Console, không hiện Toast làm phiền
     const isNetworkError = err.message.includes('Failed to fetch') || err.message.includes('NetworkError') || err.message.includes('Timeout');
     if (!isAuto || !isNetworkError) {
       toast(err.message || 'Lỗi đồng bộ', 'error');
     }
   } finally {
-    // Luôn giải phóng trạng thái dù thành công hay thất bại
     isSyncing = false; 
   }
 }
