@@ -1,17 +1,18 @@
-/* js/settings.js — V2.0
-   Cập nhật UI đồng bộ Gist: Nhập Token và Mã PIN thay vì OAuth. */
+/* js/settings.js — V2.1
+   V2.1: Xóa các logic liên quan đến AI, Đơn vị tiền tệ, Nút Đồng bộ và Nút Xóa tất cả.
+   Render tab Cài đặt. */
 
 import {
   state,
   DEFAULT_CATEGORIES,
   fmtDate, todayIso,
   getCategory, getPayment,
-  toast, showConfirm,
+  toast,
   hapticTap,
-  saveState, applyTheme
+  saveState
 } from './core.js';
 
-import { syncNow, logout, markLocalChange, saveConfig } from './sync.js';
+import { logout, markLocalChange, saveConfig } from './sync.js';
 
 /* ==================================================================
    RENDER — sync UI với state hiện tại
@@ -19,36 +20,23 @@ import { syncNow, logout, markLocalChange, saveConfig } from './sync.js';
 export function renderSettings() {
   const setBudget = document.getElementById('setBudget');
   const setIncome = document.getElementById('setIncome');
-  const setCurrency = document.getElementById('setCurrency');
-  if (!setBudget || !setIncome || !setCurrency) return;
+  
+  if (!setBudget || !setIncome) return;
 
   setBudget.value = state.settings.monthlyBudget || 0;
   setIncome.value = state.settings.monthlyIncome || 0;
-  setCurrency.value = state.settings.currency || 'đ';
-
-  document.getElementById('toggleAI').classList.toggle('on', state.settings.aiEnabled);
-  document.getElementById('toggleAnomaly').classList.toggle('on', state.settings.anomalyEnabled);
-  document.getElementById('toggleSuggest').classList.toggle('on', state.settings.suggestEnabled);
-  document.getElementById('toggleAccounting').classList.toggle('on', state.settings.accountingEnabled);
 
   // Cập nhật trạng thái form Sync
   updateSyncUI();
 }
 
 function updateSyncUI() {
-  const tokenInput = document.getElementById('syncToken');
-  const pinInput = document.getElementById('syncPin');
   const statusText = document.getElementById('syncStatus');
-  
-  if (!tokenInput || !pinInput || !statusText) return;
+  if (!statusText) return;
 
   const savedPat = localStorage.getItem('sync_gh_pat');
   const savedGistId = localStorage.getItem('sync_gh_gist_id');
   const savedPin = localStorage.getItem('sync_pin');
-
-  // Điền sẵn token và pin (dạng che dấu) nếu đã lưu
-  if (savedPat) tokenInput.value = savedPat;
-  if (savedPin) pinInput.value = savedPin;
 
   if (savedPat && savedPin) {
     statusText.textContent = savedGistId ? '✅ Đã kết nối (Đã tạo Gist)' : '✅ Đã có Token (Chưa tạo Gist)';
@@ -114,23 +102,19 @@ function importJson(file) {
       const data = JSON.parse(e.target.result);
       if (!data || !Array.isArray(data.expenses)) throw new Error('Invalid');
 
-      showConfirm(
-        'Nhập dữ liệu',
-        `File có ${data.expenses.length} giao dịch. Ghi đè dữ liệu hiện tại?`,
-        () => {
-          state.expenses = data.expenses;
-          state.categories = Array.isArray(data.categories) && data.categories.length
-            ? data.categories
-            : JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
-          state.settings = Object.assign({}, state.settings, data.settings || {});
-          saveState();
-          markLocalChange(); 
-          applyTheme();
-          
-          document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'import-full' } }));
-          toast('Đã nhập dữ liệu');
-        }
-      );
+      // Thay thế showConfirm (đã bị xóa khỏi core) bằng window.confirm
+      if (window.confirm(`File có ${data.expenses.length} giao dịch. Ghi đè dữ liệu hiện tại?`)) {
+        state.expenses = data.expenses;
+        state.categories = Array.isArray(data.categories) && data.categories.length
+          ? data.categories
+          : JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
+        state.settings = Object.assign({}, state.settings, data.settings || {});
+        saveState();
+        markLocalChange(); 
+        
+        document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'import-full' } }));
+        toast('Đã nhập dữ liệu');
+      }
     } catch (err) {
       toast('File không hợp lệ', 'error');
     }
@@ -142,20 +126,7 @@ function importJson(file) {
    BIND EVENTS (called once by main.js)
    ================================================================== */
 export function bindSettingsTabEvents() {
-  /* -------- Toggles -------- */
-  document.querySelectorAll('.toggle[data-setting]').forEach(t => {
-    t.addEventListener('click', () => {
-      hapticTap();
-      const key = t.dataset.setting;
-      state.settings[key] = !state.settings[key];
-      t.classList.toggle('on', state.settings[key]);
-      saveState();
-      markLocalChange(); 
-      document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'toggle', key } }));
-    });
-  });
-
-  /* -------- Budget / Income / Currency -------- */
+  /* -------- Budget / Income -------- */
   document.getElementById('setBudget').addEventListener('change', (e) => {
     state.settings.monthlyBudget = Math.max(0, Number(e.target.value) || 0);
     saveState();
@@ -170,14 +141,7 @@ export function bindSettingsTabEvents() {
     document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'income' } }));
   });
 
-  document.getElementById('setCurrency').addEventListener('change', (e) => {
-    state.settings.currency = e.target.value.trim() || 'đ';
-    saveState();
-    markLocalChange();
-    document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'currency' } }));
-  });
-
-  /* -------- Export / Import / Reset -------- */
+  /* -------- Export / Import -------- */
   document.getElementById('exportBtn').addEventListener('click', exportJson);
   document.getElementById('exportCsvBtn').addEventListener('click', exportCsv);
 
@@ -189,23 +153,6 @@ export function bindSettingsTabEvents() {
     const file = e.target.files[0];
     if (file) importJson(file);
     e.target.value = '';
-  });
-
-  document.getElementById('resetBtn').addEventListener('click', () => {
-    showConfirm(
-      'Xoá toàn bộ dữ liệu',
-      'Tất cả giao dịch và danh mục sẽ bị xoá vĩnh viễn. Không thể hoàn tác.',
-      () => {
-        state.expenses = [];
-        state.categories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
-        state.settings.monthlyBudget = 0;
-        state.settings.monthlyIncome = 0;
-        saveState();
-        markLocalChange();
-        document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'reset-full' } }));
-        toast('Đã xoá toàn bộ dữ liệu');
-      }
-    );
   });
 
   /* -------- Sync E2EE -------- */
@@ -226,19 +173,14 @@ export function bindSettingsTabEvents() {
     toast('Đã lưu cấu hình đồng bộ');
   });
 
-  document.getElementById('syncNowBtn').addEventListener('click', () => {
-    hapticTap();
-    syncNow();
-  });
-
   document.getElementById('syncLogoutBtn').addEventListener('click', () => {
     hapticTap();
-    showConfirm('Ngắt kết nối', 'Dữ liệu trên máy vẫn giữ nguyên, nhưng sẽ không đồng bộ nữa. Tiếp tục?', () => {
+    if (window.confirm('Dữ liệu trên máy vẫn giữ nguyên, nhưng sẽ không đồng bộ nữa. Tiếp tục?')) {
       logout();
       document.getElementById('syncToken').value = '';
       document.getElementById('syncPin').value = '';
       updateSyncUI();
-    });
+    }
   });
 
   // Lắng nghe sự kiện đăng nhập/đăng xuất để cập nhật UI ngay lập tức
