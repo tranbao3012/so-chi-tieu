@@ -1,5 +1,6 @@
-/* css/app.css — V1.6 (Đã xóa tab Danh mục, chống bôi đen khi nhấn giữ)
-   Toàn bộ CSS layout + components (đã trừ theme/reset)
+/* css/app.css — V1.7
+   V1.7: Fix App Bar (Header) căn phải chuẩn trên iOS, Android, Windows bằng Flexbox.
+   Thêm hỗ trợ hiển thị nút Đồng bộ nhanh và Theme.
    Thứ tự load: theme.css → app.css */
 
 /* ==================================================================
@@ -26,7 +27,8 @@
   z-index: 20;
   border-bottom: 1px solid transparent;
 }
-[data-platform="ios"] .app-bar {
+[data-platform="ios"] .app-bar,
+[data-platform="windows"] .app-bar {
   padding: max(calc(var(--safe-top) + 8px), 24px) 16px 0;
 }
 [data-platform="ios"] .app-bar.scrolled {
@@ -42,23 +44,21 @@
 .app-bar-inner {
   display: flex;
   align-items: center;
-  gap: 12px;
-  min-height: var(--app-bar-h);
-  position: relative;
+  width: 100%;
 }
-[data-platform="ios"] .app-bar-inner {
-  padding: 6px 0 8px;
-  min-height: auto;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-}
-[data-platform="ios"] .app-bar-title-wrap {
+
+.app-bar-title-wrap {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   width: 100%;
   gap: 8px;
+}
+[data-platform="ios"] .app-bar-title-wrap,
+[data-platform="windows"] .app-bar-title-wrap {
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .app-bar-title {
@@ -89,16 +89,25 @@
   margin-top: 1px;
 }
 
+/* [FIX] Sử dụng flex để luôn căn phải, không dùng absolute gây lệch trên iOS */
 .app-bar-actions {
   display: flex;
   align-items: center;
   gap: 4px;
   flex-shrink: 0;
+  margin-left: auto;
 }
-[data-platform="ios"] .app-bar-actions {
-  position: absolute;
-  top: 6px;
-  right: 0;
+[data-platform="ios"] .app-bar-title-wrap {
+  flex-direction: row; /* Nút nằm ngang hàng với Title trên iOS */
+  align-items: center;
+  padding: 6px 0 8px;
+}
+[data-platform="ios"] .app-bar-title {
+  display: flex;
+  flex-direction: column;
+}
+[data-platform="android"] .app-bar-actions {
+  margin-left: 0; /* Android đã dùng justify-content ở title-wrap */
 }
 
 .bar-icon-btn {
