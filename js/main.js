@@ -1,6 +1,7 @@
-/* js/main.js — V1.9
+/* js/main.js — V2.0
    Entry point: bootstrap app, bind global events, điều phối render,
-   đăng ký service worker, khởi tạo Sync Engine (E2EE). */
+   đăng ký service worker, khởi tạo Sync Engine (E2EE).
+   V2.0: Thêm nút Đồng bộ nhanh trên Header. */
 
 import {
   state, saveState, toast,
@@ -95,7 +96,7 @@ function bindTabs() {
 
 function closeSheetById(id) {
   if (id === 'expenseModal') closeExpenseModal();
-  else closeSheet(id); // Xử lý đóng các modal còn lại (bao gồm quickCatModal và confirmModal)
+  else closeSheet(id);
 }
 
 function bindSheets() {
@@ -115,9 +116,30 @@ function bindSheets() {
   });
 }
 
+/* ==================================================================
+   Bind App Bar (Theme & Quick Sync)
+   ================================================================== */
 function bindAppBar() {
   document.getElementById('themeBtn').addEventListener('click', toggleTheme);
   document.getElementById('fab').addEventListener('click', () => openExpenseModal());
+  
+  // Nút Đồng bộ nhanh trên Header
+  const quickSyncBtn = document.getElementById('quickSyncBtn');
+  if (quickSyncBtn) {
+    quickSyncBtn.addEventListener('click', async () => {
+      if (syncModule && typeof syncModule.syncNow === 'function') {
+        syncModule.syncNow();
+      } else {
+        // Nếu module chưa tải xong (hiếm khi xảy ra), tải lại và gọi
+        try {
+          const mod = await import('./sync.js');
+          mod.syncNow();
+        } catch (e) {
+          toast('Lỗi tải module đồng bộ', 'error');
+        }
+      }
+    });
+  }
 }
 
 function setupScrollBehavior() {
