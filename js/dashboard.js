@@ -1,6 +1,6 @@
-/* js/dashboard.js — V1.2
-   Render tab Tổng quan: overview Hôm nay, danh sách giao dịch gần đây.
-   V1.2: Tối giản hóa UI, xoá các thẻ Sức khoẻ, AI, và Kế toán. */
+/* js/dashboard.js — V1.3
+   Render tab Tổng quan: overview Hôm nay và danh sách giao dịch gần đây.
+   V1.3: Xóa Ô 2 (Sức khỏe & AI) và Ô 3 (Phân tích kế toán) theo yêu cầu. */
 
 import {
   state, AI,
