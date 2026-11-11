@@ -1,5 +1,4 @@
-/* css/app.css — V1.5 (Đã xóa tab Danh mục)
-   V1.5: Thanh tab-bar chuyển từ 5 cột xuống 4 cột.
+/* css/app.css — V1.6 (Đã xóa tab Danh mục, chống bôi đen khi nhấn giữ)
    Toàn bộ CSS layout + components (đã trừ theme/reset)
    Thứ tự load: theme.css → app.css */
 
@@ -156,7 +155,7 @@
   padding-right: var(--safe-right);
   background: var(--bg);
   display: grid;
-  grid-template-columns: repeat(4, 1fr); /* [FIX] Đổi từ 5 cột xuống 4 cột */
+  grid-template-columns: repeat(4, 1fr);
   z-index: 30;
 }
 [data-platform="ios"] .tab-bar {
@@ -1706,6 +1705,9 @@
   background: var(--surface);
   min-height: 72px;
   transition: border-color 0.15s ease, background-color 0.15s ease;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
 }
 .cat-option.active {
   border-color: var(--primary);
@@ -1724,6 +1726,7 @@
   color: #fff;
   font-weight: 800;
   font-size: 13px;
+  pointer-events: none;
 }
 .cat-option-name {
   font-size: 10px;
@@ -1735,6 +1738,7 @@
   white-space: nowrap;
   max-width: 100%;
   text-align: center;
+  pointer-events: none;
 }
 .cat-option.active .cat-option-name { color: var(--primary-text); font-weight: 800; }
 
