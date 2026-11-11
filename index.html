@@ -67,7 +67,7 @@
 
   <main class="app-content" id="appContent">
 
-    <!-- PANEL — TỔNG QUAN (ĐÃ XÓA Ô 2 VÀ Ô 3) -->
+    <!-- PANEL — TỔNG QUAN -->
     <section class="panel active" id="panel-dashboard">
       <div class="overview-grid">
         <div class="overview-card today" id="todayOverview"></div>
@@ -159,27 +159,10 @@
       </div>
     </section>
 
-    <!-- PANEL — CÀI ĐẶT -->
+    <!-- PANEL — CÀI ĐẶT (ĐÃ CẬP NHẬT) -->
     <section class="panel" id="panel-settings">
-      <div class="settings-card">
-        <div class="settings-title"><span data-icon="brain"></span>AI Tài chính</div>
-        <div class="settings-row">
-          <div class="settings-meta"><div class="settings-label">Phân tích thông minh</div><div class="settings-desc">Nhận xét, dự báo, cảnh báo</div></div>
-          <div class="toggle on" id="toggleAI" data-setting="aiEnabled"></div>
-        </div>
-        <div class="settings-row">
-          <div class="settings-meta"><div class="settings-label">Phát hiện bất thường</div><div class="settings-desc">Cảnh báo giao dịch cao bất thường</div></div>
-          <div class="toggle on" id="toggleAnomaly" data-setting="anomalyEnabled"></div>
-        </div>
-        <div class="settings-row">
-          <div class="settings-meta"><div class="settings-label">Gợi ý thông minh</div><div class="settings-desc">Gợi ý danh mục và số tiền</div></div>
-          <div class="toggle on" id="toggleSuggest" data-setting="suggestEnabled"></div>
-        </div>
-        <div class="settings-row">
-          <div class="settings-meta"><div class="settings-label">Kế toán 50/30/20</div><div class="settings-desc">Phân tích Thiết yếu / Mong muốn / Tiết kiệm</div></div>
-          <div class="toggle on" id="toggleAccounting" data-setting="accountingEnabled"></div>
-        </div>
-      </div>
+      
+      <!-- Đã xóa thẻ AI Tài chính (Ô số 1) -->
 
       <div class="settings-card">
         <div class="settings-title"><span data-icon="target"></span>Tài chính</div>
@@ -191,12 +174,10 @@
           <div class="settings-meta"><div class="settings-label">Thu nhập tháng</div><div class="settings-desc">Dùng cho phân tích 50/30/20</div></div>
           <input type="number" class="form-input" id="setIncome" min="0" step="1000" placeholder="0">
         </div>
-        <div class="settings-row">
-          <div class="settings-meta"><div class="settings-label">Đơn vị tiền tệ</div><div class="settings-desc">Ký hiệu hiển thị</div></div>
-          <input type="text" class="form-input" id="setCurrency" maxlength="3" placeholder="đ" style="width:70px;text-align:center;font-weight:700;" value="đ">
-        </div>
+        <!-- Đã xóa dòng Đơn vị tiền tệ -->
       </div>
 
+      <!-- SYNC SETTINGS CARD -->
       <div class="settings-card">
         <div class="settings-title"><span data-icon="transfer"></span>Đồng bộ Gist (Mã hóa E2EE)</div>
         
@@ -220,8 +201,8 @@
         </div>
 
         <div class="settings-row" style="display: flex; gap: 8px; border-top: 1px solid var(--border-soft); padding-top: 12px;">
-          <button class="btn btn-sm btn-primary" id="syncNowBtn" style="flex: 1;">Đồng bộ ngay</button>
-          <button class="btn btn-sm" id="syncLogoutBtn" style="color: var(--danger); border-color: var(--danger);">Ngắt kết nối</button>
+          <!-- Đã xóa nút Đồng bộ ngay, nút Ngắt kết nối giãn full -->
+          <button class="btn btn-sm" id="syncLogoutBtn" style="flex: 1; color: var(--danger); border-color: var(--danger);">Ngắt kết nối</button>
         </div>
       </div>
 
@@ -240,16 +221,13 @@
           <button class="btn btn-sm" id="importBtn">Chọn</button>
           <input type="file" accept=".json" id="importFile" style="display:none;">
         </div>
-        <div class="settings-row">
-          <div class="settings-meta"><div class="settings-label" style="color:var(--danger);">Xoá tất cả</div><div class="settings-desc">Không thể hoàn tác</div></div>
-          <button class="btn btn-sm btn-danger" id="resetBtn">Xoá</button>
-        </div>
+        <!-- Đã xóa dòng Xoá tất cả -->
       </div>
 
       <div class="settings-card">
         <div class="settings-title"><span data-icon="infoCircle"></span>Về ứng dụng</div>
         <div style="font-size:12px;color:var(--text-muted);line-height:1.65;">
-          <strong style="color:var(--text);">Quản Lý Chi Tiêu v6.7 — Minimal</strong> · Mobile-first · 60fps
+          <strong style="color:var(--text);">Quản Lý Chi Tiêu &copy; Trần Bảo</strong>
         </div>
       </div>
     </section>
