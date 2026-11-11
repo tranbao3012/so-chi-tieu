@@ -96,7 +96,7 @@
       <div id="expenseList"></div>
     </section>
 
-    <!-- PANEL — BÁO CÁO -->
+    <!-- PANEL — BÁO CÁO (ĐÃ XÓA HOÀN TOÀN PHẦN THEO TUẦN) -->
     <section class="panel" id="panel-reports">
       <div class="month-nav">
         <button class="month-nav-btn" id="prevMonth" aria-label="Tháng trước">
@@ -114,6 +114,7 @@
       <div class="report-hero" id="reportHero"></div>
       <div class="kpi-grid" id="reportKpis"></div>
       <div class="card" id="reportInsights"></div>
+      
       <div class="reports-grid">
         <div class="card">
           <div class="section-title">
@@ -136,34 +137,28 @@
           </div>
         </div>
       </div>
-      <div class="reports-grid">
+      
+      <!-- Thẻ Phương thức (Full width) - KHÔNG CÓ THẺ THEO TUẦN -->
+      <div class="reports-grid" style="grid-template-columns: 1fr;">
         <div class="card">
           <div class="section-title">
             <div class="section-title-left"><span class="section-title-icon" data-icon="creditCard"></span><span class="section-title-text">Phương thức</span></div>
           </div>
           <div id="reportPayments"></div>
         </div>
-        <div class="card">
-          <div class="section-title">
-            <div class="section-title-left"><span class="section-title-icon" data-icon="calendar"></span><span class="section-title-text">Theo tuần</span></div>
-          </div>
-          <div class="weekly-grid" id="reportWeekly"></div>
-        </div>
       </div>
+
       <div class="card">
         <div class="section-title">
-          <div class="section-title-left"><span class="section-title-icon" data-icon="trendUp"></span><span class="section-title-text">Top 10 chi tiêu</span></div>
+          <div class="section-title-left"><span class="section-title-icon" data-icon="trendUp"></span><span class="section-title-text">Top danh mục chi tiêu</span></div>
           <small id="reportTopLabel"></small>
         </div>
         <div id="reportTop"></div>
       </div>
     </section>
 
-    <!-- PANEL — CÀI ĐẶT (ĐÃ CẬP NHẬT) -->
+    <!-- PANEL — CÀI ĐẶT -->
     <section class="panel" id="panel-settings">
-      
-      <!-- Đã xóa thẻ AI Tài chính (Ô số 1) -->
-
       <div class="settings-card">
         <div class="settings-title"><span data-icon="target"></span>Tài chính</div>
         <div class="settings-row">
@@ -174,20 +169,16 @@
           <div class="settings-meta"><div class="settings-label">Thu nhập tháng</div><div class="settings-desc">Dùng cho phân tích 50/30/20</div></div>
           <input type="number" class="form-input" id="setIncome" min="0" step="1000" placeholder="0">
         </div>
-        <!-- Đã xóa dòng Đơn vị tiền tệ -->
       </div>
 
-      <!-- SYNC SETTINGS CARD -->
       <div class="settings-card">
         <div class="settings-title"><span data-icon="transfer"></span>Đồng bộ Gist (Mã hóa E2EE)</div>
-        
         <div class="settings-row" style="border-bottom: none; padding-bottom: 0;">
           <div class="settings-meta">
             <div class="settings-label">Trạng thái</div>
             <div class="settings-desc" id="syncStatus">Chưa kết nối. Vui lòng nhập Token và Mã PIN.</div>
           </div>
         </div>
-
         <div class="settings-row" style="flex-direction: column; align-items: stretch; gap: 8px; border-bottom: none; padding-top: 8px;">
           <div>
             <div class="settings-label" style="font-size: 11px; margin-bottom: 4px;">GitHub Token (PAT)</div>
@@ -199,9 +190,7 @@
           </div>
           <button class="btn btn-sm btn-primary" id="saveSyncConfigBtn" style="width: 100%; margin-top: 4px;">Lưu cấu hình</button>
         </div>
-
         <div class="settings-row" style="display: flex; gap: 8px; border-top: 1px solid var(--border-soft); padding-top: 12px;">
-          <!-- Đã xóa nút Đồng bộ ngay, nút Ngắt kết nối giãn full -->
           <button class="btn btn-sm" id="syncLogoutBtn" style="flex: 1; color: var(--danger); border-color: var(--danger);">Ngắt kết nối</button>
         </div>
       </div>
@@ -221,7 +210,6 @@
           <button class="btn btn-sm" id="importBtn">Chọn</button>
           <input type="file" accept=".json" id="importFile" style="display:none;">
         </div>
-        <!-- Đã xóa dòng Xoá tất cả -->
       </div>
 
       <div class="settings-card">
