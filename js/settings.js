@@ -1,6 +1,5 @@
-/* js/settings.js — V2.1
-   V2.1: Xóa các logic liên quan đến AI, Đơn vị tiền tệ, Nút Đồng bộ và Nút Xóa tất cả.
-   Render tab Cài đặt. */
+/* js/settings.js — V2.2
+   V2.2: Fix lỗi không lưu được cấu hình (do xóa nhầm nút Sync) và khôi phục điền sẵn PAT/PIN. */
 
 import {
   state,
@@ -26,17 +25,24 @@ export function renderSettings() {
   setBudget.value = state.settings.monthlyBudget || 0;
   setIncome.value = state.settings.monthlyIncome || 0;
 
-  // Cập nhật trạng thái form Sync
+  // Cập nhật trạng thái form Sync và điền sẵn PAT/PIN
   updateSyncUI();
 }
 
 function updateSyncUI() {
+  const tokenInput = document.getElementById('syncToken');
+  const pinInput = document.getElementById('syncPin');
   const statusText = document.getElementById('syncStatus');
-  if (!statusText) return;
+  
+  if (!tokenInput || !pinInput || !statusText) return;
 
   const savedPat = localStorage.getItem('sync_gh_pat');
   const savedGistId = localStorage.getItem('sync_gh_gist_id');
   const savedPin = localStorage.getItem('sync_pin');
+
+  // Điền sẵn token và pin nếu đã lưu
+  if (savedPat) tokenInput.value = savedPat;
+  if (savedPin) pinInput.value = savedPin;
 
   if (savedPat && savedPin) {
     statusText.textContent = savedGistId ? '✅ Đã kết nối (Đã tạo Gist)' : '✅ Đã có Token (Chưa tạo Gist)';
@@ -102,7 +108,6 @@ function importJson(file) {
       const data = JSON.parse(e.target.result);
       if (!data || !Array.isArray(data.expenses)) throw new Error('Invalid');
 
-      // Thay thế showConfirm (đã bị xóa khỏi core) bằng window.confirm
       if (window.confirm(`File có ${data.expenses.length} giao dịch. Ghi đè dữ liệu hiện tại?`)) {
         state.expenses = data.expenses;
         state.categories = Array.isArray(data.categories) && data.categories.length
@@ -183,7 +188,6 @@ export function bindSettingsTabEvents() {
     }
   });
 
-  // Lắng nghe sự kiện đăng nhập/đăng xuất để cập nhật UI ngay lập tức
   document.addEventListener('sync:user', updateSyncUI);
   document.addEventListener('sync:logout', updateSyncUI);
 }
