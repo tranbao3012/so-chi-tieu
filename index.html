@@ -48,14 +48,12 @@
           <div class="app-bar-subtitle" id="appBarSubtitle">Quản lý chi tiêu</div>
         </div>
         <div class="app-bar-actions">
-          <!-- NÚT ĐỒNG BỘ NHANH (MỚI) -->
           <button class="bar-icon-btn" id="quickSyncBtn" aria-label="Đồng bộ ngay" style="color: var(--primary);">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
             </svg>
           </button>
           
-          <!-- NÚT THEME -->
           <button class="bar-icon-btn" id="themeBtn" aria-label="Đổi giao diện">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="themeIcon">
               <circle cx="12" cy="12" r="4"/>
@@ -69,16 +67,12 @@
 
   <main class="app-content" id="appContent">
 
-    <!-- PANEL — TỔNG QUAN -->
+    <!-- PANEL — TỔNG QUAN (ĐÃ XÓA Ô 2 VÀ Ô 3) -->
     <section class="panel active" id="panel-dashboard">
       <div class="overview-grid">
         <div class="overview-card today" id="todayOverview"></div>
       </div>
-      <div class="ai-grid">
-        <div class="ai-card header-card" id="healthCard"></div>
-        <div class="ai-card" id="aiAssistant"></div>
-      </div>
-      <div class="acct-card" id="accountingCard"></div>
+      
       <div class="card">
         <div class="section-title">
           <div class="section-title-left"><span class="section-title-icon" data-icon="clock"></span><span class="section-title-text">Gần đây</span></div>
@@ -203,7 +197,6 @@
         </div>
       </div>
 
-      <!-- SYNC SETTINGS CARD -->
       <div class="settings-card">
         <div class="settings-title"><span data-icon="transfer"></span>Đồng bộ Gist (Mã hóa E2EE)</div>
         
@@ -256,7 +249,7 @@
       <div class="settings-card">
         <div class="settings-title"><span data-icon="infoCircle"></span>Về ứng dụng</div>
         <div style="font-size:12px;color:var(--text-muted);line-height:1.65;">
-          <strong style="color:var(--text);">Quản Lý Chi Tiêu v6.6 — Quick Sync</strong> · Mobile-first · 60fps
+          <strong style="color:var(--text);">Quản Lý Chi Tiêu v6.7 — Minimal</strong> · Mobile-first · 60fps
         </div>
       </div>
     </section>
