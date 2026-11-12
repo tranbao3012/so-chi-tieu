@@ -1,5 +1,5 @@
-/* css/app.css — V1.8
-   V1.8: Fix lỗi nhấn giữ biểu đồ cột trên mobile (touch-action: none).
+/* css/app.css — V1.9
+   V1.9: Thêm CSS cho Thẻ Thông tin nhanh (Streak & Insight).
    Toàn bộ CSS layout + components (đã trừ theme/reset)
    Thứ tự load: theme.css → app.css */
 
@@ -260,7 +260,8 @@
 .acct-card,
 .settings-card,
 .expense-group,
-.cat-card {
+.cat-card,
+.quick-stat-card {
   contain: layout paint;
 }
 
@@ -385,328 +386,58 @@
 }
 
 /* ==================================================================
-   AI CARDS (dashboard)
+   QUICK STATS GRID (Dashboard - Streak & Insight)
    ================================================================== */
-.ai-grid {
+.quick-stats-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 10px;
   margin-bottom: 12px;
 }
-@media (min-width: 720px) {
-  .ai-grid { grid-template-columns: 1fr 1.4fr; }
-}
 
-.ai-card {
-  padding: 16px;
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-  border: 1px solid var(--border-soft);
-  position: relative;
-  overflow: hidden;
-}
-
-.ai-card.header-card {
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 60%, #a855f7 100%);
-  color: #fff;
-  border: none;
-}
-.ai-card.header-card::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  right: -20%;
-  width: 200px;
-  height: 200px;
-  background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
-  pointer-events: none;
-}
-
-.health-header {
+.quick-stat-card {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
-  position: relative;
-  z-index: 1;
-}
-.health-icon {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  background: rgba(255,255,255,0.22);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.health-icon svg { width: 15px; height: 15px; color: #fff; }
-.health-label {
-  font-size: 10.5px;
-  font-weight: 800;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  opacity: 0.92;
-}
-
-.health-score-wrap {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  position: relative;
-  z-index: 1;
-}
-.health-score {
-  font-size: 42px;
-  font-weight: 900;
-  letter-spacing: -2px;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-.health-score-max { font-size: 14px; opacity: 0.7; margin-left: 2px; font-weight: 600; }
-.health-status-wrap { flex: 1; min-width: 0; }
-.health-status {
-  font-size: 14px;
-  font-weight: 800;
-  margin-bottom: 3px;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-.health-status svg { width: 14px; height: 14px; }
-.health-desc { font-size: 11px; opacity: 0.92; line-height: 1.4; }
-
-.ai-assistant-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
-}
-.ai-assistant-icon {
-  width: 30px;
-  height: 30px;
-  border-radius: 9px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.ai-assistant-icon svg { width: 16px; height: 16px; color: #fff; }
-.ai-assistant-title { font-size: 13px; font-weight: 800; color: var(--text); }
-.ai-assistant-sub { font-size: 10.5px; color: var(--text-soft); margin-top: 1px; font-weight: 500; }
-
-.insight-list { display: flex; flex-direction: column; gap: 6px; }
-.insight-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 9px 11px;
-  border-radius: var(--radius-sm);
-  background: var(--surface-2);
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--text-muted);
-  border-left: 3px solid transparent;
-}
-.insight-item.warning { background: var(--warning-soft); border-left-color: var(--warning); }
-.insight-item.success { background: var(--success-soft); border-left-color: var(--success); }
-.insight-item.info { background: var(--info-soft); border-left-color: var(--info); }
-.insight-item.danger { background: var(--danger-soft); border-left-color: var(--danger); }
-.insight-item strong { color: var(--text); font-weight: 700; }
-.insight-icon {
-  width: 20px;
-  height: 20px;
-  border-radius: 5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-.insight-icon svg { width: 11px; height: 11px; }
-.insight-item.warning .insight-icon { background: var(--warning); color: #fff; }
-.insight-item.success .insight-icon { background: var(--success); color: #fff; }
-.insight-item.info .insight-icon { background: var(--info); color: #fff; }
-.insight-item.danger .insight-icon { background: var(--danger); color: #fff; }
-
-/* ==================================================================
-   ACCOUNTING (dashboard)
-   ================================================================== */
-.acct-card {
-  padding: 16px;
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-  border: 1px solid var(--border-soft);
-  margin-bottom: 12px;
-  position: relative;
-  overflow: hidden;
-}
-.acct-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #f59e0b, #ef4444, #8b5cf6);
-}
-
-.acct-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
-@media (min-width: 720px) { .acct-grid { grid-template-columns: 1.4fr 1fr; } }
-
-.rule-row {
-  margin-bottom: 12px;
+  gap: 12px;
   padding: 12px;
-  border-radius: var(--radius-md);
-  background: var(--surface-2);
-  border: 1px solid var(--border-soft);
-}
-.rule-row.needs { border-left: 3px solid #ef4444; }
-.rule-row.wants { border-left: 3px solid #f59e0b; }
-.rule-row.savings { border-left: 3px solid #10b981; }
-.rule-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
-  gap: 8px;
-}
-.rule-label { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text); }
-.rule-icon {
-  width: 20px;
-  height: 20px;
-  border-radius: 5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  flex-shrink: 0;
-}
-.rule-icon svg { width: 11px; height: 11px; }
-.rule-row.needs .rule-icon { background: #ef4444; }
-.rule-row.wants .rule-icon { background: #f59e0b; }
-.rule-row.savings .rule-icon { background: #10b981; }
-.rule-amount { font-size: 13px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; }
-.rule-track {
-  height: 8px;
+  border-radius: var(--radius-lg);
   background: var(--surface);
-  border-radius: 4px;
-  overflow: hidden;
-  position: relative;
-  margin-bottom: 5px;
-}
-.rule-target { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--text-soft); opacity: 0.5; z-index: 2; }
-.rule-fill { height: 100%; border-radius: 4px; }
-.rule-row.needs .rule-fill { background: linear-gradient(90deg, #ef4444, #f87171); }
-.rule-row.wants .rule-fill { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
-.rule-row.savings .rule-fill { background: linear-gradient(90deg, #10b981, #34d399); }
-.rule-meta { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-soft); font-weight: 600; }
-
-.acct-ratios { display: flex; flex-direction: column; gap: 8px; }
-.ratio-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 11px;
-  border-radius: var(--radius-md);
-  background: var(--surface-2);
   border: 1px solid var(--border-soft);
 }
-.ratio-icon {
-  width: 28px;
-  height: 28px;
-  border-radius: 7px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.ratio-icon svg { width: 14px; height: 14px; }
-.ratio-icon.good { background: var(--success-soft); color: var(--success); }
-.ratio-icon.warn { background: var(--warning-soft); color: var(--warning); }
-.ratio-icon.bad { background: var(--danger-soft); color: var(--danger); }
-.ratio-meta { flex: 1; min-width: 0; }
-.ratio-label { font-size: 10px; font-weight: 700; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.3px; }
-.ratio-value { font-size: 14px; font-weight: 800; color: var(--text); margin-top: 1px; font-variant-numeric: tabular-nums; }
-.ratio-sub { font-size: 10px; color: var(--text-soft); margin-top: 1px; }
 
-/* ==================================================================
-   SECTION TITLE (dùng chung)
-   ================================================================== */
-.section-title {
+.quick-stat-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 10px;
-  padding: 0 2px;
-}
-.section-title-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
-.section-title-icon {
-  width: 26px;
-  height: 26px;
-  border-radius: 7px;
-  background: var(--primary-soft);
-  color: var(--primary);
-  display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
-.section-title-icon svg { width: 14px; height: 14px; }
-.section-title-text {
+
+.quick-stat-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.quick-stat-value {
   font-size: 14px;
   font-weight: 800;
   color: var(--text);
-  letter-spacing: -0.2px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.section-title small {
-  font-size: 10.5px;
+
+.quick-stat-label {
+  font-size: 10px;
   color: var(--text-soft);
-  font-weight: 500;
-  flex-shrink: 0;
+  font-weight: 600;
+  margin-top: 2px;
 }
-
-/* ==================================================================
-   CARD base
-   ================================================================== */
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border-soft);
-  border-radius: var(--radius-lg);
-  padding: 16px;
-  margin-bottom: 12px;
-}
-
-/* ==================================================================
-   DONUT (Reports)
-   ================================================================== */
-.donut-wrap { display: flex; flex-direction: column; align-items: center; gap: 12px; }
-.donut-container { position: relative; width: 160px; height: 160px; }
-.donut-center {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-}
-.donut-center-label { font-size: 9.5px; color: var(--text-soft); font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; }
-.donut-center-value { font-size: 17px; font-weight: 800; color: var(--text); margin-top: 2px; letter-spacing: -0.3px; }
-
-.legend { display: flex; flex-direction: column; gap: 4px; width: 100%; }
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 7px 10px;
-  border-radius: var(--radius-sm);
-  font-size: 12px;
-}
-.legend-item:active { background: var(--surface-2); }
-.legend-dot { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
-.legend-name { flex: 1; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.legend-value { font-weight: 700; color: var(--text-muted); font-variant-numeric: tabular-nums; font-size: 11.5px; }
-.legend-pct { font-size: 10.5px; color: var(--text-soft); font-weight: 600; margin-left: 2px; min-width: 32px; text-align: right; }
 
 /* ==================================================================
    RECENT LIST (dashboard)
@@ -1231,8 +962,8 @@
   position: relative;
   z-index: 1;
   cursor: pointer;
-  touch-action: none; /* [FIX] Chặn cuộn trang khi nhấn giữ biểu đồ */
-  user-select: none;  /* [FIX] Chặn bôi đen */
+  touch-action: none; 
+  user-select: none;  
 }
 .bar {
   width: 100%;
@@ -1334,37 +1065,6 @@
 }
 .payment-track { height: 7px; background: var(--surface-2); border-radius: 4px; overflow: hidden; }
 .payment-fill { height: 100%; border-radius: 4px; }
-
-/* ==================================================================
-   WEEKLY (Đã xóa khỏi báo cáo nhưng giữ lại class đề phòng)
-   ================================================================== */
-.weekly-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-}
-@media (min-width: 500px) { .weekly-grid { grid-template-columns: repeat(3, 1fr); } }
-@media (min-width: 800px) { .weekly-grid { grid-template-columns: repeat(5, 1fr); } }
-.weekly-item {
-  padding: 10px 8px;
-  border-radius: var(--radius-md);
-  background: var(--surface-2);
-  border: 1px solid var(--border-soft);
-  text-align: center;
-}
-.weekly-label { font-size: 9.5px; font-weight: 700; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 2px; }
-.weekly-days { font-size: 9px; color: var(--text-soft); margin-bottom: 6px; font-weight: 500; }
-.weekly-value {
-  font-size: 12px;
-  font-weight: 800;
-  color: var(--text);
-  letter-spacing: -0.2px;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.weekly-count { font-size: 9.5px; color: var(--text-soft); margin-top: 3px; font-weight: 600; }
 
 /* ==================================================================
    TOP TABLE
