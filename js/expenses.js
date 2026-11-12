@@ -1,6 +1,6 @@
-/* js/expenses.js — V1.8
-   V1.8: Fix triệt để lỗi nhấn giữ trên cả Mobile và PC (chặn menu hệ thống, chống nhầm click).
-   V1.6: Tự động format tiền tệ khi nhập (100.000đ). Thêm nút tạo danh mục nhanh (+). */
+/* js/expenses.js — V1.9
+   V1.9: Ép cứng Inline Style cho danh sách giao dịch để chống vỡ layout trên mobile.
+   Fix triệt để lỗi nhấn giữ, format tiền tệ, tạo danh mục nhanh. */
 
 import {
   state, formState, PAYMENT_METHODS, COLOR_PALETTE,
@@ -12,7 +12,6 @@ import {
   uid, saveState
 } from './core.js';
 
-// KÍCH HOẠT ĐỒNG BỘ
 import { markLocalChange } from './sync.js';
 
 /* ==================================================================
@@ -83,7 +82,7 @@ export function populateCategoryFilter() {
 }
 
 /* ==================================================================
-   EXPENSE LIST
+   EXPENSE LIST (Ép cứng Inline Style)
    ================================================================== */
 function renderExpenses() {
   const from = document.getElementById('filterFrom').value;
@@ -121,23 +120,36 @@ function renderExpenses() {
 
   c.innerHTML = Array.from(groups.entries()).map(([date, items]) => {
     const dayTotal = items.reduce((s, e) => s + Number(e.amount || 0), 0);
-    return `<div class="expense-group">
-      <div class="group-header"><div class="group-header-left">${ic('calendar')}<span>${fmtDate(date)}</span></div><span class="group-total">${fmtMoney(dayTotal)}</span></div>
+    
+    return `<div class="expense-group" style="margin-bottom: 12px; background: var(--surface); border-radius: 12px; overflow: hidden; border: 1px solid var(--border-soft);">
+      <div class="group-header" style="padding: 8px 12px; background: var(--surface-2); border-bottom: 1px solid var(--border-soft); display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; color: var(--text-muted);">
+        <div class="group-header-left" style="display: flex; align-items: center; gap: 6px;">${ic('calendar')}<span>${fmtDate(date)}</span></div>
+        <span class="group-total" style="color: var(--primary);">${fmtMoney(dayTotal)}</span>
+      </div>
       ${items.map(e => {
         const cat = getCategory(e.categoryId);
         const isAno = anomalies.has(e.id);
-        return `<div class="expense-swipe" data-expense-id="${e.id}">
-          <div class="expense-swipe-actions">
-            <button class="swipe-action-btn edit" data-edit-expense="${e.id}">${ic('edit')}<span>Sửa</span></button>
-            <button class="swipe-action-btn delete" data-del-expense="${e.id}">${ic('trash')}<span>Xoá</span></button>
+        
+        const wrapStyle = "position: relative; overflow: hidden; width: 100%; border-bottom: 1px solid var(--border-soft); background: var(--surface);";
+        const actionStyle = "position: absolute; top: 0; right: 0; bottom: 0; display: flex; z-index: 1;";
+        const rowStyle = "position: relative; z-index: 2; background: var(--surface); display: flex; align-items: center; gap: 12px; padding: 12px 8px; width: 100%; touch-action: pan-y; user-select: none; transition: transform 0.2s ease;";
+
+        return `<div class="expense-swipe" data-expense-id="${e.id}" style="${wrapStyle}">
+          <div class="expense-swipe-actions" style="${actionStyle}">
+            <button class="swipe-action-btn edit" data-edit-expense="${e.id}" style="width: 76px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--primary); color: #fff; font-size: 10px; font-weight: 700; border: none; cursor: pointer;">${ic('edit', 18)}<span style="margin-top: 2px;">Sửa</span></button>
+            <button class="swipe-action-btn delete" data-del-expense="${e.id}" style="width: 76px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--danger); color: #fff; font-size: 10px; font-weight: 700; border: none; cursor: pointer;">${ic('trash', 18)}<span style="margin-top: 2px;">Xoá</span></button>
           </div>
-          <div class="expense-row${isAno ? ' anomaly' : ''}" data-swipe-row="${e.id}">
-            <div class="expense-icon" style="background:${cat.color};">${escapeHtml(cat.name.charAt(0).toUpperCase())}</div>
-            <div class="expense-body">
-              <div class="expense-top"><span class="expense-category">${escapeHtml(cat.name)}</span><span class="expense-payment">${getPayment(e.paymentMethod).name}</span>${isAno ? `<span class="anomaly-badge">⚠</span>` : ''}</div>
-              <div class="expense-note">${escapeHtml(e.note || 'Không có ghi chú')}</div>
+          <div class="expense-row${isAno ? ' anomaly' : ''}" data-swipe-row="${e.id}" style="${rowStyle}">
+            <div class="expense-icon" style="background:${cat.color}; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 14px; flex-shrink: 0;">${escapeHtml(cat.name.charAt(0).toUpperCase())}</div>
+            <div class="expense-body" style="flex: 1; min-width: 0;">
+              <div class="expense-top" style="display: flex; align-items: center; gap: 6px; margin-bottom: 2px; flex-wrap: wrap;">
+                <span class="expense-category" style="font-size: 13px; font-weight: 700; color: var(--text);">${escapeHtml(cat.name)}</span>
+                <span class="expense-payment" style="font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; background: var(--surface-2); color: var(--text-soft);">${getPayment(e.paymentMethod).name}</span>
+                ${isAno ? `<span style="color:var(--warning); font-size:12px;">⚠</span>` : ''}
+              </div>
+              <div class="expense-note" style="font-size: 11px; color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(e.note || 'Không có ghi chú')}</div>
             </div>
-            <div class="expense-amount">${fmtMoney(e.amount)}</div>
+            <div class="expense-amount" style="font-size: 14px; font-weight: 800; color: var(--text); white-space: nowrap; flex-shrink: 0;">${fmtMoney(e.amount)}</div>
           </div>
         </div>`;
       }).join('')}
@@ -164,7 +176,6 @@ function bindSwipeActions() {
       isDragging = false;
       if (openRow && openRow !== row) {
         openRow.style.transform = 'translate3d(0,0,0)';
-        openRow.classList.remove('swiping');
         openRow = null;
       }
     }, { passive: true });
@@ -173,10 +184,7 @@ function bindSwipeActions() {
       const dx = e.touches[0].clientX - startX;
       if (dx > 5) return;
       if (Math.abs(dx) > 10) {
-        if (!isDragging) {
-          isDragging = true;
-          row.classList.add('swiping');
-        }
+        if (!isDragging) isDragging = true;
         currentX = Math.max(-152, Math.min(0, dx));
         row.style.transform = `translate3d(${currentX}px,0,0)`;
       }
@@ -184,7 +192,6 @@ function bindSwipeActions() {
 
     row.addEventListener('touchend', () => {
       if (!isDragging) return;
-      row.classList.remove('swiping');
       if (currentX < -SWIPE_THRESHOLD / 2) {
         row.style.transform = 'translate3d(-152px,0,0)';
         openRow = row;
@@ -198,7 +205,7 @@ function bindSwipeActions() {
 }
 
 /* ==================================================================
-   EXPENSE FORM (bottom sheet)
+   EXPENSE FORM
    ================================================================== */
 export function openExpenseModal(id = null) {
   formState.editingExpenseId = id;
@@ -384,7 +391,7 @@ function deleteExpense(id) {
 }
 
 /* ==================================================================
-   QUICK CATEGORY (CREATE / EDIT)
+   QUICK CATEGORY
    ================================================================== */
 function openQuickCatModal() {
   editingCatId = null;
@@ -485,9 +492,6 @@ export function bindExpenseTabEvents() {
 export function bindExpenseFormEvents() {
   const catGrid = document.getElementById('formCategories');
 
-  // --- XỬ LÝ NHẤN GIỮ (LONG PRESS) ---
-  
-  // Chặn menu mặc định của trình duyệt khi nhấn giữ trên mobile
   catGrid.addEventListener('contextmenu', (e) => {
     if (e.target.closest('[data-cat-id]')) {
       e.preventDefault();
@@ -521,7 +525,7 @@ export function bindExpenseFormEvents() {
         document.getElementById('catActionTitle').textContent = cat ? cat.name : 'Danh mục';
         openSheet('catActionModal');
       }
-    }, 600); // 600ms
+    }, 600); 
   };
 
   const cancelPress = (e) => {
@@ -534,7 +538,6 @@ export function bindExpenseFormEvents() {
         curX = e.clientX;
         curY = e.clientY;
       }
-      // Nếu di chuyển quá 10px (vuốt) thì hủy nhấn giữ
       if (Math.abs(curX - startX) > 10 || Math.abs(curY - startY) > 10) {
         isDragging = true;
         clearTimeout(pressTimer);
@@ -553,7 +556,6 @@ export function bindExpenseFormEvents() {
   catGrid.addEventListener('mouseup', cancelPress);
   catGrid.addEventListener('mouseleave', cancelPress);
 
-  // --- XỬ LÝ CLICK CHỌN DANH MỤC ---
   catGrid.addEventListener('click', (e) => {
     if (isLongPress) {
       isLongPress = false;
@@ -576,7 +578,6 @@ export function bindExpenseFormEvents() {
     updateAISuggestions();
   });
 
-  // --- MODAL TÙY CHỌN (SỬA / XÓA) ---
   document.getElementById('catActionEdit').addEventListener('click', () => {
     closeSheet('catActionModal');
     if (!actionTargetCatId) return;
@@ -628,7 +629,6 @@ export function bindExpenseFormEvents() {
     });
   });
 
-  // --- CÁC SỰ KIỆN FORM KHÁC ---
   document.getElementById('formPayments').addEventListener('click', (e) => {
     const btn = e.target.closest('[data-pay-id]');
     if (!btn) return;
