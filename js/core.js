@@ -1,4 +1,5 @@
-/* js/core.js — V1.0
+/* js/core.js — V1.2
+   V1.2: Ép cứng width/height cho icon SVG để chống vỡ layout nếu CSS không tải được.
    Core module: State, Storage, Utils, Queries, AI, ACCT, UI helpers, PDF */
 
 /* ==================================================================
@@ -6,15 +7,16 @@
    ================================================================== */
 export const STORAGE_KEY = 'expense_tracker_v1';
 
+const _now = Date.now(); 
 export const DEFAULT_CATEGORIES = [
-  { id: 'food', name: 'Ăn uống', color: '#f97316', type: 'essential' },
-  { id: 'transport', name: 'Di chuyển', color: '#3b82f6', type: 'essential' },
-  { id: 'shopping', name: 'Mua sắm', color: '#ec4899', type: 'discretionary' },
-  { id: 'bills', name: 'Hoá đơn', color: '#ef4444', type: 'essential' },
-  { id: 'entertainment', name: 'Giải trí', color: '#8b5cf6', type: 'discretionary' },
-  { id: 'health', name: 'Sức khoẻ', color: '#10b981', type: 'essential' },
-  { id: 'education', name: 'Giáo dục', color: '#6366f1', type: 'essential' },
-  { id: 'other', name: 'Khác', color: '#64748b', type: 'discretionary' }
+  { id: 'food', name: 'Ăn uống', color: '#f97316', type: 'essential', updatedAt: _now },
+  { id: 'transport', name: 'Di chuyển', color: '#3b82f6', type: 'essential', updatedAt: _now },
+  { id: 'shopping', name: 'Mua sắm', color: '#ec4899', type: 'discretionary', updatedAt: _now },
+  { id: 'bills', name: 'Hoá đơn', color: '#ef4444', type: 'essential', updatedAt: _now },
+  { id: 'entertainment', name: 'Giải trí', color: '#8b5cf6', type: 'discretionary', updatedAt: _now },
+  { id: 'health', name: 'Sức khoẻ', color: '#10b981', type: 'essential', updatedAt: _now },
+  { id: 'education', name: 'Giáo dục', color: '#6366f1', type: 'essential', updatedAt: _now },
+  { id: 'other', name: 'Khác', color: '#64748b', type: 'discretionary', updatedAt: _now }
 ];
 
 export const PAYMENT_METHODS = [
@@ -62,11 +64,19 @@ export const ICONS = {
   sun: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>'
 };
 
-export const ic = (n) => ICONS[n] || '';
+// [FIX] Ép cứng width/height trực tiếp vào thẻ svg để không bao giờ bị vỡ layout
+export const ic = (n, size = 16) => {
+  const svg = ICONS[n] || '';
+  if (!svg) return '';
+  return svg.replace('<svg ', `<svg width="${size}" height="${size}" `);
+};
 
 export function fillIcons() {
   document.querySelectorAll('[data-icon]').forEach(el => {
-    if (ICONS[el.dataset.icon] && !el.querySelector('svg')) el.innerHTML = ICONS[el.dataset.icon];
+    if (ICONS[el.dataset.icon] && !el.querySelector('svg')) {
+      // Sử dụng hàm ic() để lấy thẻ svg đã được ép kích thước
+      el.innerHTML = ic(el.dataset.icon, 16);
+    }
   });
 }
 
@@ -107,7 +117,8 @@ export const state = {
     aiEnabled: true,
     anomalyEnabled: true,
     suggestEnabled: true,
-    accountingEnabled: true
+    accountingEnabled: true,
+    updatedAt: Date.now()
   }
 };
 
@@ -512,6 +523,7 @@ export function applyTheme() {
 export function toggleTheme() {
   hapticTap();
   state.settings.theme = state.settings.theme === 'dark' ? 'light' : 'dark';
+  state.settings.updatedAt = Date.now(); 
   saveState();
   applyTheme();
 }
