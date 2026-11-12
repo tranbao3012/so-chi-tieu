@@ -69,19 +69,15 @@
 
     <!-- PANEL — TỔNG QUAN -->
     <section class="panel active" id="panel-dashboard">
-      
-      <!-- Thẻ Hôm nay -->
       <div class="overview-grid">
         <div class="overview-card today" id="todayOverview"></div>
       </div>
       
-      <!-- Thẻ Thông tin nhanh (Streak & Insight) -->
       <div class="quick-stats-grid">
         <div class="quick-stat-card" id="streakCard"></div>
         <div class="quick-stat-card" id="insightCard"></div>
       </div>
 
-      <!-- Danh sách Gần đây -->
       <div class="card">
         <div class="section-title">
           <div class="section-title-left"><span class="section-title-icon" data-icon="clock"></span><span class="section-title-text">Gần đây</span></div>
@@ -147,7 +143,8 @@
         </div>
       </div>
       
-      <div class="reports-grid" style="grid-template-columns: 1fr;">
+      <!-- [FIX] Thay inline style bằng class full-width -->
+      <div class="reports-grid full-width">
         <div class="card">
           <div class="section-title">
             <div class="section-title-left"><span class="section-title-icon" data-icon="creditCard"></span><span class="section-title-text">Phương thức</span></div>
