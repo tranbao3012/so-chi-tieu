@@ -1,8 +1,8 @@
-// sw.js — V1.3
-// Fix: Không cache HTML navigation nếu URL chứa ?code= (tránh lỗi đăng xuất OAuth)
-// Bắt buộc tăng CACHE_VERSION để trình duyệt xoá cache cũ
+// sw.js — V1.4
+// Fix: Cập nhật CACHE_VERSION để ép điện thoại (iOS/Android) xóa cache cũ.
+// Bắt buộc tăng CACHE_VERSION mỗi khi sửa code HTML/CSS/JS.
 
-const CACHE_VERSION = 'expense-tracker-v2.2.0';
+const CACHE_VERSION = 'expense-tracker-v2.3.0'; // [FIX] Đã tăng phiên bản
 
 const APP_SHELL = [
   './',
@@ -18,10 +18,10 @@ const APP_SHELL = [
   './js/core.js',
   './js/dashboard.js',
   './js/expenses.js',
-  './js/categories.js',
   './js/reports.js',
   './js/settings.js',
   './js/sync.js',
+  './js/crypto.js',
 
   // Icons
   './icons/icon-192.png',
@@ -87,8 +87,6 @@ self.addEventListener('fetch', (event) => {
       fetch(req)
         .then((res) => {
           if (res && res.ok) {
-            // CHỈ CACHE NẾU URL KHÔNG CHỨA MÃ CODE OAUTH (?code=)
-            // Tránh việc Service Worker cache lại URL có mã code đã hết hạn
             if (!req.url.includes('code=')) {
               const copy = res.clone();
               caches.open(CACHE_VERSION).then((c) => c.put(req, copy));
