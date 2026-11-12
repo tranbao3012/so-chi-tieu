@@ -1,5 +1,6 @@
 /* js/settings.js — V2.3
-   V2.3: Dọn dẹp inline-style, tương thích 100% CSS mới. */
+   V2.3: Dọn dẹp inline-style, tương thích 100% CSS chuẩn. 
+   Thêm kiểm tra an toàn (null-check) cho các phần tử HTML. */
 
 import {
   state,
@@ -19,11 +20,16 @@ import { logout, markLocalChange, saveConfig } from './sync.js';
 export function renderSettings() {
   const setBudget = document.getElementById('setBudget');
   const setIncome = document.getElementById('setIncome');
+  const setCurrency = document.getElementById('setCurrency');
   
   if (!setBudget || !setIncome) return;
 
   setBudget.value = state.settings.monthlyBudget || 0;
   setIncome.value = state.settings.monthlyIncome || 0;
+  
+  if (setCurrency) {
+    setCurrency.value = state.settings.currency || 'đ';
+  }
 
   // Cập nhật trạng thái form Sync
   updateSyncUI();
@@ -131,7 +137,7 @@ function importJson(file) {
    BIND EVENTS (called once by main.js)
    ================================================================== */
 export function bindSettingsTabEvents() {
-  /* -------- Budget / Income -------- */
+  /* -------- Budget / Income / Currency -------- */
   document.getElementById('setBudget').addEventListener('change', (e) => {
     state.settings.monthlyBudget = Math.max(0, Number(e.target.value) || 0);
     saveState();
@@ -145,6 +151,16 @@ export function bindSettingsTabEvents() {
     markLocalChange();
     document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'income' } }));
   });
+
+  const setCurrency = document.getElementById('setCurrency');
+  if (setCurrency) {
+    setCurrency.addEventListener('change', (e) => {
+      state.settings.currency = e.target.value.trim() || 'đ';
+      saveState();
+      markLocalChange();
+      document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'currency' } }));
+    });
+  }
 
   /* -------- Export / Import -------- */
   document.getElementById('exportBtn').addEventListener('click', exportJson);
@@ -161,32 +177,38 @@ export function bindSettingsTabEvents() {
   });
 
   /* -------- Sync E2EE -------- */
-  document.getElementById('saveSyncConfigBtn').addEventListener('click', () => {
-    hapticTap();
-    const token = document.getElementById('syncToken').value.trim();
-    const pin = document.getElementById('syncPin').value.trim();
-    
-    if (!token || !pin) {
-      return toast('Vui lòng nhập đủ Token và Mã PIN', 'error');
-    }
-    if (pin.length < 4) {
-      return toast('Mã PIN phải có ít nhất 4 ký tự', 'error');
-    }
+  const saveSyncBtn = document.getElementById('saveSyncConfigBtn');
+  if (saveSyncBtn) {
+    saveSyncBtn.addEventListener('click', () => {
+      hapticTap();
+      const token = document.getElementById('syncToken').value.trim();
+      const pin = document.getElementById('syncPin').value.trim();
+      
+      if (!token || !pin) {
+        return toast('Vui lòng nhập đủ Token và Mã PIN', 'error');
+      }
+      if (pin.length < 4) {
+        return toast('Mã PIN phải có ít nhất 4 ký tự', 'error');
+      }
 
-    saveConfig(token, pin);
-    updateSyncUI();
-    toast('Đã lưu cấu hình đồng bộ');
-  });
-
-  document.getElementById('syncLogoutBtn').addEventListener('click', () => {
-    hapticTap();
-    if (window.confirm('Dữ liệu trên máy vẫn giữ nguyên, nhưng sẽ không đồng bộ nữa. Tiếp tục?')) {
-      logout();
-      document.getElementById('syncToken').value = '';
-      document.getElementById('syncPin').value = '';
+      saveConfig(token, pin);
       updateSyncUI();
-    }
-  });
+      toast('Đã lưu cấu hình đồng bộ');
+    });
+  }
+
+  const logoutBtn = document.getElementById('syncLogoutBtn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+      hapticTap();
+      if (window.confirm('Dữ liệu trên máy vẫn giữ nguyên, nhưng sẽ không đồng bộ nữa. Tiếp tục?')) {
+        logout();
+        document.getElementById('syncToken').value = '';
+        document.getElementById('syncPin').value = '';
+        updateSyncUI();
+      }
+    });
+  }
 
   document.addEventListener('sync:user', updateSyncUI);
   document.addEventListener('sync:logout', updateSyncUI);
