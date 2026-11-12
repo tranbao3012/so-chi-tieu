@@ -1,7 +1,7 @@
-// sw.js — V3.1
-// Bắt buộc tăng CACHE_VERSION để xóa triệt để cache lỗi giao diện trên iOS/Android.
+// sw.js — V3.2 (Force Update to Dark UI)
+// Tăng vọt CACHE_VERSION để ép xóa toàn bộ cache cũ (giao diện lỗi) và nhận giao diện mới.
 
-const CACHE_VERSION = 'expense-tracker-v4.1.0'; // [FIX] Đã tăng lên v4.1.0 cho giao diện Compact UI
+const CACHE_VERSION = 'expense-tracker-v5.0.0'; // [FIX] Bắt buộc tăng phiên bản
 
 const APP_SHELL = [
   './',
