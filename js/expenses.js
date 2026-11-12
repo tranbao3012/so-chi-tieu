@@ -1,6 +1,5 @@
-/* js/expenses.js — V1.9
-   V1.9: Ép cứng Inline Style cho danh sách giao dịch để chống vỡ layout trên mobile.
-   Fix triệt để lỗi nhấn giữ, format tiền tệ, tạo danh mục nhanh. */
+/* js/expenses.js — V2.1 (Dark Theme Compatible & Error State Fix)
+   Render tab Giao dịch và xử lý form thêm/sửa chi tiêu. */
 
 import {
   state, formState, PAYMENT_METHODS, COLOR_PALETTE,
@@ -121,8 +120,11 @@ function renderExpenses() {
   c.innerHTML = Array.from(groups.entries()).map(([date, items]) => {
     const dayTotal = items.reduce((s, e) => s + Number(e.amount || 0), 0);
     
-    return `<div class="expense-group" style="margin-bottom: 12px; background: var(--surface); border-radius: 12px; overflow: hidden; border: 1px solid var(--border-soft);">
-      <div class="group-header" style="padding: 8px 12px; background: var(--surface-2); border-bottom: 1px solid var(--border-soft); display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; color: var(--text-muted);">
+    const groupStyle = "margin-bottom: 16px; background: var(--surface); border-radius: 20px; overflow: hidden; border: 1px solid var(--border-soft);";
+    const groupHeaderStyle = "padding: 12px 20px; background: var(--surface-2); display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: var(--text-soft);";
+
+    return `<div class="expense-group" style="${groupStyle}">
+      <div class="group-header" style="${groupHeaderStyle}">
         <div class="group-header-left" style="display: flex; align-items: center; gap: 6px;">${ic('calendar')}<span>${fmtDate(date)}</span></div>
         <span class="group-total" style="color: var(--primary);">${fmtMoney(dayTotal)}</span>
       </div>
@@ -132,24 +134,24 @@ function renderExpenses() {
         
         const wrapStyle = "position: relative; overflow: hidden; width: 100%; border-bottom: 1px solid var(--border-soft); background: var(--surface);";
         const actionStyle = "position: absolute; top: 0; right: 0; bottom: 0; display: flex; z-index: 1;";
-        const rowStyle = "position: relative; z-index: 2; background: var(--surface); display: flex; align-items: center; gap: 12px; padding: 12px 8px; width: 100%; touch-action: pan-y; user-select: none; transition: transform 0.2s ease;";
+        const rowStyle = "position: relative; z-index: 2; background: var(--surface); display: flex; align-items: center; gap: 12px; padding: 14px 16px; width: 100%; touch-action: pan-y; user-select: none; transition: transform 0.2s ease;";
 
         return `<div class="expense-swipe" data-expense-id="${e.id}" style="${wrapStyle}">
           <div class="expense-swipe-actions" style="${actionStyle}">
-            <button class="swipe-action-btn edit" data-edit-expense="${e.id}" style="width: 76px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--primary); color: #fff; font-size: 10px; font-weight: 700; border: none; cursor: pointer;">${ic('edit', 18)}<span style="margin-top: 2px;">Sửa</span></button>
+            <button class="swipe-action-btn edit" data-edit-expense="${e.id}" style="width: 76px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--surface-3); color: var(--text); font-size: 10px; font-weight: 700; border: none; cursor: pointer;">${ic('edit', 18)}<span style="margin-top: 2px;">Sửa</span></button>
             <button class="swipe-action-btn delete" data-del-expense="${e.id}" style="width: 76px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--danger); color: #fff; font-size: 10px; font-weight: 700; border: none; cursor: pointer;">${ic('trash', 18)}<span style="margin-top: 2px;">Xoá</span></button>
           </div>
           <div class="expense-row${isAno ? ' anomaly' : ''}" data-swipe-row="${e.id}" style="${rowStyle}">
-            <div class="expense-icon" style="background:${cat.color}; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 14px; flex-shrink: 0;">${escapeHtml(cat.name.charAt(0).toUpperCase())}</div>
+            <div class="expense-icon" style="background:${cat.color}; width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 14px; flex-shrink: 0;">${escapeHtml(cat.name.charAt(0).toUpperCase())}</div>
             <div class="expense-body" style="flex: 1; min-width: 0;">
               <div class="expense-top" style="display: flex; align-items: center; gap: 6px; margin-bottom: 2px; flex-wrap: wrap;">
-                <span class="expense-category" style="font-size: 13px; font-weight: 700; color: var(--text);">${escapeHtml(cat.name)}</span>
+                <span class="expense-category" style="font-size: 14px; font-weight: 700; color: var(--text);">${escapeHtml(cat.name)}</span>
                 <span class="expense-payment" style="font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; background: var(--surface-2); color: var(--text-soft);">${getPayment(e.paymentMethod).name}</span>
                 ${isAno ? `<span style="color:var(--warning); font-size:12px;">⚠</span>` : ''}
               </div>
-              <div class="expense-note" style="font-size: 11px; color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(e.note || 'Không có ghi chú')}</div>
+              <div class="expense-note" style="font-size: 12px; color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(e.note || 'Không có ghi chú')}</div>
             </div>
-            <div class="expense-amount" style="font-size: 14px; font-weight: 800; color: var(--text); white-space: nowrap; flex-shrink: 0;">${fmtMoney(e.amount)}</div>
+            <div class="expense-amount" style="font-size: 15px; font-weight: 800; color: var(--text); white-space: nowrap; flex-shrink: 0;">${fmtMoney(e.amount)}</div>
           </div>
         </div>`;
       }).join('')}
@@ -205,7 +207,7 @@ function bindSwipeActions() {
 }
 
 /* ==================================================================
-   EXPENSE FORM
+   EXPENSE FORM (bottom sheet)
    ================================================================== */
 export function openExpenseModal(id = null) {
   formState.editingExpenseId = id;
@@ -218,6 +220,8 @@ export function openExpenseModal(id = null) {
   
   formState.formCategory = null;
   formState.formPayment = 'cash';
+  
+  // FIX: Ẩn các thông báo lỗi khi mở form
   document.getElementById('errAmount').classList.remove('show');
   document.getElementById('errCategory').classList.remove('show');
 
@@ -335,6 +339,7 @@ function saveExpense() {
   const note = document.getElementById('formNote').value.trim();
   let err = false;
 
+  // FIX: Hiện thông báo lỗi nếu chưa nhập
   if (!amountRaw || isNaN(amount) || amount <= 0) {
     document.getElementById('errAmount').classList.add('show');
     err = true;
@@ -391,7 +396,7 @@ function deleteExpense(id) {
 }
 
 /* ==================================================================
-   QUICK CATEGORY
+   QUICK CATEGORY (CREATE / EDIT)
    ================================================================== */
 function openQuickCatModal() {
   editingCatId = null;
@@ -572,7 +577,7 @@ export function bindExpenseFormEvents() {
     if (!btn) return;
     hapticTap();
     formState.formCategory = btn.dataset.catId;
-    document.getElementById('errCategory').classList.remove('show');
+    document.getElementById('errCategory').classList.remove('show'); // Tắt lỗi khi chọn
     renderFormChips();
     updateSummaryPreview();
     updateAISuggestions();
