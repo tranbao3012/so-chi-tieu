@@ -127,43 +127,21 @@
       <div class="kpi-grid" id="reportKpis"></div>
       <div class="card" id="reportInsights"></div>
       
-      <div class="reports-grid">
-        <div class="card">
-          <div class="section-title">
-            <div class="section-title-left">
-              <span class="section-title-text">Danh mục</span>
-            </div>
+      <!-- Bar chart "Theo ngày" (full-width, card độc lập) -->
+      <div class="card">
+        <div class="section-title">
+          <div class="section-title-left">
+            <span class="section-title-text">Theo ngày</span>
           </div>
-          <div class="donut-wrap">
-            <div class="donut-container" id="reportDonut"></div>
-            <div class="legend" id="reportLegend"></div>
-          </div>
+          <small id="reportBarsLabel" style="color:var(--text-soft);"></small>
         </div>
-        <div class="card">
-          <div class="section-title">
-            <div class="section-title-left">
-              <span class="section-title-text">Theo ngày</span>
-            </div>
-            <small id="reportBarsLabel" style="color:var(--text-soft);"></small>
-          </div>
-          <div class="chart-wrap">
-            <div class="chart-max-label" id="reportBarsMax" style="font-size: 11px; text-align: right; color: var(--text-soft); margin-bottom: 8px;">—</div>
-            <div class="chart-bars" id="reportBars"></div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="reports-grid full-width">
-        <div class="card">
-          <div class="section-title">
-            <div class="section-title-left">
-              <span class="section-title-text">Phương thức</span>
-            </div>
-          </div>
-          <div id="reportPayments"></div>
+        <div class="chart-wrap">
+          <div class="chart-max-label" id="reportBarsMax" style="font-size: 11px; text-align: right; color: var(--text-soft); margin-bottom: 8px;">—</div>
+          <div class="chart-bars" id="reportBars"></div>
         </div>
       </div>
 
+      <!-- Top danh mục chi tiêu -->
       <div class="card">
         <div class="section-title">
           <div class="section-title-left">
