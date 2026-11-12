@@ -1,8 +1,7 @@
-// sw.js — V1.5
-// Fix: Tăng CACHE_VERSION lên v2.4.0 để xóa triệt để cache lỗi icon trên điện thoại.
-// Bắt buộc tăng CACHE_VERSION mỗi khi sửa code HTML/CSS/JS.
+// sw.js — V1.6
+// Fix: Tăng CACHE_VERSION lên v2.5.0 để áp dụng inline style cho icon và biểu đồ.
 
-const CACHE_VERSION = 'expense-tracker-v2.4.0'; // [FIX] Tăng phiên bản
+const CACHE_VERSION = 'expense-tracker-v2.5.0'; // [FIX] Tăng phiên bản
 
 const APP_SHELL = [
   './',
