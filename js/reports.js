@@ -1,8 +1,8 @@
-/* js/reports.js — V2.1 (Robust — fix silent failures in bar chart & top table)
-   - Tách mỗi section thành hàm riêng có try/catch
-   - Defensive parse date
-   - Inline style fallback cho bar
-   - console.log để debug */
+/* js/reports.js — V2.2 (Compact — Remove KPI grid & uppercase labels)
+   Thay đổi:
+   - Xóa renderKpis() và mọi tham chiếu
+   - renderHero(): bỏ label uppercase "SỐ GD" / "TB/NGÀY", gộp thành 1 dòng meta
+   - Trend hiển thị dạng chip nhỏ ở góc phải trên */
 
 import {
   state, reportState,
@@ -37,14 +37,10 @@ export function renderReports() {
     const days = daysInMonth(reportMonth.getFullYear(), reportMonth.getMonth());
     const uniqueDays = new Set(monthExp.map(e => e.date)).size;
     const avg = total / days;
-    const largest = monthExp.reduce((m, e) => Math.max(m, Number(e.amount || 0)), 0);
     const diffPct = prevTotal > 0 ? ((total - prevTotal) / prevTotal * 100) : 0;
 
     try { renderHero(reportMonth, total, count, avg, diffPct, prevTotal); }
     catch (e) { console.error('[Reports] Hero:', e); }
-
-    try { renderKpis(total, prevTotal, diffPct, uniqueDays, days, largest); }
-    catch (e) { console.error('[Reports] KPI:', e); }
 
     try { renderInsights(monthExp, total, prevTotal, days); }
     catch (e) { console.error('[Reports] Insights:', e); }
@@ -62,7 +58,7 @@ export function renderReports() {
 }
 
 /* ==================================================================
-   HERO
+   HERO — compact, không label uppercase
    ================================================================== */
 function renderHero(month, total, count, avg, diffPct, prevTotal) {
   const monthLabelEl = safe('reportMonthLabel');
@@ -71,66 +67,22 @@ function renderHero(month, total, count, avg, diffPct, prevTotal) {
   const heroEl = safe('reportHero');
   if (!heroEl) return;
 
-  let trendHtml = '';
+  let trendText = '';
+  let trendClass = '';
   if (prevTotal > 0) {
-    if (diffPct > 0) {
-      trendHtml = `<div class="report-hero-sub up">${ic('arrowUp', 12)}<span>Tăng ${Math.abs(diffPct).toFixed(0)}% so với tháng trước</span></div>`;
-    } else if (diffPct < 0) {
-      trendHtml = `<div class="report-hero-sub down">${ic('arrowDown', 12)}<span>Giảm ${Math.abs(diffPct).toFixed(0)}% so với tháng trước</span></div>`;
-    } else {
-      trendHtml = `<div class="report-hero-sub">${ic('minus', 12)}<span>Không đổi</span></div>`;
-    }
-  } else {
-    trendHtml = `<div class="report-hero-sub" style="color:var(--text-soft);">${ic('minus', 12)}<span>${total > 0 ? 'Chưa có dữ liệu tháng trước' : 'Chưa có dữ liệu'}</span></div>`;
+    if (diffPct > 0) { trendText = '↑ +' + diffPct.toFixed(0) + '%'; trendClass = 'up'; }
+    else if (diffPct < 0) { trendText = '↓ ' + diffPct.toFixed(0) + '%'; trendClass = 'down'; }
+    else { trendText = '0%'; trendClass = ''; }
   }
 
   heroEl.innerHTML = `
-    <div class="report-hero-label">${ic('dollarSign', 12)}<span>Tổng chi tháng ${month.getMonth() + 1}</span></div>
+    <div class="report-hero-top">
+      <div class="report-hero-title">Tổng chi tháng ${month.getMonth() + 1}</div>
+      ${trendText ? `<div class="report-hero-trend ${trendClass}">${trendText}</div>` : ''}
+    </div>
     <div class="report-hero-value">${fmtMoney(total)}</div>
-    ${trendHtml}
-    <div class="report-hero-stats">
-      <div>
-        <div class="report-hero-stat-label">Số GD</div>
-        <div class="report-hero-stat-value">${count}</div>
-      </div>
-      <div>
-        <div class="report-hero-stat-label">TB/Ngày</div>
-        <div class="report-hero-stat-value">${fmtMoneyShort(Math.round(avg))}</div>
-      </div>
-    </div>`;
-}
-
-/* ==================================================================
-   KPI GRID
-   ================================================================== */
-function renderKpis(total, prevTotal, diffPct, uniqueDays, days, largest) {
-  const el = safe('reportKpis');
-  if (!el) return;
-
-  const budget = Number(state.settings.monthlyBudget || 0);
-  const budgetPct = budget > 0 ? (total / budget * 100) : 0;
-
-  el.innerHTML = `
-    <div class="kpi">
-      <div class="kpi-label">${ic('trendUp', 10)} Lớn nhất</div>
-      <div class="kpi-value">${fmtMoneyShort(largest)}</div>
-      <div class="kpi-sub">GD đắt nhất</div>
-    </div>
-    <div class="kpi" style="border-left-color: ${diffPct > 0 ? 'var(--danger)' : 'var(--primary)'};">
-      <div class="kpi-label">${ic(diffPct > 0 ? 'arrowUp' : 'arrowDown', 10)} So tháng trước</div>
-      <div class="kpi-value">${prevTotal > 0 ? (diffPct >= 0 ? '+' : '') + diffPct.toFixed(0) + '%' : '—'}</div>
-      <div class="kpi-sub">${prevTotal > 0 ? fmtMoneyShort(prevTotal) : 'Chưa có'}</div>
-    </div>
-    <div class="kpi" style="border-left-color: var(--warning);">
-      <div class="kpi-label">${ic('calendar', 10)} Ngày có chi</div>
-      <div class="kpi-value">${uniqueDays}/${days}</div>
-      <div class="kpi-sub">Ngày phát sinh</div>
-    </div>
-    <div class="kpi" style="border-left-color: ${budget > 0 && budgetPct > 100 ? 'var(--danger)' : 'var(--primary)'};">
-      <div class="kpi-label">${ic('target', 10)} Ngân sách</div>
-      <div class="kpi-value">${budget > 0 ? budgetPct.toFixed(0) + '%' : '—'}</div>
-      <div class="kpi-sub">${budget > 0 ? (budgetPct > 100 ? 'Vượt ' + fmtMoneyShort(total - budget) : 'Còn ' + fmtMoneyShort(budget - total)) : 'Chưa đặt'}</div>
-    </div>`;
+    <div class="report-hero-meta">${count} giao dịch · ${fmtMoneyShort(Math.round(avg))}/ngày</div>
+  `;
 }
 
 /* ==================================================================
@@ -161,7 +113,7 @@ function renderInsights(monthExp, total, prevTotal, days) {
 }
 
 /* ==================================================================
-   BAR CHART — Defensive + Inline style fallback
+   BAR CHART — defensive parse + inline fallback
    ================================================================== */
 function renderBarChart(monthExp, days, uniqueDays) {
   const barsEl = safe('reportBars');
@@ -169,7 +121,6 @@ function renderBarChart(monthExp, days, uniqueDays) {
   const labelEl = safe('reportBarsLabel');
   if (!barsEl) return;
 
-  // Aggregate by day — bỏ qua giao dịch có date malformed thay vì throw
   const dailyMap = new Map();
   const dailyCount = new Map();
   let skipped = 0;
@@ -199,7 +150,6 @@ function renderBarChart(monthExp, days, uniqueDays) {
     const show = days <= 15 || d % 2 === 0 || d === 1 || d === days;
     const h = hasVal ? Math.max(pct, 2) : 0;
 
-    // Inline style fallback — không phụ thuộc class CSS
     const barStyle = hasVal
       ? `height:${h}%; background:linear-gradient(180deg, var(--primary, #34d399) 0%, var(--primary-hover, #10b981) 100%); min-height:3px; width:100%; max-width:18px; border-radius:4px 4px 0 0;`
       : `height:0; background:transparent; width:100%; max-width:18px;`;
