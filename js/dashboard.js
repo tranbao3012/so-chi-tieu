@@ -1,4 +1,5 @@
 /* js/dashboard.js — V1.5
+   Render tab Tổng quan: overview Hôm nay, Streak, Insight, danh sách giao dịch gần đây.
    V1.5: Xóa Sparkline, xóa Mini-KPI, đổi tên thẻ Hôm nay, cập nhật Insight (chi nhiều nhất hôm nay),
    thêm tính năng vuốt để Sửa/Xóa cho danh sách giao dịch gần đây. */
 
