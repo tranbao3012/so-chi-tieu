@@ -1,6 +1,8 @@
-/* js/reports.js — V2.0 (Remove "Danh mục" & "Phương thức" cards)
-   Đã xóa phần render donut/legend và payment bars.
-   Chỉ giữ: Hero, KPI grid, Insights, Bar chart "Theo ngày", Top danh mục. */
+/* js/reports.js — V2.1 (Robust — fix silent failures in bar chart & top table)
+   - Tách mỗi section thành hàm riêng có try/catch
+   - Defensive parse date
+   - Inline style fallback cho bar
+   - console.log để debug */
 
 import {
   state, reportState,
@@ -16,37 +18,74 @@ import {
 let barInteractionSetup = false;
 let currentBarActive = null;
 
+function safe(id) {
+  const el = document.getElementById(id);
+  if (!el) console.warn('[Reports] Missing element #' + id);
+  return el;
+}
+
+/* ==================================================================
+   ENTRY
+   ================================================================== */
 export function renderReports() {
-  const reportMonth = reportState.month;
+  try {
+    const reportMonth = reportState.month;
+    const monthExp = getMonthExpenses(reportMonth);
+    const prevExp = getMonthExpenses(new Date(reportMonth.getFullYear(), reportMonth.getMonth() - 1, 1));
+    const { total, count } = calcSummary(monthExp);
+    const prevTotal = calcSummary(prevExp).total;
+    const days = daysInMonth(reportMonth.getFullYear(), reportMonth.getMonth());
+    const uniqueDays = new Set(monthExp.map(e => e.date)).size;
+    const avg = total / days;
+    const largest = monthExp.reduce((m, e) => Math.max(m, Number(e.amount || 0)), 0);
+    const diffPct = prevTotal > 0 ? ((total - prevTotal) / prevTotal * 100) : 0;
 
-  document.getElementById('reportMonthLabel').textContent = monthLabel(reportMonth);
+    try { renderHero(reportMonth, total, count, avg, diffPct, prevTotal); }
+    catch (e) { console.error('[Reports] Hero:', e); }
 
-  const monthExp = getMonthExpenses(reportMonth);
-  const prevExp = getMonthExpenses(new Date(reportMonth.getFullYear(), reportMonth.getMonth() - 1, 1));
-  const { total, count } = calcSummary(monthExp);
-  const prevTotal = calcSummary(prevExp).total;
-  
-  const days = daysInMonth(reportMonth.getFullYear(), reportMonth.getMonth());
-  const uniqueDays = new Set(monthExp.map(e => e.date)).size;
-  
-  const avg = total / days;
-  const largest = monthExp.reduce((m, e) => Math.max(m, Number(e.amount || 0)), 0);
-  const diffPct = prevTotal > 0 ? ((total - prevTotal) / prevTotal * 100) : 0;
+    try { renderKpis(total, prevTotal, diffPct, uniqueDays, days, largest); }
+    catch (e) { console.error('[Reports] KPI:', e); }
+
+    try { renderInsights(monthExp, total, prevTotal, days); }
+    catch (e) { console.error('[Reports] Insights:', e); }
+
+    try { renderBarChart(monthExp, days, uniqueDays); }
+    catch (e) { console.error('[Reports] BarChart:', e); }
+
+    try { renderTop(monthExp); }
+    catch (e) { console.error('[Reports] Top:', e); }
+
+    setupBarInteraction();
+  } catch (err) {
+    console.error('[Reports] Fatal:', err);
+  }
+}
+
+/* ==================================================================
+   HERO
+   ================================================================== */
+function renderHero(month, total, count, avg, diffPct, prevTotal) {
+  const monthLabelEl = safe('reportMonthLabel');
+  if (monthLabelEl) monthLabelEl.textContent = monthLabel(month);
+
+  const heroEl = safe('reportHero');
+  if (!heroEl) return;
 
   let trendHtml = '';
   if (prevTotal > 0) {
-    if (diffPct > 0) { trendHtml = `<div class="report-hero-sub up">${ic('arrowUp', 12)}<span>Tăng ${Math.abs(diffPct).toFixed(0)}% so với tháng trước</span></div>`; }
-    else if (diffPct < 0) { trendHtml = `<div class="report-hero-sub down">${ic('arrowDown', 12)}<span>Giảm ${Math.abs(diffPct).toFixed(0)}% so với tháng trước</span></div>`; }
-    else { trendHtml = `<div class="report-hero-sub">${ic('minus', 12)}<span>Không đổi</span></div>`; }
-  } else if (total > 0) {
-    trendHtml = `<div class="report-hero-sub" style="color:var(--text-soft);">${ic('minus', 12)}<span>Chưa có dữ liệu tháng trước</span></div>`;
+    if (diffPct > 0) {
+      trendHtml = `<div class="report-hero-sub up">${ic('arrowUp', 12)}<span>Tăng ${Math.abs(diffPct).toFixed(0)}% so với tháng trước</span></div>`;
+    } else if (diffPct < 0) {
+      trendHtml = `<div class="report-hero-sub down">${ic('arrowDown', 12)}<span>Giảm ${Math.abs(diffPct).toFixed(0)}% so với tháng trước</span></div>`;
+    } else {
+      trendHtml = `<div class="report-hero-sub">${ic('minus', 12)}<span>Không đổi</span></div>`;
+    }
   } else {
-    trendHtml = `<div class="report-hero-sub" style="color:var(--text-soft);">${ic('minus', 12)}<span>Chưa có dữ liệu</span></div>`;
+    trendHtml = `<div class="report-hero-sub" style="color:var(--text-soft);">${ic('minus', 12)}<span>${total > 0 ? 'Chưa có dữ liệu tháng trước' : 'Chưa có dữ liệu'}</span></div>`;
   }
 
-  /* ---------- Hero ---------- */
-  document.getElementById('reportHero').innerHTML = `
-    <div class="report-hero-label">${ic('dollarSign', 12)}<span>Tổng chi tháng ${reportMonth.getMonth() + 1}</span></div>
+  heroEl.innerHTML = `
+    <div class="report-hero-label">${ic('dollarSign', 12)}<span>Tổng chi tháng ${month.getMonth() + 1}</span></div>
     <div class="report-hero-value">${fmtMoney(total)}</div>
     ${trendHtml}
     <div class="report-hero-stats">
@@ -59,11 +98,19 @@ export function renderReports() {
         <div class="report-hero-stat-value">${fmtMoneyShort(Math.round(avg))}</div>
       </div>
     </div>`;
+}
 
-  /* ---------- KPI grid ---------- */
-  const budget = state.settings.monthlyBudget || 0;
+/* ==================================================================
+   KPI GRID
+   ================================================================== */
+function renderKpis(total, prevTotal, diffPct, uniqueDays, days, largest) {
+  const el = safe('reportKpis');
+  if (!el) return;
+
+  const budget = Number(state.settings.monthlyBudget || 0);
   const budgetPct = budget > 0 ? (total / budget * 100) : 0;
-  document.getElementById('reportKpis').innerHTML = `
+
+  el.innerHTML = `
     <div class="kpi">
       <div class="kpi-label">${ic('trendUp', 10)} Lớn nhất</div>
       <div class="kpi-value">${fmtMoneyShort(largest)}</div>
@@ -84,31 +131,64 @@ export function renderReports() {
       <div class="kpi-value">${budget > 0 ? budgetPct.toFixed(0) + '%' : '—'}</div>
       <div class="kpi-sub">${budget > 0 ? (budgetPct > 100 ? 'Vượt ' + fmtMoneyShort(total - budget) : 'Còn ' + fmtMoneyShort(budget - total)) : 'Chưa đặt'}</div>
     </div>`;
+}
 
-  /* ---------- Insights ---------- */
+/* ==================================================================
+   INSIGHTS
+   ================================================================== */
+function renderInsights(monthExp, total, prevTotal, days) {
+  const el = safe('reportInsights');
+  if (!el) return;
+
   const insights = generateInsights(monthExp, total, prevTotal, days);
-  document.getElementById('reportInsights').innerHTML = insights.length === 0
-    ? `<div style="text-align:center;padding:16px;color:var(--text-soft);font-size:12px;">Chưa có dữ liệu để phân tích</div>`
-    : `<div class="section-title"><div class="section-title-left"><span class="section-title-text">Nhận xét</span></div></div>
-       <div class="insight-list">
-         ${insights.map(i => `
-           <div class="insight-row">
-             <div class="insight-icon-wrap">${ic(i.icon, 14)}</div>
-             <div class="insight-text">${i.html}</div>
-           </div>
-         `).join('')}
-       </div>`;
+  if (!insights || insights.length === 0) {
+    el.innerHTML = `<div style="text-align:center;padding:16px;color:var(--text-soft);font-size:12px;">Chưa có dữ liệu để phân tích</div>`;
+    return;
+  }
 
-  /* ---------- Bar chart "Theo ngày" ---------- */
-  const dailyMap = new Map(), dailyCount = new Map();
+  el.innerHTML = `
+    <div class="section-title">
+      <div class="section-title-left"><span class="section-title-text">Nhận xét</span></div>
+    </div>
+    <div class="insight-list">
+      ${insights.map(i => `
+        <div class="insight-row">
+          <div class="insight-icon-wrap">${ic(i.icon, 14)}</div>
+          <div class="insight-text">${i.html}</div>
+        </div>
+      `).join('')}
+    </div>`;
+}
+
+/* ==================================================================
+   BAR CHART — Defensive + Inline style fallback
+   ================================================================== */
+function renderBarChart(monthExp, days, uniqueDays) {
+  const barsEl = safe('reportBars');
+  const maxEl = safe('reportBarsMax');
+  const labelEl = safe('reportBarsLabel');
+  if (!barsEl) return;
+
+  // Aggregate by day — bỏ qua giao dịch có date malformed thay vì throw
+  const dailyMap = new Map();
+  const dailyCount = new Map();
+  let skipped = 0;
+
   monthExp.forEach(e => {
-    const d = parseInt(e.date.split('-')[2], 10);
-    dailyMap.set(d, (dailyMap.get(d) || 0) + Number(e.amount));
+    if (!e || !e.date || typeof e.date !== 'string') { skipped++; return; }
+    const parts = e.date.split('-');
+    if (parts.length < 3) { skipped++; return; }
+    const d = parseInt(parts[2], 10);
+    if (!Number.isFinite(d)) { skipped++; return; }
+    dailyMap.set(d, (dailyMap.get(d) || 0) + Number(e.amount || 0));
     dailyCount.set(d, (dailyCount.get(d) || 0) + 1);
   });
-  const maxDay = Math.max(...Array.from(dailyMap.values()), 0);
-  document.getElementById('reportBarsMax').textContent = maxDay > 0 ? 'Max: ' + fmtMoneyShort(maxDay) : '—';
-  document.getElementById('reportBarsLabel').textContent = `${uniqueDays}/${days} ngày`;
+
+  const values = Array.from(dailyMap.values());
+  const maxDay = values.length ? Math.max(...values, 0) : 0;
+
+  if (maxEl) maxEl.textContent = maxDay > 0 ? 'Max: ' + fmtMoneyShort(maxDay) : '—';
+  if (labelEl) labelEl.textContent = `${uniqueDays}/${days} ngày`;
 
   let barsHtml = '';
   for (let d = 1; d <= days; d++) {
@@ -117,49 +197,73 @@ export function renderReports() {
     const pct = maxDay > 0 ? (val / maxDay) * 100 : 0;
     const hasVal = val > 0;
     const show = days <= 15 || d % 2 === 0 || d === 1 || d === days;
-    const barCls = hasVal ? 'bar has-value' : 'bar is-empty';
-    const barH = hasVal ? Math.max(pct, 1) : 0;
-    barsHtml += `<div class="bar-col" data-day="${d}" data-amount="${val}" data-count="${cnt}">
-      <div class="${barCls}" style="height:${barH}%;"></div>
+    const h = hasVal ? Math.max(pct, 2) : 0;
+
+    // Inline style fallback — không phụ thuộc class CSS
+    const barStyle = hasVal
+      ? `height:${h}%; background:linear-gradient(180deg, var(--primary, #34d399) 0%, var(--primary-hover, #10b981) 100%); min-height:3px; width:100%; max-width:18px; border-radius:4px 4px 0 0;`
+      : `height:0; background:transparent; width:100%; max-width:18px;`;
+
+    barsHtml += `<div class="bar-col" data-day="${d}" data-amount="${val}" data-count="${cnt}" style="cursor:pointer;">
+      <div class="bar ${hasVal ? 'has-value' : 'is-empty'}" style="${barStyle}"></div>
       <div class="bar-label">${show ? d : ''}</div>
     </div>`;
   }
-  document.getElementById('reportBars').innerHTML = barsHtml;
 
-  /* ---------- Top danh mục chi tiêu ---------- */
-  const allCats = calcByCategory(monthExp);
-  document.getElementById('reportTopLabel').textContent = `${allCats.length} danh mục`;
-  document.getElementById('reportTop').innerHTML = allCats.length === 0
-    ? `<div style="text-align:center;padding:24px;color:var(--text-soft);font-size:12px;">Chưa có chi tiêu</div>`
-    : `<table class="top-table">
-        <thead>
-          <tr><th>Danh mục</th><th>Số tiền</th></tr>
-        </thead>
-        <tbody>
-          ${allCats.map(b => {
-            return `<tr>
-              <td>
-                <div class="top-cat-cell">
-                  <span class="top-cat-dot" style="background:${b.category.color};"></span>
-                  ${escapeHtml(b.category.name)}
-                </div>
-              </td>
-              <td>${fmtMoney(b.value)}</td>
-            </tr>`;
-          }).join('')}
-        </tbody>
-      </table>`;
+  barsEl.innerHTML = barsHtml;
+
+  console.log('[Reports] Bar chart rendered:', days, 'days · maxDay =', maxDay, '· skipped =', skipped);
 }
 
 /* ==================================================================
-   TOOLTIP — click để hiện, tự ẩn sau 3s, bấm ngoài để ẩn
+   TOP CATEGORIES
+   ================================================================== */
+function renderTop(monthExp) {
+  const labelEl = safe('reportTopLabel');
+  const el = safe('reportTop');
+  if (!el) return;
+
+  const allCats = calcByCategory(monthExp);
+  if (labelEl) labelEl.textContent = `${allCats.length} danh mục`;
+
+  if (!allCats || allCats.length === 0) {
+    el.innerHTML = `<div style="text-align:center;padding:24px;color:var(--text-soft);font-size:12px;">Chưa có chi tiêu</div>`;
+    return;
+  }
+
+  const rows = allCats.map(b => {
+    const name = b.category && b.category.name ? b.category.name : 'Khác';
+    const color = b.category && b.category.color ? b.category.color : '#64748b';
+    return `<tr>
+      <td>
+        <div class="top-cat-cell">
+          <span class="top-cat-dot" style="background:${color};"></span>
+          ${escapeHtml(name)}
+        </div>
+      </td>
+      <td>${fmtMoney(b.value)}</td>
+    </tr>`;
+  }).join('');
+
+  el.innerHTML = `
+    <table class="top-table">
+      <thead><tr><th>Danh mục</th><th>Số tiền</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+
+  console.log('[Reports] Top categories rendered:', allCats.length);
+}
+
+/* ==================================================================
+   TOOLTIP
    ================================================================== */
 function showBarTooltip(el) {
+  const tt = safe('barTooltip');
+  if (!tt) return;
+
   const day = el.dataset.day;
   const amount = Number(el.dataset.amount || 0);
   const count = Number(el.dataset.count || 0);
-  const tt = document.getElementById('barTooltip');
-  if (!tt) return;
 
   if (currentBarActive) currentBarActive.classList.remove('active');
   el.classList.add('active');
@@ -169,24 +273,24 @@ function showBarTooltip(el) {
     <div class="bar-tooltip-label">Ngày ${day}/${reportState.month.getMonth() + 1}</div>
     <div class="bar-tooltip-value">${fmtMoney(amount)}</div>
     <div class="bar-tooltip-sub">${count} giao dịch</div>`;
-  
+
   tt.classList.add('show');
+
   const rect = el.getBoundingClientRect();
   const ttR = tt.getBoundingClientRect();
-
   let left = rect.left + rect.width / 2 - ttR.width / 2;
   let top = rect.top - ttR.height - 10;
   if (left < 10) left = 10;
   if (left + ttR.width > window.innerWidth - 10) left = window.innerWidth - ttR.width - 10;
   if (top < 10) top = rect.bottom + 10;
-  
+
   tt.style.left = left + 'px';
   tt.style.top = top + 'px';
   hapticTap();
 }
 
 function hideBarTooltip() {
-  const tt = document.getElementById('barTooltip');
+  const tt = safe('barTooltip');
   if (tt) tt.classList.remove('show');
   if (currentBarActive) {
     currentBarActive.classList.remove('active');
@@ -196,7 +300,7 @@ function hideBarTooltip() {
 
 function setupBarInteraction() {
   if (barInteractionSetup) return;
-  const chart = document.getElementById('reportBars');
+  const chart = safe('reportBars');
   if (!chart) return;
   barInteractionSetup = true;
 
@@ -205,8 +309,6 @@ function setupBarInteraction() {
   chart.addEventListener('click', (e) => {
     const bar = e.target.closest('.bar-col');
     if (!bar) return;
-    e.preventDefault();
-    e.stopPropagation();
     showBarTooltip(bar);
     if (hideTimer) clearTimeout(hideTimer);
     hideTimer = setTimeout(hideBarTooltip, 3000);
@@ -220,26 +322,37 @@ function setupBarInteraction() {
   });
 }
 
+/* ==================================================================
+   PUBLIC API
+   ================================================================== */
 export function renderReportsTab() {
   renderReports();
-  setupBarInteraction();
 }
 
 export function bindReportTabEvents() {
-  document.getElementById('prevMonth').addEventListener('click', () => {
-    hapticTap();
-    reportState.month = new Date(reportState.month.getFullYear(), reportState.month.getMonth() - 1, 1);
-    renderReports();
-  });
+  const prevBtn = safe('prevMonth');
+  if (prevBtn) {
+    prevBtn.addEventListener('click', () => {
+      hapticTap();
+      reportState.month = new Date(reportState.month.getFullYear(), reportState.month.getMonth() - 1, 1);
+      renderReports();
+    });
+  }
 
-  document.getElementById('nextMonth').addEventListener('click', () => {
-    hapticTap();
-    reportState.month = new Date(reportState.month.getFullYear(), reportState.month.getMonth() + 1, 1);
-    renderReports();
-  });
+  const nextBtn = safe('nextMonth');
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+      hapticTap();
+      reportState.month = new Date(reportState.month.getFullYear(), reportState.month.getMonth() + 1, 1);
+      renderReports();
+    });
+  }
 
-  document.getElementById('exportPdfBtn').addEventListener('click', () => {
-    hapticTap();
-    exportPDF();
-  });
+  const pdfBtn = safe('exportPdfBtn');
+  if (pdfBtn) {
+    pdfBtn.addEventListener('click', () => {
+      hapticTap();
+      exportPDF();
+    });
+  }
 }
