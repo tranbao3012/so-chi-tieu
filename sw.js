@@ -1,18 +1,11 @@
-// sw.js — V3.3 (Force Update to Dark UI v6.0.0)
-// Tăng vọt CACHE_VERSION để ép xóa toàn bộ cache cũ (giao diện lỗi) và nhận giao diện mới.
-
-const CACHE_VERSION = 'expense-tracker-v6.0.0'; // [FIX] Bắt buộc tăng phiên bản
+const CACHE_VERSION = 'expense-tracker-v1.0.0';
 
 const APP_SHELL = [
   './',
   './index.html',
   './manifest.json',
-
-  // CSS
   './css/theme.css',
   './css/app.css',
-
-  // JS modules
   './js/main.js',
   './js/core.js',
   './js/dashboard.js',
@@ -21,8 +14,6 @@ const APP_SHELL = [
   './js/settings.js',
   './js/sync.js',
   './js/crypto.js',
-
-  // Icons
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-maskable-192.png',
@@ -39,24 +30,16 @@ function offlineResponse() {
   });
 }
 
-/* ==================================================================
-   INSTALL — precache app shell
-   ================================================================== */
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_VERSION)
-      .then((cache) => {
-        return cache.addAll(APP_SHELL).catch((err) => {
-          console.warn('Precache warning:', err);
-        });
-      })
+      .then((cache) => cache.addAll(APP_SHELL).catch((err) => {
+        console.warn('[SW] Precache warning:', err);
+      }))
       .then(() => self.skipWaiting())
   );
 });
 
-/* ==================================================================
-   ACTIVATE — xoá cache cũ
-   ================================================================== */
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys()
@@ -69,44 +52,16 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-/* ==================================================================
-   FETCH — network-first cho HTML/JS/CSS, cache-first cho static
-   ================================================================== */
 self.addEventListener('fetch', (event) => {
   const req = event.request;
-
   if (req.method !== 'GET') return;
 
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
 
-  // HTML navigation: network-first → cache fallback → index.html → 503
   if (req.mode === 'navigate' || (req.headers.get('accept') || '').includes('text/html')) {
     event.respondWith(
-      fetch(req)
-        .then((res) => {
-          if (res && res.ok) {
-            if (!req.url.includes('code=')) {
-              const copy = res.clone();
-              caches.open(CACHE_VERSION).then((c) => c.put(req, copy));
-            }
-          }
-          return res;
-        })
-        .catch(() =>
-          caches.match(req)
-            .then((cached) => cached || caches.match('./index.html'))
-        )
-        .then((res) => res || offlineResponse())
-    );
-    return;
-  }
-
-  // JS/CSS modules: network-first
-  const isCode = /\.(js|css|mjs)$/.test(url.pathname);
-  if (isCode) {
-    event.respondWith(
-      fetch(req)
+      fetch(req, { cache: 'no-store' })
         .then((res) => {
           if (res && res.ok) {
             const copy = res.clone();
@@ -114,14 +69,28 @@ self.addEventListener('fetch', (event) => {
           }
           return res;
         })
-        .catch(() =>
-          caches.match(req).then((cached) => cached || offlineResponse())
-        )
+        .catch(() => caches.match(req).then((c) => c || caches.match('./index.html')))
+        .then((res) => res || offlineResponse())
     );
     return;
   }
 
-  // Static assets: cache-first + revalidate ngầm
+  const isCode = /\.(js|css|mjs)$/.test(url.pathname);
+  if (isCode) {
+    event.respondWith(
+      fetch(req, { cache: 'no-store' })
+        .then((res) => {
+          if (res && res.ok) {
+            const copy = res.clone();
+            caches.open(CACHE_VERSION).then((c) => c.put(req, copy));
+          }
+          return res;
+        })
+        .catch(() => caches.match(req).then((c) => c || offlineResponse()))
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(req).then((cached) => {
       const networkFetch = fetch(req)
@@ -138,15 +107,13 @@ self.addEventListener('fetch', (event) => {
         networkFetch.catch(() => {});
         return cached;
       }
-
       return networkFetch.then((res) => res || offlineResponse());
     })
   );
 });
 
-/* ==================================================================
-   MESSAGE — cho phép trang trigger SW update
-   ================================================================== */
 self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting();
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
