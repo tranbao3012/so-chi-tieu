@@ -1,17 +1,15 @@
-/* js/reports.js — V1.9 (Bar Chart Color Fix + Tooltip Click-based)
-   Sửa 2 lỗi:
-   1. Cột không có màu → dùng class .has-value / .is-empty, gradient primary.
-   2. Tooltip flash → dùng click + timer 3s, bấm ngoài để ẩn.
-   Bỏ touch-action: none → cho phép scroll ngang chart. */
+/* js/reports.js — V2.0 (Remove "Danh mục" & "Phương thức" cards)
+   Đã xóa phần render donut/legend và payment bars.
+   Chỉ giữ: Hero, KPI grid, Insights, Bar chart "Theo ngày", Top danh mục. */
 
 import {
   state, reportState,
   ic, escapeHtml,
-  fmtMoney, fmtMoneyShort, fmtDate, monthLabel,
+  fmtMoney, fmtMoneyShort, monthLabel,
   daysInMonth,
-  getMonthExpenses, getCategory, calcByCategory,
-  calcSummary, calcByPayment,
-  generateInsights, renderDonut, exportPDF,
+  getMonthExpenses, calcByCategory,
+  calcSummary,
+  generateInsights, exportPDF,
   hapticTap
 } from './core.js';
 
@@ -101,23 +99,7 @@ export function renderReports() {
          `).join('')}
        </div>`;
 
-  /* ---------- Donut ---------- */
-  const byCat = calcByCategory(monthExp);
-  renderDonut(document.getElementById('reportDonut'), byCat.map(b => ({ value: b.value, color: b.category.color })), total);
-  
-  document.getElementById('reportLegend').innerHTML = byCat.length === 0
-    ? `<div style="text-align:center;padding:16px;color:var(--text-soft);font-size:11px;">Chưa có dữ liệu</div>`
-    : byCat.map(b => {
-        const pct = total > 0 ? (b.value / total * 100) : 0;
-        return `<div class="legend-item">
-          <span class="legend-dot" style="background:${b.category.color};"></span>
-          <span class="legend-name">${escapeHtml(b.category.name)}</span>
-          <span class="legend-value">${fmtMoneyShort(b.value)}</span>
-          <span class="legend-pct">${pct.toFixed(0)}%</span>
-        </div>`;
-      }).join('');
-
-  /* ---------- Bar chart (FIXED) ---------- */
+  /* ---------- Bar chart "Theo ngày" ---------- */
   const dailyMap = new Map(), dailyCount = new Map();
   monthExp.forEach(e => {
     const d = parseInt(e.date.split('-')[2], 10);
@@ -144,26 +126,7 @@ export function renderReports() {
   }
   document.getElementById('reportBars').innerHTML = barsHtml;
 
-  /* ---------- Payment bars ---------- */
-  const byPayment = calcByPayment(monthExp);
-  const maxPay = Math.max(...byPayment.map(p => p.value), 1);
-  document.getElementById('reportPayments').innerHTML = byPayment.length === 0
-    ? `<div style="text-align:center;padding:16px;color:var(--text-soft);font-size:11px;">Chưa có dữ liệu</div>`
-    : byPayment.map(p => {
-        const pct = total > 0 ? (p.value / total * 100) : 0;
-        const widthPct = (p.value / maxPay) * 100;
-        return `<div class="payment-row">
-          <div class="payment-head">
-            <span class="payment-label"><span class="payment-dot" style="background:${p.payment.color};"></span>${escapeHtml(p.payment.name)}</span>
-            <span class="payment-value">${fmtMoneyShort(p.value)} (${pct.toFixed(0)}%)</span>
-          </div>
-          <div class="payment-track">
-            <div class="payment-fill" style="width:${widthPct}%; background:${p.payment.color};"></div>
-          </div>
-        </div>`;
-      }).join('');
-
-  /* ---------- Top Danh Mục ---------- */
+  /* ---------- Top danh mục chi tiêu ---------- */
   const allCats = calcByCategory(monthExp);
   document.getElementById('reportTopLabel').textContent = `${allCats.length} danh mục`;
   document.getElementById('reportTop').innerHTML = allCats.length === 0
@@ -189,7 +152,7 @@ export function renderReports() {
 }
 
 /* ==================================================================
-   TOOLTIP — hiển thị khi bấm vào cột, tự ẩn sau 3s
+   TOOLTIP — click để hiện, tự ẩn sau 3s, bấm ngoài để ẩn
    ================================================================== */
 function showBarTooltip(el) {
   const day = el.dataset.day;
@@ -207,7 +170,6 @@ function showBarTooltip(el) {
     <div class="bar-tooltip-value">${fmtMoney(amount)}</div>
     <div class="bar-tooltip-sub">${count} giao dịch</div>`;
   
-  // Đo tooltip trước khi show để tính vị trí
   tt.classList.add('show');
   const rect = el.getBoundingClientRect();
   const ttR = tt.getBoundingClientRect();
@@ -240,7 +202,6 @@ function setupBarInteraction() {
 
   let hideTimer = null;
 
-  // Click để hiện (hoạt động đồng nhất desktop + mobile)
   chart.addEventListener('click', (e) => {
     const bar = e.target.closest('.bar-col');
     if (!bar) return;
@@ -251,7 +212,6 @@ function setupBarInteraction() {
     hideTimer = setTimeout(hideBarTooltip, 3000);
   });
 
-  // Bấm ra ngoài để ẩn ngay
   document.addEventListener('click', (e) => {
     if (!e.target.closest('#reportBars') && !e.target.closest('#barTooltip')) {
       if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
