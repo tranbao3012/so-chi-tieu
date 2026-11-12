@@ -1,5 +1,4 @@
-/* js/reports.js — V1.6 (Perfect Match with UI Preview)
-   Render tab Báo cáo. */
+/* js/reports.js — V1.7 (Fix Icon & Layout) */
 
 import {
   state, reportState,
@@ -12,15 +11,9 @@ import {
   hapticTap
 } from './core.js';
 
-/* ==================================================================
-   MODULE STATE
-   ================================================================== */
 let barInteractionSetup = false;
 let currentBarActive = null;
 
-/* ==================================================================
-   MAIN RENDER
-   ================================================================== */
 export function renderReports() {
   const reportMonth = reportState.month;
 
@@ -38,18 +31,22 @@ export function renderReports() {
   const largest = monthExp.reduce((m, e) => Math.max(m, Number(e.amount || 0)), 0);
   const diffPct = prevTotal > 0 ? ((total - prevTotal) / prevTotal * 100) : 0;
 
-  let trendLine = 'Chưa có dữ liệu', trendIcon = 'minus', trendClass = '';
+  let trendHtml = '';
   if (prevTotal > 0) {
-    if (diffPct > 0) { trendLine = `Tăng ${Math.abs(diffPct).toFixed(0)}% so với tháng trước`; trendIcon = 'arrowUp'; trendClass = 'up'; }
-    else if (diffPct < 0) { trendLine = `Giảm ${Math.abs(diffPct).toFixed(0)}% so với tháng trước`; trendIcon = 'arrowDown'; trendClass = 'down'; }
-    else trendLine = 'Không đổi';
+    if (diffPct > 0) { trendHtml = `<div class="report-hero-sub up">${ic('arrowUp', 14)}<span>Tăng ${Math.abs(diffPct).toFixed(0)}% so với tháng trước</span></div>`; }
+    else if (diffPct < 0) { trendHtml = `<div class="report-hero-sub down">${ic('arrowDown', 14)}<span>Giảm ${Math.abs(diffPct).toFixed(0)}% so với tháng trước</span></div>`; }
+    else { trendHtml = `<div class="report-hero-sub">${ic('minus', 14)}<span>Không đổi</span></div>`; }
+  } else if (total > 0) {
+    trendHtml = `<div class="report-hero-sub" style="color:var(--text-soft);">${ic('minus', 14)}<span>Chưa có dữ liệu tháng trước</span></div>`;
+  } else {
+    trendHtml = `<div class="report-hero-sub" style="color:var(--text-soft);">${ic('minus', 14)}<span>Chưa có dữ liệu</span></div>`;
   }
 
   /* ---------- Hero ---------- */
   document.getElementById('reportHero').innerHTML = `
     <div class="report-hero-label">${ic('dollarSign', 14)}<span>Tổng chi tháng ${reportMonth.getMonth() + 1}</span></div>
     <div class="report-hero-value">${fmtMoney(total)}</div>
-    <div class="report-hero-sub ${trendClass}">${ic(trendIcon, 14)}<span>${trendLine}</span></div>
+    ${trendHtml}
     <div class="report-hero-stats">
       <div>
         <div class="report-hero-stat-label">Số GD</div>
@@ -70,17 +67,17 @@ export function renderReports() {
       <div class="kpi-value">${fmtMoneyShort(largest)}</div>
       <div class="kpi-sub">GD đắt nhất</div>
     </div>
-    <div class="kpi" style="border-left: 3px solid ${diffPct > 0 ? 'var(--danger)' : 'var(--primary)'};">
+    <div class="kpi" style="border-left-color: ${diffPct > 0 ? 'var(--danger)' : 'var(--primary)'};">
       <div class="kpi-label">${ic(diffPct > 0 ? 'arrowUp' : 'arrowDown', 12)} So tháng trước</div>
       <div class="kpi-value">${prevTotal > 0 ? (diffPct >= 0 ? '+' : '') + diffPct.toFixed(0) + '%' : '—'}</div>
       <div class="kpi-sub">${prevTotal > 0 ? fmtMoneyShort(prevTotal) : 'Chưa có'}</div>
     </div>
-    <div class="kpi" style="border-left: 3px solid var(--warning);">
+    <div class="kpi" style="border-left-color: var(--warning);">
       <div class="kpi-label">${ic('calendar', 12)} Ngày có chi</div>
       <div class="kpi-value">${uniqueDays}/${days}</div>
       <div class="kpi-sub">Ngày phát sinh</div>
     </div>
-    <div class="kpi" style="border-left: 3px solid ${budget > 0 && budgetPct > 100 ? 'var(--danger)' : 'var(--primary)'};">
+    <div class="kpi" style="border-left-color: ${budget > 0 && budgetPct > 100 ? 'var(--danger)' : 'var(--primary)'};">
       <div class="kpi-label">${ic('target', 12)} Ngân sách</div>
       <div class="kpi-value">${budget > 0 ? budgetPct.toFixed(0) + '%' : '—'}</div>
       <div class="kpi-sub">${budget > 0 ? (budgetPct > 100 ? 'Vượt ' + fmtMoneyShort(total - budget) : 'Còn ' + fmtMoneyShort(budget - total)) : 'Chưa đặt'}</div>
@@ -92,7 +89,7 @@ export function renderReports() {
     ? `<div style="text-align:center;padding:16px;color:var(--text-soft);font-size:13px;">Chưa có dữ liệu để phân tích</div>`
     : `<div class="section-title"><div class="section-title-left"><span class="section-title-text">Nhận xét</span></div></div><div class="insight-list">${insights.map(i => `<div class="insight-item"><div class="insight-icon">${ic(i.icon, 14)}</div><span>${i.html}</span></div>`).join('')}</div>`;
 
-  /* ---------- Donut (by category) ---------- */
+  /* ---------- Donut ---------- */
   const byCat = calcByCategory(monthExp);
   renderDonut(document.getElementById('reportDonut'), byCat.map(b => ({ value: b.value, color: b.category.color })), total);
   
@@ -108,7 +105,7 @@ export function renderReports() {
         </div>`;
       }).join('');
 
-  /* ---------- Bar chart (daily) ---------- */
+  /* ---------- Bar chart ---------- */
   const dailyMap = new Map(), dailyCount = new Map();
   monthExp.forEach(e => {
     const d = parseInt(e.date.split('-')[2], 10);
@@ -158,10 +155,7 @@ export function renderReports() {
     ? `<div style="text-align:center;padding:24px;color:var(--text-soft);font-size:13px;">Chưa có chi tiêu</div>`
     : `<table class="top-table">
         <thead>
-          <tr>
-            <th>Danh mục</th>
-            <th>Số tiền</th>
-          </tr>
+          <tr><th>Danh mục</th><th>Số tiền</th></tr>
         </thead>
         <tbody>
           ${allCats.map(b => {
@@ -179,9 +173,6 @@ export function renderReports() {
       </table>`;
 }
 
-/* ==================================================================
-   BAR CHART TOOLTIP
-   ================================================================== */
 function showBarTooltip(el) {
   const day = el.dataset.day;
   const amount = Number(el.dataset.amount || 0);
@@ -238,17 +229,11 @@ function setupBarInteraction() {
   chart.addEventListener('pointerleave', hideBarTooltip);
 }
 
-/* ==================================================================
-   ENTRY — render tab
-   ================================================================== */
 export function renderReportsTab() {
   renderReports();
   setupBarInteraction();
 }
 
-/* ==================================================================
-   BIND EVENTS (called once by main.js)
-   ================================================================== */
 export function bindReportTabEvents() {
   document.getElementById('prevMonth').addEventListener('click', () => {
     hapticTap();
