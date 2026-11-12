@@ -1,5 +1,5 @@
-/* js/core.js — V1.2
-   V1.2: Ép cứng width/height cho icon SVG để chống vỡ layout nếu CSS không tải được.
+/* js/core.js — V1.3
+   V1.3: Ép cứng style inline cho icon và biểu đồ tròn để chống vỡ layout tuyệt đối.
    Core module: State, Storage, Utils, Queries, AI, ACCT, UI helpers, PDF */
 
 /* ==================================================================
@@ -64,17 +64,16 @@ export const ICONS = {
   sun: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>'
 };
 
-// [FIX] Ép cứng width/height trực tiếp vào thẻ svg để không bao giờ bị vỡ layout
+// [FIX] Ép cứng style inline cho mọi icon để chống vỡ layout kể cả khi mất CSS
 export const ic = (n, size = 16) => {
   const svg = ICONS[n] || '';
   if (!svg) return '';
-  return svg.replace('<svg ', `<svg width="${size}" height="${size}" `);
+  return svg.replace('<svg ', `<svg width="${size}" height="${size}" style="width:${size}px;height:${size}px;min-width:${size}px;min-height:${size}px;display:inline-block;vertical-align:middle;" `);
 };
 
 export function fillIcons() {
   document.querySelectorAll('[data-icon]').forEach(el => {
     if (ICONS[el.dataset.icon] && !el.querySelector('svg')) {
-      // Sử dụng hàm ic() để lấy thẻ svg đã được ép kích thước
       el.innerHTML = ic(el.dataset.icon, 16);
     }
   });
@@ -542,15 +541,24 @@ export function renderSparkline(container, data, color = 'var(--primary)') {
   container.innerHTML = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="100%" preserveAspectRatio="none"><path d="${area}" fill="${color}" opacity="0.15"/><polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 }
 
+// [FIX] Ép cứng inline style cho container và donut center
 export function renderDonut(container, segments, total) {
   if (!container) return;
   const size = 160, cx = 80, cy = 80, r = 58;
   const circ = 2 * Math.PI * r;
+  
+  container.style.width = size + 'px';
+  container.style.height = size + 'px';
+  container.style.margin = '0 auto';
+  container.style.position = 'relative';
+
   if (!total) {
-    container.innerHTML = `<svg viewBox="0 0 ${size} ${size}" width="100%" height="100%"><circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--surface-3)" stroke-width="16"/></svg><div class="donut-center"><div class="donut-center-label">Tổng</div><div class="donut-center-value">0</div></div>`;
+    container.innerHTML = `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}"><circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--surface-3)" stroke-width="16"/></svg><div class="donut-center" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;"><div class="donut-center-label" style="font-size:9.5px;color:var(--text-soft);font-weight:700;">Tổng</div><div class="donut-center-value" style="font-size:17px;font-weight:800;color:var(--text);">0</div></div>`;
     return;
   }
-  let offset = 0, svg = `<svg viewBox="0 0 ${size} ${size}" width="100%" height="100%"><circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--surface-3)" stroke-width="16"/>`;
+  
+  let offset = 0;
+  let svg = `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}"><circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--surface-3)" stroke-width="16"/>`;
   segments.forEach(s => {
     const dash = (s.value / total) * circ;
     if (dash < 0.5) return;
@@ -558,7 +566,7 @@ export function renderDonut(container, segments, total) {
     offset += dash;
   });
   svg += '</svg>';
-  svg += `<div class="donut-center"><div class="donut-center-label">Tổng</div><div class="donut-center-value">${fmtMoneyShort(total)}</div></div>`;
+  svg += `<div class="donut-center" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;"><div class="donut-center-label" style="font-size:9.5px;color:var(--text-soft);font-weight:700;">Tổng</div><div class="donut-center-value" style="font-size:17px;font-weight:800;color:var(--text);">${fmtMoneyShort(total)}</div></div>`;
   container.innerHTML = svg;
 }
 
