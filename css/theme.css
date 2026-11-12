@@ -1,4 +1,4 @@
-/* css/theme.css — V3.0 (Clean & Standard) */
+/* css/theme.css — V3.1 (Compact UI) */
 
 /* ==================================================================
    DESIGN TOKENS — Light mode
@@ -24,35 +24,34 @@
   --surface-3: #e2e8f0;
   
   --border: #e2e8f0;
-  --border-soft: #f1f5f9;
+  --border-soft: #eef1f5;
   --border-strong: #cbd5e1;
 
   --text: #0f172a;
   --text-muted: #475569;
   --text-soft: #94a3b8;
 
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  /* Giảm nhẹ bo góc để gọn gàng hơn */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
 
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
 
-  --app-bar-h: 60px;
-  --tab-bar-h: 60px;
+  /* Thu gọn chiều cao thanh điều hướng */
+  --app-bar-h: 52px;
+  --tab-bar-h: 54px;
 }
 
 /* ==================================================================
    Platform overrides
    ================================================================== */
 [data-platform="android"] {
-  --app-bar-h: 60px;
-  --tab-bar-h: 64px;
+  --app-bar-h: 54px;
+  --tab-bar-h: 58px;
 }
 
 /* ==================================================================
@@ -85,9 +84,6 @@
   --text: #f8fafc;
   --text-muted: #cbd5e1;
   --text-soft: #64748b;
-
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.3);
 }
 
 /* ==================================================================
@@ -106,7 +102,7 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   background: var(--bg);
   color: var(--text);
-  line-height: 1.5;
+  line-height: 1.4;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
