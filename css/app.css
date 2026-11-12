@@ -1,4 +1,4 @@
-/* css/app.css — V3.1 (Bulletproof Mobile-First & FAB Fix) */
+/* css/app.css — V4.0 (Bulletproof Standard CSS) */
 /* Tương thích 100% iOS, Android, Windows - Không dùng CSS Experimental */
 
 /* ==================================================================
@@ -8,7 +8,7 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
-  height: -webkit-fill-available; /* Fix cho iOS cũ */
+  height: -webkit-fill-available;
   height: 100dvh;
   position: relative;
   background: var(--bg);
@@ -21,22 +21,24 @@
    ================================================================== */
 .app-bar {
   flex-shrink: 0;
-  background: var(--bg);
+  background: var(--surface); /* Nền đặc, không dùng kính mờ */
   padding-top: max(calc(env(safe-area-inset-top, 0px) + 10px), 24px);
   z-index: 20;
-  border-bottom: 1px solid transparent;
+  border-bottom: 1px solid var(--border-soft);
 }
-[data-platform="ios"] .app-bar, [data-platform="windows"] .app-bar {
+[data-platform="ios"] .app-bar, 
+[data-platform="windows"] .app-bar {
   padding: max(calc(env(safe-area-inset-top, 0px) + 10px), 24px) 20px 0;
 }
 [data-platform="android"] .app-bar {
-  background: var(--surface);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   padding: max(calc(env(safe-area-inset-top, 0px) + 10px), 24px) 16px 0;
 }
-.app-bar.scrolled { border-bottom-color: var(--border-soft); }
 
-.app-bar-inner { display: flex; align-items: center; width: 100%; }
+.app-bar-inner { 
+  display: flex; 
+  align-items: center; 
+  width: 100%; 
+}
 .app-bar-title-wrap {
   display: flex;
   align-items: center;
@@ -44,22 +46,42 @@
   width: 100%;
   gap: 12px;
 }
-[data-platform="ios"] .app-bar-title-wrap, [data-platform="windows"] .app-bar-title-wrap {
+[data-platform="ios"] .app-bar-title-wrap, 
+[data-platform="windows"] .app-bar-title-wrap {
   flex-direction: row;
   padding: 8px 0;
 }
-.app-bar-title { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
-[data-platform="android"] .app-bar-title { font-size: 18px; font-weight: 700; }
+.app-bar-title { 
+  font-size: 22px; 
+  font-weight: 800; 
+  letter-spacing: -0.5px; 
+  color: var(--text);
+}
+[data-platform="android"] .app-bar-title { 
+  font-size: 18px; 
+  font-weight: 700; 
+}
 
-.app-bar-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; margin-left: auto; }
+.app-bar-actions { 
+  display: flex; 
+  align-items: center; 
+  gap: 8px; 
+  flex-shrink: 0; 
+  margin-left: auto; 
+}
 
 .bar-icon-btn {
-  width: 42px; height: 42px; border-radius: 12px;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--text-muted); background: var(--surface);
-  border: 1px solid var(--border-soft);
+  width: 40px; 
+  height: 40px; 
+  border-radius: 10px;
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  color: var(--text-muted); 
+  background: var(--surface-2);
+  transition: background 0.2s;
 }
-.bar-icon-btn:active { background: var(--surface-2); }
+.bar-icon-btn:active { background: var(--surface-3); }
 [data-platform="android"] .bar-icon-btn { border-radius: 50%; }
 
 /* ==================================================================
@@ -80,19 +102,31 @@
    4. TAB BAR (BOTTOM NAVIGATION)
    ================================================================== */
 .tab-bar {
-  position: fixed; left: 0; right: 0; bottom: 0;
+  position: fixed; 
+  left: 0; 
+  right: 0; 
+  bottom: 0;
   height: calc(var(--tab-bar-h) + env(safe-area-inset-bottom, 0px));
   padding-bottom: env(safe-area-inset-bottom, 0px);
   padding-left: env(safe-area-inset-left, 0px);
   padding-right: env(safe-area-inset-right, 0px);
   background: var(--surface);
-  display: grid; grid-template-columns: repeat(4, 1fr);
-  z-index: 30; border-top: 1px solid var(--border-soft);
+  display: grid; 
+  grid-template-columns: repeat(4, 1fr);
+  z-index: 30; 
+  border-top: 1px solid var(--border-soft);
 }
 
 .tab-btn {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 4px; color: var(--text-soft); padding: 8px 4px; min-height: 48px;
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  justify-content: center;
+  gap: 4px; 
+  color: var(--text-soft); 
+  padding: 8px 4px; 
+  min-height: 48px;
+  transition: color 0.2s;
 }
 .tab-btn.active { color: var(--primary); }
 [data-platform="ios"] .tab-btn span { font-size: 10px; font-weight: 600; }
@@ -105,11 +139,8 @@
 .fab {
   position: fixed;
   right: 20px;
-  /* Fallback cho Android cũ */
-  bottom: 80px; 
-  /* Áp dụng Safe Area cho thiết bị mới */
+  bottom: 80px; /* Fallback */
   bottom: calc(var(--tab-bar-h) + env(safe-area-inset-bottom, 0px) + 20px);
-  
   width: 56px; 
   height: 56px; 
   border-radius: 20px;
@@ -120,41 +151,26 @@
   justify-content: center;
   box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4); 
   z-index: 999;
-  
-  /* Chống bóp méo */
   box-sizing: border-box;
   padding: 0;
   margin: 0;
   border: none;
 }
-
-/* Ép kích thước icon bên trong FAB */
-.fab svg {
-  width: 24px !important;
-  height: 24px !important;
-  flex-shrink: 0;
-}
-
+.fab svg { width: 24px !important; height: 24px !important; flex-shrink: 0; }
 .fab:active { transform: scale(0.9); }
-
-[data-platform="ios"] .fab { 
-  border-radius: 28px; 
-  width: 54px; 
-  height: 54px; 
-}
-[data-platform="android"] .fab { 
-  border-radius: 50%; 
-  right: 16px; 
-  width: 58px; 
-  height: 58px; 
-}
+[data-platform="ios"] .fab { border-radius: 28px; width: 54px; height: 54px; }
+[data-platform="android"] .fab { border-radius: 50%; right: 16px; width: 58px; height: 58px; }
 
 /* ==================================================================
    6. CARDS & CONTAINERS
    ================================================================== */
 .card, .overview-card, .settings-card, .quick-stat-card, .expense-group {
-  background: var(--surface); border-radius: 16px; border: 1px solid var(--border-soft);
-  margin-bottom: 16px; overflow: hidden;
+  background: var(--surface); 
+  border-radius: 16px; 
+  border: 1px solid var(--border-soft);
+  margin-bottom: 16px; 
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
 }
 .card { padding: 20px; }
 
@@ -162,7 +178,12 @@
    7. DASHBOARD TAB
    ================================================================== */
 .overview-grid { margin-bottom: 16px; }
-.overview-card { padding: 24px 20px; background: var(--primary-soft); border: none; }
+.overview-card { 
+  padding: 24px 20px; 
+  background: var(--primary-soft); 
+  border: none; 
+  box-shadow: none;
+}
 .overview-header { display: flex; justify-content: space-between; margin-bottom: 16px; }
 .overview-title { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 800; color: var(--primary); text-transform: uppercase; }
 .overview-icon { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: var(--primary); color: #fff; }
@@ -179,6 +200,7 @@
 .quick-stat-value { font-size: 14px; font-weight: 800; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .quick-stat-label { font-size: 10px; color: var(--text-soft); font-weight: 600; margin-top: 2px; }
 
+/* Recent List */
 .recent-list { display: flex; flex-direction: column; }
 .recent-list .expense-swipe { position: relative; overflow: hidden; border-bottom: 1px solid var(--border-soft); }
 .recent-list .recent-item { position: relative; z-index: 2; background: var(--surface); touch-action: pan-y; padding: 12px 0; display: flex; align-items: center; gap: 12px; }
@@ -328,9 +350,12 @@
 .btn-ghost { background: var(--surface-2); color: var(--text-muted); }
 
 /* ==================================================================
-   12. TOAST
+   12. TOAST & MISC
    ================================================================== */
 .toast-container { position: fixed; left: 16px; right: 16px; bottom: calc(var(--tab-bar-h) + env(safe-area-inset-bottom, 0px) + 16px); z-index: 2000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
-.toast { background: var(--surface); border-radius: 16px; padding: 16px; border-left: 4px solid var(--primary); font-weight: 600; font-size: 14px; color: var(--text); }
+.toast { background: var(--surface); border-radius: 16px; padding: 16px; border-left: 4px solid var(--primary); font-weight: 600; font-size: 14px; color: var(--text); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
 .toast.success { border-color: var(--success); }
 .toast.error { border-color: var(--danger); }
+
+.bar-tooltip { position: fixed; z-index: 3000; pointer-events: none; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 10px 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); opacity: 0; transform: translateY(6px); transition: opacity 0.15s ease, transform 0.15s ease; font-size: 12px; }
+.bar-tooltip.show { opacity: 1; transform: translateY(0); }
