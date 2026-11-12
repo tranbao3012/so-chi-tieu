@@ -1,4 +1,4 @@
-/* css/app.css — V7.0 (Bar Chart Color Fix + Visual Hierarchy) */
+/* css/app.css — V8.0 (PDF Export Fix — Full print stylesheet) */
 
 /* ==================================================================
    1. APP SHELL & LAYOUT
@@ -243,7 +243,7 @@
 .group-total { color: var(--primary); }
 
 /* ==================================================================
-   10. REPORTS TAB (BAR CHART FIX + VISUAL HIERARCHY)
+   10. REPORTS TAB
    ================================================================== */
 .month-nav { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; margin-top: 4px; }
 .month-nav-btn { width: 36px; height: 36px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--text); }
@@ -273,7 +273,7 @@
 .kpi-value { font-size: 18px; font-weight: 800; color: var(--text); }
 .kpi-sub { font-size: 10px; color: var(--text-soft); margin-top: 2px; font-weight: 500; }
 
-/* INSIGHTS — mỗi insight là 1 ô riêng biệt */
+/* INSIGHTS */
 .insight-list { display: flex; flex-direction: column; gap: 8px; }
 .insight-row {
   display: flex;
@@ -288,32 +288,7 @@
 .insight-text { flex: 1; font-size: 12.5px; color: var(--text); line-height: 1.45; }
 .insight-text strong { color: var(--primary); font-weight: 800; }
 
-.reports-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 12px; }
-@media (min-width: 720px) { .reports-grid { grid-template-columns: 1fr 1fr; } }
-.reports-grid.full-width { grid-template-columns: 1fr; }
-
-.donut-wrap { display: flex; flex-direction: column; align-items: center; width: 100%; gap: 14px; }
-.donut-container { position: relative; width: 140px; height: 140px; margin: 0 auto; flex-shrink: 0; }
-.donut-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
-.donut-center-label { font-size: 9px; font-weight: 700; color: var(--text-soft); }
-.donut-center-value { font-size: 16px; font-weight: 800; color: var(--text); }
-
-/* LEGEND — mỗi item là 1 ô riêng */
-.legend { display: flex; flex-direction: column; width: 100%; gap: 6px; }
-.legend-item {
-  display: flex;
-  align-items: center;
-  padding: 8px 10px;
-  background: var(--surface-2);
-  border-radius: 8px;
-  border: 1px solid var(--border-soft);
-}
-.legend-dot { width: 8px; height: 8px; border-radius: 2px; margin-right: 8px; flex-shrink: 0; }
-.legend-name { flex: 1; font-weight: 600; font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.legend-value { font-weight: 800; font-size: 12px; color: var(--text); }
-.legend-pct { font-size: 11px; color: var(--text-soft); width: 35px; text-align: right; margin-left: 6px; font-weight: 700; }
-
-/* ==================== BAR CHART (MAIN FIX) ==================== */
+/* ==================== BAR CHART ==================== */
 .chart-wrap { position: relative; width: 100%; overflow: hidden; }
 .chart-bars {
   display: flex;
@@ -343,8 +318,6 @@
   -webkit-tap-highlight-color: transparent;
   touch-action: pan-x;
 }
-
-/* BAR — có data = gradient xanh mint; ngày trống = trong suốt */
 .bar {
   width: 100%;
   max-width: 18px;
@@ -363,7 +336,6 @@
   filter: brightness(1.2);
   box-shadow: 0 0 8px rgba(52, 211, 153, 0.55), 0 0 2px rgba(52, 211, 153, 0.8);
 }
-
 .bar-label {
   position: absolute;
   bottom: 0;
@@ -377,23 +349,7 @@
   line-height: 1;
 }
 
-/* PAYMENT — mỗi dòng là 1 ô */
-.payment-row {
-  margin-bottom: 8px;
-  padding: 12px;
-  background: var(--surface-2);
-  border-radius: 10px;
-  border: 1px solid var(--border-soft);
-}
-.payment-row:last-child { margin-bottom: 0; }
-.payment-head { display: flex; justify-content: space-between; margin-bottom: 8px; align-items: center; }
-.payment-label { font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 6px; color: var(--text-muted); }
-.payment-dot { width: 10px; height: 10px; border-radius: 3px; }
-.payment-value { font-weight: 800; color: var(--text); font-size: 12px; }
-.payment-track { height: 6px; background: var(--surface-3); border-radius: 3px; overflow: hidden; }
-.payment-fill { height: 100%; border-radius: 3px; transition: width 0.3s ease; }
-
-/* TOP TABLE — xen kẽ nền */
+/* TOP TABLE */
 .top-table { width: 100%; border-collapse: collapse; font-size: 12px; }
 .top-table th { text-align: left; padding: 8px 10px; color: var(--primary); font-weight: 800; border-bottom: 2px solid var(--border); font-size: 10px; text-transform: uppercase; letter-spacing: 0.3px; }
 .top-table th:last-child { text-align: right; }
@@ -497,3 +453,258 @@
 .bar-tooltip-label { font-size: 9px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 2px; letter-spacing: 0.3px; }
 .bar-tooltip-value { font-size: 13px; font-weight: 800; color: #fff; }
 .bar-tooltip-sub { font-size: 9px; color: #cbd5e1; margin-top: 2px; font-weight: 600; }
+
+/* ==================================================================
+   14. PDF EXPORT — Screen hidden + Print styles
+   ================================================================== */
+
+/* Ẩn khỏi màn hình — chỉ render khi in */
+#pdfReport {
+  display: none;
+}
+
+@media print {
+  /* ---------- PAGE SETUP ---------- */
+  @page {
+    size: A4;
+    margin: 10mm;
+  }
+
+  /* Reset overflow + nền để print không bị cắt */
+  html, body {
+    overflow: visible !important;
+    height: auto !important;
+    background: #ffffff !important;
+    color: #1e293b !important;
+  }
+
+  /* ---------- ẨN TOÀN BỘ APP ---------- */
+  .app,
+  .tab-bar,
+  .fab,
+  .sheet-overlay,
+  .toast-container,
+  .bar-tooltip {
+    display: none !important;
+  }
+
+  /* ---------- HIỆN PDF ---------- */
+  #pdfReport {
+    display: block !important;
+    background: #ffffff;
+    color: #1e293b;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 9.5pt;
+    line-height: 1.5;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* ---------- PAGE ---------- */
+  .pdf-page {
+    page-break-after: always;
+    break-after: page;
+    padding: 0;
+  }
+  .pdf-page:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
+
+  /* ---------- COVER ---------- */
+  .pdf-cover {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 250mm;
+    padding: 12mm;
+    background: linear-gradient(135deg, #eef2ff 0%, #ede9fe 100%);
+    border-radius: 3mm;
+    border-top: 4mm solid #4f46e5;
+  }
+  .pdf-cover-top { display: flex; flex-direction: column; gap: 10mm; }
+  .pdf-cover-brand { display: flex; align-items: center; gap: 4mm; }
+  .pdf-cover-logo {
+    width: 14mm; height: 14mm;
+    background: #4f46e5;
+    color: #ffffff;
+    border-radius: 3mm;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20pt; font-weight: 900;
+  }
+  .pdf-cover-brand-name { font-size: 13pt; font-weight: 800; color: #1e293b; }
+  .pdf-cover-brand-sub { font-size: 9pt; color: #64748b; font-weight: 600; }
+  .pdf-cover-title {
+    font-size: 30pt; font-weight: 900; line-height: 1.1;
+    color: #1e1b4b; letter-spacing: -0.5pt;
+  }
+  .pdf-cover-subtitle { font-size: 13pt; color: #4f46e5; font-weight: 600; margin-top: 2mm; }
+  .pdf-cover-period {
+    display: inline-block;
+    align-self: flex-start;
+    padding: 3mm 6mm;
+    background: #4f46e5;
+    color: #ffffff;
+    border-radius: 3mm;
+    font-size: 18pt; font-weight: 800;
+    margin-top: 6mm;
+  }
+  .pdf-cover-meta {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 3mm;
+    margin-bottom: 6mm;
+  }
+  .pdf-cover-meta-item {
+    padding: 3mm 4mm;
+    background: #ffffff;
+    border: 1px solid #c7d2fe;
+    border-radius: 2mm;
+  }
+  .pdf-cover-meta-label {
+    font-size: 8pt; color: #6366f1; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.3pt;
+  }
+  .pdf-cover-meta-value {
+    font-size: 11pt; font-weight: 800; color: #1e293b; margin-top: 1mm;
+  }
+  .pdf-cover-footer {
+    text-align: center; font-size: 8pt; color: #64748b;
+    padding-top: 3mm; border-top: 1px solid #c7d2fe;
+  }
+
+  /* ---------- PAGE HEADER / FOOTER ---------- */
+  .pdf-page-header {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    padding-bottom: 2mm; margin-bottom: 5mm;
+    border-bottom: 2pt solid #4f46e5;
+  }
+  .pdf-page-header-title { font-size: 16pt; font-weight: 800; color: #1e293b; }
+  .pdf-page-header-section { font-size: 9.5pt; color: #64748b; font-weight: 600; }
+  .pdf-page-footer {
+    display: flex; justify-content: space-between;
+    font-size: 8pt; color: #94a3b8;
+    padding-top: 3mm; margin-top: 6mm;
+    border-top: 1px solid #e2e8f0;
+  }
+
+  /* ---------- HEALTH BANNER ---------- */
+  .pdf-health-banner {
+    display: flex; align-items: center; gap: 5mm;
+    padding: 5mm 6mm;
+    background: #ecfdf5;
+    border-radius: 3mm;
+    border-left: 4pt solid #10b981;
+    margin-bottom: 5mm;
+  }
+  .pdf-health-score-big {
+    font-size: 28pt; font-weight: 900; color: #065f46; line-height: 1;
+  }
+  .pdf-health-score-big span { font-size: 11pt; color: #94a3b8; font-weight: 600; }
+  .pdf-health-label {
+    font-size: 8.5pt; color: #047857; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.3pt;
+  }
+  .pdf-health-status { font-size: 13pt; color: #065f46; font-weight: 800; }
+  .pdf-health-desc { font-size: 8.5pt; color: #047857; }
+
+  /* ---------- KPI GRID ---------- */
+  .pdf-kpi-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 3mm; margin-bottom: 5mm;
+  }
+  .pdf-kpi {
+    padding: 3mm 4mm;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 2mm;
+  }
+  .pdf-kpi-label {
+    font-size: 7.5pt; color: #64748b; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.2pt;
+  }
+  .pdf-kpi-value {
+    font-size: 13pt; font-weight: 900; color: #1e293b;
+    margin: 1mm 0; line-height: 1.1;
+  }
+  .pdf-kpi-sub { font-size: 7.5pt; color: #94a3b8; font-weight: 500; }
+
+  /* ---------- SECTION ---------- */
+  .pdf-section {
+    margin-bottom: 5mm;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .pdf-section-title {
+    font-size: 10.5pt; font-weight: 800; color: #1e293b;
+    margin-bottom: 2.5mm; padding-bottom: 1.5mm;
+    border-bottom: 1pt solid #e2e8f0;
+  }
+
+  /* ---------- TABLE ---------- */
+  .pdf-table { width: 100%; border-collapse: collapse; font-size: 8.5pt; }
+  .pdf-table th {
+    text-align: left; padding: 1.5mm 2mm;
+    background: #f1f5f9; color: #475569; font-weight: 800;
+    text-transform: uppercase; font-size: 7.5pt;
+    letter-spacing: 0.2pt; border-bottom: 1pt solid #cbd5e1;
+  }
+  .pdf-table th.right, .pdf-table th.num { text-align: right; }
+  .pdf-table td {
+    padding: 1.5mm 2mm;
+    border-bottom: 1px solid #f1f5f9;
+    color: #1e293b;
+  }
+  .pdf-table td.right, .pdf-table td.num { text-align: right; font-weight: 700; }
+  .pdf-table tbody tr:nth-child(even) td { background: #f8fafc; }
+  .pdf-table strong { font-weight: 800; }
+
+  .dot {
+    display: inline-block;
+    width: 2mm; height: 2mm;
+    border-radius: 0.5mm;
+    margin-right: 2mm;
+    vertical-align: middle;
+  }
+
+  /* ---------- 2 COLUMN ---------- */
+  .pdf-2col {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 4mm;
+  }
+
+  /* ---------- INSIGHTS ---------- */
+  .pdf-insight-list { display: flex; flex-direction: column; gap: 2mm; }
+  .pdf-insight {
+    padding: 2.5mm 4mm;
+    background: #f8fafc;
+    border-left: 3pt solid #4f46e5;
+    border-radius: 1mm;
+    font-size: 9pt; color: #1e293b;
+    line-height: 1.4;
+  }
+  .pdf-insight.danger { background: #fef2f2; border-left-color: #ef4444; color: #7f1d1d; }
+  .pdf-insight.warning { background: #fffbeb; border-left-color: #f59e0b; color: #78350f; }
+  .pdf-insight.success { background: #ecfdf5; border-left-color: #10b981; color: #064e3b; }
+  .pdf-insight strong { font-weight: 800; }
+
+  /* ---------- SIGNATURES ---------- */
+  .pdf-sign {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 4mm; margin-top: 8mm;
+  }
+  .pdf-sign-block { text-align: center; }
+  .pdf-sign-label {
+    font-size: 8.5pt; font-weight: 700; color: #64748b; margin-bottom: 6mm;
+  }
+  .pdf-sign-line {
+    font-size: 8.5pt; color: #1e293b;
+    padding-top: 2mm; border-top: 1px solid #cbd5e1;
+  }
+
+  /* ---------- SVG ---------- */
+  #pdfReport svg {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+}
