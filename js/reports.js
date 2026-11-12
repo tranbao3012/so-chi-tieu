@@ -1,4 +1,8 @@
-/* js/reports.js — V1.8 (Fix Chart Interaction & Insight UI) */
+/* js/reports.js — V1.9 (Bar Chart Color Fix + Tooltip Click-based)
+   Sửa 2 lỗi:
+   1. Cột không có màu → dùng class .has-value / .is-empty, gradient primary.
+   2. Tooltip flash → dùng click + timer 3s, bấm ngoài để ẩn.
+   Bỏ touch-action: none → cho phép scroll ngang chart. */
 
 import {
   state, reportState,
@@ -83,7 +87,7 @@ export function renderReports() {
       <div class="kpi-sub">${budget > 0 ? (budgetPct > 100 ? 'Vượt ' + fmtMoneyShort(total - budget) : 'Còn ' + fmtMoneyShort(budget - total)) : 'Chưa đặt'}</div>
     </div>`;
 
-  /* ---------- Insights (Redesigned) ---------- */
+  /* ---------- Insights ---------- */
   const insights = generateInsights(monthExp, total, prevTotal, days);
   document.getElementById('reportInsights').innerHTML = insights.length === 0
     ? `<div style="text-align:center;padding:16px;color:var(--text-soft);font-size:12px;">Chưa có dữ liệu để phân tích</div>`
@@ -113,7 +117,7 @@ export function renderReports() {
         </div>`;
       }).join('');
 
-  /* ---------- Bar chart (Fixed Structure) ---------- */
+  /* ---------- Bar chart (FIXED) ---------- */
   const dailyMap = new Map(), dailyCount = new Map();
   monthExp.forEach(e => {
     const d = parseInt(e.date.split('-')[2], 10);
@@ -128,11 +132,13 @@ export function renderReports() {
   for (let d = 1; d <= days; d++) {
     const val = dailyMap.get(d) || 0;
     const cnt = dailyCount.get(d) || 0;
-    const pct = maxDay > 0 ? val / maxDay * 100 : 0;
+    const pct = maxDay > 0 ? (val / maxDay) * 100 : 0;
+    const hasVal = val > 0;
     const show = days <= 15 || d % 2 === 0 || d === 1 || d === days;
-    // Thêm pointer-events: none cho .bar để sự kiện nhắm vào .bar-col
+    const barCls = hasVal ? 'bar has-value' : 'bar is-empty';
+    const barH = hasVal ? Math.max(pct, 1) : 0;
     barsHtml += `<div class="bar-col" data-day="${d}" data-amount="${val}" data-count="${cnt}">
-      <div class="bar" style="height:${pct}%; pointer-events: none;"></div>
+      <div class="${barCls}" style="height:${barH}%;"></div>
       <div class="bar-label">${show ? d : ''}</div>
     </div>`;
   }
@@ -182,6 +188,9 @@ export function renderReports() {
       </table>`;
 }
 
+/* ==================================================================
+   TOOLTIP — hiển thị khi bấm vào cột, tự ẩn sau 3s
+   ================================================================== */
 function showBarTooltip(el) {
   const day = el.dataset.day;
   const amount = Number(el.dataset.amount || 0);
@@ -193,10 +202,14 @@ function showBarTooltip(el) {
   el.classList.add('active');
   currentBarActive = el;
 
-  tt.innerHTML = `<div class="bar-tooltip-label">Ngày ${day}/${reportState.month.getMonth() + 1}</div><div class="bar-tooltip-value">${fmtMoney(amount)}</div><div class="bar-tooltip-sub">${count} giao dịch</div>`;
+  tt.innerHTML = `
+    <div class="bar-tooltip-label">Ngày ${day}/${reportState.month.getMonth() + 1}</div>
+    <div class="bar-tooltip-value">${fmtMoney(amount)}</div>
+    <div class="bar-tooltip-sub">${count} giao dịch</div>`;
   
-  const rect = el.getBoundingClientRect();
+  // Đo tooltip trước khi show để tính vị trí
   tt.classList.add('show');
+  const rect = el.getBoundingClientRect();
   const ttR = tt.getBoundingClientRect();
 
   let left = rect.left + rect.width / 2 - ttR.width / 2;
@@ -225,18 +238,26 @@ function setupBarInteraction() {
   if (!chart) return;
   barInteractionSetup = true;
 
-  // Sự kiện nhấn giữ (pointer)
-  chart.addEventListener('pointerdown', (e) => {
+  let hideTimer = null;
+
+  // Click để hiện (hoạt động đồng nhất desktop + mobile)
+  chart.addEventListener('click', (e) => {
     const bar = e.target.closest('.bar-col');
-    if (bar) {
-      e.preventDefault(); 
-      showBarTooltip(bar);
-    }
+    if (!bar) return;
+    e.preventDefault();
+    e.stopPropagation();
+    showBarTooltip(bar);
+    if (hideTimer) clearTimeout(hideTimer);
+    hideTimer = setTimeout(hideBarTooltip, 3000);
   });
 
-  chart.addEventListener('pointerup', hideBarTooltip);
-  chart.addEventListener('pointercancel', hideBarTooltip);
-  chart.addEventListener('pointerleave', hideBarTooltip);
+  // Bấm ra ngoài để ẩn ngay
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#reportBars') && !e.target.closest('#barTooltip')) {
+      if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
+      hideBarTooltip();
+    }
+  });
 }
 
 export function renderReportsTab() {
