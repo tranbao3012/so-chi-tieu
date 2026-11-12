@@ -165,43 +165,28 @@
       </div>
 
       <div class="settings-card">
-        <div class="settings-title">Đồng bộ Gist (Mã hóa E2EE)</div>
-        <div class="settings-row" style="border-bottom: none; padding-bottom: 0;">
-          <div class="settings-meta">
-            <div class="settings-label">Trạng thái</div>
-            <div class="settings-desc" id="syncStatus">Chưa kết nối. Vui lòng nhập Token và Mã PIN.</div>
+        <button class="settings-collapse-header" id="syncToggle" type="button" aria-expanded="false" aria-controls="syncBody">
+          <span class="settings-title" style="margin: 0;">Đồng bộ Gist (Mã hóa E2EE)</span>
+          <svg class="sync-chevron" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
+        <div class="sync-progress-track">
+          <div class="sync-progress-fill" id="syncProgressFill"></div>
+        </div>
+        <div class="sync-collapse-body" id="syncBody">
+          <div class="sync-body-inner">
+            <div class="sync-input-group">
+              <div class="sync-input-label">GitHub Token (PAT)</div>
+              <input type="password" class="form-input sync-input" id="syncToken" placeholder="ghp_..." autocomplete="off" autocapitalize="off" spellcheck="false">
+            </div>
+            <div class="sync-input-group">
+              <div class="sync-input-label">Mã PIN bảo mật (dùng chung các thiết bị)</div>
+              <input type="password" class="form-input sync-input" id="syncPin" placeholder="Nhập ít nhất 4 ký tự..." autocomplete="off" autocapitalize="off" spellcheck="false">
+            </div>
+            <button class="btn btn-primary" id="saveSyncConfigBtn" style="width: 100%; margin-top: 4px;">Lưu cấu hình</button>
+            <button class="btn" id="syncLogoutBtn" style="width: 100%; margin-top: 4px; color: var(--danger); border: 1px solid var(--danger); background: transparent;">Ngắt kết nối</button>
           </div>
-        </div>
-        <div class="settings-row" style="flex-direction: column; align-items: stretch; gap: 8px; border-bottom: none; padding-top: 8px;">
-          <div>
-            <div class="settings-label" style="font-size: 11px; margin-bottom: 4px;">GitHub Token (PAT)</div>
-            <input type="password" class="form-input" id="syncToken" placeholder="ghp_..." style="width: 100%; text-align: left;" autocomplete="off" autocapitalize="off" spellcheck="false">
-          </div>
-          <div>
-            <div class="settings-label" style="font-size: 11px; margin-bottom: 4px;">Mã PIN bảo mật (Dùng chung cho các thiết bị)</div>
-            <input type="password" class="form-input" id="syncPin" placeholder="Nhập ít nhất 4 ký tự..." style="width: 100%; text-align: left;" autocomplete="off" autocapitalize="off" spellcheck="false">
-          </div>
-          <button class="btn btn-sm btn-primary" id="saveSyncConfigBtn" style="width: 100%; margin-top: 4px;">Lưu cấu hình</button>
-        </div>
-        <div class="settings-row" style="display: flex; gap: 8px; border-top: 1px solid var(--border-soft); padding-top: 12px;">
-          <button class="btn btn-sm" id="syncLogoutBtn" style="flex: 1; color: var(--danger); border-color: var(--danger);">Ngắt kết nối</button>
-        </div>
-      </div>
-
-      <div class="settings-card">
-        <div class="settings-title">Dữ liệu</div>
-        <div class="settings-row">
-          <div class="settings-meta"><div class="settings-label">Xuất JSON</div><div class="settings-desc">Sao lưu toàn bộ dữ liệu</div></div>
-          <button class="btn btn-sm" id="exportBtn">Tải</button>
-        </div>
-        <div class="settings-row">
-          <div class="settings-meta"><div class="settings-label">Xuất CSV</div><div class="settings-desc">Mở bằng Excel</div></div>
-          <button class="btn btn-sm" id="exportCsvBtn">Tải</button>
-        </div>
-        <div class="settings-row">
-          <div class="settings-meta"><div class="settings-label">Nhập JSON</div><div class="settings-desc">Khôi phục từ file sao lưu</div></div>
-          <button class="btn btn-sm" id="importBtn">Chọn</button>
-          <input type="file" accept=".json,application/json" id="importFile" style="display:none;">
         </div>
       </div>
 
