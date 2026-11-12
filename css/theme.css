@@ -1,4 +1,4 @@
-/* css/theme.css — V3.1 (Compact UI) */
+/* css/theme.css — V1.0 (Standard & Stable) */
 
 /* ==================================================================
    DESIGN TOKENS — Light mode
@@ -31,27 +31,25 @@
   --text-muted: #475569;
   --text-soft: #94a3b8;
 
-  /* Giảm nhẹ bo góc để gọn gàng hơn */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 12px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
 
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
 
-  /* Thu gọn chiều cao thanh điều hướng */
-  --app-bar-h: 52px;
-  --tab-bar-h: 54px;
+  --app-bar-h: 56px;
+  --tab-bar-h: 56px;
 }
 
 /* ==================================================================
    Platform overrides
    ================================================================== */
 [data-platform="android"] {
-  --app-bar-h: 54px;
-  --tab-bar-h: 58px;
+  --app-bar-h: 58px;
+  --tab-bar-h: 62px;
 }
 
 /* ==================================================================
@@ -73,7 +71,7 @@
   --info-soft: #082f49;
 
   --bg: #0b1020;
-  --surface: #151c2c;
+  --surface: #161c30;
   --surface-2: #1e293b;
   --surface-3: #334155;
   
