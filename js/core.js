@@ -1,6 +1,6 @@
-/* js/core.js — V1.3
+/* js/core.js — V1.4
    Core module: State, Storage, Utils, Queries, AI, ACCT, UI helpers, PDF 
-   (Phiên bản ổn định, ép cứng kích thước icon chống vỡ layout) */
+   (Phiên bản ổn định, ép cứng kích thước icon và donut chống vỡ layout) */
 
 /* ==================================================================
    CONSTANTS
