@@ -1,12 +1,13 @@
-/* js/dashboard.js — V1.3
-   Render tab Tổng quan: overview Hôm nay và danh sách giao dịch gần đây.
-   V1.3: Xóa Ô 2 (Sức khỏe & AI) và Ô 3 (Phân tích kế toán) theo yêu cầu. */
+/* js/dashboard.js — V1.4
+   V1.4: Thêm Thẻ Gamification (Chuỗi ngày) và Thẻ Insight (So sánh tháng).
+   Render tab Tổng quan: overview Hôm nay, Streak, Insight, danh sách giao dịch gần đây. */
 
 import {
   state, AI,
   ic, escapeHtml,
   fmtMoney, fmtMoneyShort, fmtDate, dayIso,
   getDayExpenses,
+  getMonthExpenses, getLastMonth,
   calcSummary, calcByCategory, calcTrend,
   getCategory, getPayment,
   renderSparkline
@@ -47,6 +48,92 @@ function renderTodayOverview() {
 }
 
 /* ==================================================================
+   STREAK — Đếm chuỗi ngày ghi chép liên tiếp
+   ================================================================== */
+function calculateStreak() {
+  if (!state.expenses || state.expenses.length === 0) return 0;
+  
+  const dates = new Set(state.expenses.map(e => e.date));
+  let streak = 0;
+  let checkDate = new Date();
+  
+  // Nếu hôm nay chưa nhập, kiểm tra xem hôm qua có nhập không để duy trì chuỗi
+  if (!dates.has(dayIso(checkDate))) {
+    checkDate.setDate(checkDate.getDate() - 1);
+    if (!dates.has(dayIso(checkDate))) return 0; // Đứt chuỗi
+  }
+  
+  // Đếm ngược thời gian
+  while (dates.has(dayIso(checkDate))) {
+    streak++;
+    checkDate.setDate(checkDate.getDate() - 1);
+  }
+  return streak;
+}
+
+function renderStreakCard() {
+  const el = document.getElementById('streakCard');
+  if (!el) return;
+
+  const streak = calculateStreak();
+  
+  el.innerHTML = `
+    <div class="quick-stat-icon" style="background: linear-gradient(135deg, #f97316, #ea580c); color: #fff; font-size: 20px;">🔥</div>
+    <div class="quick-stat-info">
+      <div class="quick-stat-value">${streak} ngày</div>
+      <div class="quick-stat-label">Chuỗi ghi chép</div>
+    </div>
+  `;
+}
+
+/* ==================================================================
+   INSIGHT — So sánh tháng này vs tháng trước
+   ================================================================== */
+function renderInsightCard() {
+  const el = document.getElementById('insightCard');
+  if (!el) return;
+  
+  const now = new Date();
+  const curTotal = calcSummary(getMonthExpenses(now)).total;
+  const prevTotal = calcSummary(getMonthExpenses(getLastMonth())).total;
+  
+  let icon = '💡';
+  let text = 'Chưa đủ dữ liệu';
+  let color = 'var(--text-muted)';
+  
+  if (prevTotal > 0) {
+    const diff = curTotal - prevTotal;
+    const pct = Math.abs((diff / prevTotal) * 100).toFixed(0);
+    
+    if (diff > 0) {
+      text = `Tăng ${pct}% so với tháng trước`;
+      icon = '📈';
+      color = 'var(--danger)';
+    } else if (diff < 0) {
+      text = `Giảm ${pct}% so với tháng trước`;
+      icon = '📉';
+      color = 'var(--success)';
+    } else {
+      text = 'Chi tiêu bằng tháng trước';
+      icon = '➖';
+      color = 'var(--text-soft)';
+    }
+  } else if (curTotal > 0) {
+    text = 'Khởi đầu tháng mới';
+    icon = '✨';
+    color = 'var(--primary)';
+  }
+
+  el.innerHTML = `
+    <div class="quick-stat-icon" style="background: var(--surface-2); font-size: 20px;">${icon}</div>
+    <div class="quick-stat-info">
+      <div class="quick-stat-value" style="color: ${color}; font-size: 12px; line-height: 1.2; margin-bottom: 2px;">${text}</div>
+      <div class="quick-stat-label">Nhận xét tháng</div>
+    </div>
+  `;
+}
+
+/* ==================================================================
    RECENT LIST
    ================================================================== */
 function renderRecentList() {
@@ -81,5 +168,7 @@ function renderRecentList() {
    ================================================================== */
 export function renderDashboard() {
   renderTodayOverview();
+  renderStreakCard();   // MỚI
+  renderInsightCard();  // MỚI
   renderRecentList();
 }
