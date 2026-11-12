@@ -1,6 +1,5 @@
-/* js/settings.js — V2.3
-   V2.3: Dọn dẹp inline-style, tương thích 100% CSS chuẩn. 
-   Thêm kiểm tra an toàn (null-check) cho các phần tử HTML. */
+/* js/settings.js — V2.4 (Dark Theme Compatible)
+   Render tab Cài đặt. */
 
 import {
   state,
@@ -52,7 +51,7 @@ function updateSyncUI() {
 
   if (savedPat && savedPin) {
     statusText.textContent = savedGistId ? '✅ Đã kết nối (Đã tạo Gist)' : '✅ Đã có Token (Chưa tạo Gist)';
-    statusText.style.color = 'var(--success)';
+    statusText.style.color = 'var(--primary)';
   } else {
     statusText.textContent = 'Chưa kết nối. Vui lòng nhập Token và Mã PIN.';
     statusText.style.color = 'var(--text-soft)';
