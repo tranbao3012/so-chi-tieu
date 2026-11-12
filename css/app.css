@@ -1,4 +1,4 @@
-/* css/app.css — V8.1 (Compact Reports — Remove KPI grid & uppercase hero labels) */
+/* css/app.css — V8.3 (Hero dùng section-title + amount nền surface-2) */
 
 /* ==================================================================
    1. APP SHELL & LAYOUT
@@ -250,7 +250,7 @@
 .month-label { flex: 1; text-align: center; font-size: 15px; font-weight: 800; color: var(--text); }
 .btn-export-pdf { padding: 8px 12px; border-radius: 10px; background: var(--primary-soft); color: var(--primary); font-weight: 700; font-size: 12px; display: flex; align-items: center; gap: 4px; }
 
-/* HERO — compact (không label uppercase, không stats row) */
+/* ==================== HERO (compact v8.3) ==================== */
 .report-hero {
   background: var(--surface);
   border-radius: 16px;
@@ -259,18 +259,8 @@
   border: 1px solid var(--border-soft);
   overflow: hidden;
 }
-.report-hero-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 6px;
-  gap: 8px;
-}
-.report-hero-title {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text-muted);
-  line-height: 1.2;
+.report-hero .section-title {
+  margin-bottom: 12px;
 }
 .report-hero-trend {
   font-size: 11px;
@@ -284,18 +274,16 @@
 }
 .report-hero-trend.up { color: var(--danger); background: var(--danger-soft); }
 .report-hero-trend.down { color: var(--primary); background: var(--primary-soft); }
-.report-hero-value {
+.report-hero-amount {
+  background: var(--surface-2);
+  border-radius: 12px;
+  padding: 14px 16px;
   font-size: 28px;
   font-weight: 800;
   color: var(--text);
-  line-height: 1.1;
-  margin-bottom: 6px;
+  line-height: 1.15;
   word-break: break-word;
-}
-.report-hero-meta {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-soft);
+  border: 1px solid var(--border-soft);
 }
 
 /* INSIGHTS */
@@ -633,7 +621,7 @@
   .pdf-health-status { font-size: 13pt; color: #065f46; font-weight: 800; }
   .pdf-health-desc { font-size: 8.5pt; color: #047857; }
 
-  /* ---------- PDF KPI GRID (cho file PDF, không liên quan on-screen) ---------- */
+  /* ---------- PDF KPI GRID (chỉ trong file PDF, không liên quan on-screen) ---------- */
   .pdf-kpi-grid {
     display: grid; grid-template-columns: repeat(4, 1fr);
     gap: 3mm; margin-bottom: 5mm;
