@@ -6,17 +6,19 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#f8fafc">
+<meta name="theme-color" content="#0f172a">
 <meta name="apple-mobile-web-app-title" content="Chi Tiêu">
 <script>
 /* Inline bootstrap — chạy TRƯỚC khi CSS load để tránh FOUC theme + flash platform. */
 (function () {
-  var theme = 'light';
+  var theme = 'dark'; /* Mặc định là Dark Mode theo ảnh mẫu */
   try {
     var raw = localStorage.getItem('expense_tracker_v1');
     if (raw) {
       var parsed = JSON.parse(raw);
-      if (parsed && parsed.settings && parsed.settings.theme === 'dark') theme = 'dark';
+      if (parsed && parsed.settings && parsed.settings.theme) {
+        theme = parsed.settings.theme;
+      }
     }
   } catch (e) {}
   document.documentElement.setAttribute('data-theme', theme);
@@ -27,7 +29,7 @@
   document.documentElement.setAttribute('data-platform', platform);
 
   var meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.setAttribute('content', theme === 'dark' ? '#0b1020' : '#f8fafc');
+  if (meta) meta.setAttribute('content', theme === 'dark' ? '#0f172a' : '#f8fafc');
 })();
 </script>
 <link rel="manifest" href="manifest.json">
@@ -69,7 +71,7 @@
   <!-- MAIN CONTENT -->
   <main class="app-content" id="appContent">
 
-    <!-- PANEL — TỔNG QUAN -->
+    <!-- 1. PANEL TỔNG QUAN -->
     <section class="panel active" id="panel-dashboard">
       <div class="overview-grid">
         <div class="overview-card today" id="todayOverview"></div>
@@ -82,14 +84,16 @@
 
       <div class="card">
         <div class="section-title">
-          <div class="section-title-left"><span class="section-title-icon" data-icon="clock"></span><span class="section-title-text">Gần đây</span></div>
+          <div class="section-title-left">
+            <span class="section-title-text">Gần đây</span>
+          </div>
           <button class="btn btn-sm btn-ghost" data-goto="expenses">Xem tất cả →</button>
         </div>
         <div class="recent-list" id="recentList"></div>
       </div>
     </section>
 
-    <!-- PANEL — GIAO DỊCH -->
+    <!-- 2. PANEL GIAO DỊCH -->
     <section class="panel" id="panel-expenses">
       <div class="smart-filters" id="smartFilters"></div>
       <div class="filter-bar">
@@ -103,7 +107,7 @@
       <div id="expenseList"></div>
     </section>
 
-    <!-- PANEL — BÁO CÁO -->
+    <!-- 3. PANEL BÁO CÁO -->
     <section class="panel" id="panel-reports">
       <div class="month-nav">
         <button class="month-nav-btn" id="prevMonth" aria-label="Tháng trước">
@@ -118,6 +122,7 @@
           PDF
         </button>
       </div>
+      
       <div class="report-hero" id="reportHero"></div>
       <div class="kpi-grid" id="reportKpis"></div>
       <div class="card" id="reportInsights"></div>
@@ -125,7 +130,9 @@
       <div class="reports-grid">
         <div class="card">
           <div class="section-title">
-            <div class="section-title-left"><span class="section-title-icon" data-icon="pieChart"></span><span class="section-title-text">Danh mục</span></div>
+            <div class="section-title-left">
+              <span class="section-title-text">Danh mục</span>
+            </div>
           </div>
           <div class="donut-wrap">
             <div class="donut-container" id="reportDonut"></div>
@@ -134,13 +141,14 @@
         </div>
         <div class="card">
           <div class="section-title">
-            <div class="section-title-left"><span class="section-title-icon" data-icon="barChart"></span><span class="section-title-text">Theo ngày</span></div>
-            <small id="reportBarsLabel"></small>
+            <div class="section-title-left">
+              <span class="section-title-text">Theo ngày</span>
+            </div>
+            <small id="reportBarsLabel" style="color:var(--text-soft);"></small>
           </div>
           <div class="chart-wrap">
-            <div class="chart-max-label" id="reportBarsMax">—</div>
+            <div class="chart-max-label" id="reportBarsMax" style="font-size: 11px; text-align: right; color: var(--text-soft); margin-bottom: 8px;">—</div>
             <div class="chart-bars" id="reportBars"></div>
-            <div class="chart-hint">Nhấn giữ cột để xem chi tiết</div>
           </div>
         </div>
       </div>
@@ -148,7 +156,9 @@
       <div class="reports-grid full-width">
         <div class="card">
           <div class="section-title">
-            <div class="section-title-left"><span class="section-title-icon" data-icon="creditCard"></span><span class="section-title-text">Phương thức</span></div>
+            <div class="section-title-left">
+              <span class="section-title-text">Phương thức</span>
+            </div>
           </div>
           <div id="reportPayments"></div>
         </div>
@@ -156,29 +166,37 @@
 
       <div class="card">
         <div class="section-title">
-          <div class="section-title-left"><span class="section-title-icon" data-icon="trendUp"></span><span class="section-title-text">Top danh mục chi tiêu</span></div>
-          <small id="reportTopLabel"></small>
+          <div class="section-title-left">
+            <span class="section-title-text">Top danh mục chi tiêu</span>
+          </div>
+          <small id="reportTopLabel" style="color:var(--text-soft);"></small>
         </div>
         <div id="reportTop"></div>
       </div>
     </section>
 
-    <!-- PANEL — CÀI ĐẶT -->
+    <!-- 4. PANEL CÀI ĐẶT -->
     <section class="panel" id="panel-settings">
       <div class="settings-card">
-        <div class="settings-title"><span data-icon="target"></span>Tài chính</div>
+        <div class="settings-title">Tài chính</div>
         <div class="settings-row">
-          <div class="settings-meta"><div class="settings-label">Ngân sách tháng</div><div class="settings-desc">0 = không giới hạn</div></div>
+          <div class="settings-meta">
+            <div class="settings-label">Ngân sách tháng</div>
+            <div class="settings-desc">0 = không giới hạn</div>
+          </div>
           <input type="number" class="form-input" id="setBudget" min="0" step="1000" placeholder="0">
         </div>
         <div class="settings-row">
-          <div class="settings-meta"><div class="settings-label">Thu nhập tháng</div><div class="settings-desc">Dùng cho phân tích 50/30/20</div></div>
+          <div class="settings-meta">
+            <div class="settings-label">Thu nhập tháng</div>
+            <div class="settings-desc">Dùng cho phân tích 50/30/20</div>
+          </div>
           <input type="number" class="form-input" id="setIncome" min="0" step="1000" placeholder="0">
         </div>
       </div>
 
       <div class="settings-card">
-        <div class="settings-title"><span data-icon="transfer"></span>Đồng bộ Gist (Mã hóa E2EE)</div>
+        <div class="settings-title">Đồng bộ Gist (Mã hóa E2EE)</div>
         <div class="settings-row" style="border-bottom: none; padding-bottom: 0;">
           <div class="settings-meta">
             <div class="settings-label">Trạng thái</div>
@@ -202,7 +220,7 @@
       </div>
 
       <div class="settings-card">
-        <div class="settings-title"><span data-icon="download"></span>Dữ liệu</div>
+        <div class="settings-title">Dữ liệu</div>
         <div class="settings-row">
           <div class="settings-meta"><div class="settings-label">Xuất JSON</div><div class="settings-desc">Sao lưu toàn bộ dữ liệu</div></div>
           <button class="btn btn-sm" id="exportBtn">Tải</button>
@@ -219,7 +237,7 @@
       </div>
 
       <div class="settings-card">
-        <div class="settings-title"><span data-icon="infoCircle"></span>Về ứng dụng</div>
+        <div class="settings-title">Về ứng dụng</div>
         <div style="font-size:12px;color:var(--text-muted);line-height:1.65;">
           <strong style="color:var(--text);">Quản Lý Chi Tiêu &copy; Trần Bảo</strong>
         </div>
@@ -229,8 +247,8 @@
   </main>
 
   <!-- FAB (ÉP CỨNG KÍCH THƯỚC INLINE) -->
-  <button class="fab" id="fab" aria-label="Thêm chi tiêu" style="width:56px; height:56px; padding:0; margin:0; border:none; -webkit-appearance:none;">
-    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:24px; height:24px; min-width:24px; min-height:24px; display:block;">
+  <button class="fab" id="fab" aria-label="Thêm chi tiêu" style="width:60px; height:60px; padding:0; margin:0; border:none; -webkit-appearance:none;">
+    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:28px; height:28px; min-width:28px; min-height:28px; display:block;">
       <path d="M12 5v14M5 12h14"/>
     </svg>
   </button>
@@ -281,10 +299,7 @@
     </div>
     <div class="sheet-body">
       <div class="sheet-section">
-        <div class="sheet-section-label">
-          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-          Số tiền
-        </div>
+        <div class="sheet-section-label">Số tiền</div>
         <div class="amount-input-wrap">
           <span class="amount-currency-prefix" id="amountCurrencyPrefix">đ</span>
           <input type="text" class="amount-input" id="formAmount" placeholder="0" inputmode="numeric">
@@ -295,33 +310,21 @@
         <div id="aiHintBanner"></div>
       </div>
       <div class="sheet-section">
-        <div class="sheet-section-label">
-          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-          Danh mục
-        </div>
+        <div class="sheet-section-label">Danh mục</div>
         <div class="category-grid-modal" id="formCategories"></div>
         <div class="field-error" id="errCategory">Vui lòng chọn danh mục</div>
       </div>
       <div class="sheet-section">
-        <div class="sheet-section-label">
-          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-          Phương thức
-        </div>
+        <div class="sheet-section-label">Phương thức</div>
         <div class="payment-row-modal" id="formPayments"></div>
       </div>
       <div class="sheet-section">
         <div style="margin-bottom: 12px;">
-          <div class="sheet-section-label">
-            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            Ngày
-          </div>
+          <div class="sheet-section-label">Ngày</div>
           <input type="date" class="field-input" id="formDate">
         </div>
         <div>
-          <div class="sheet-section-label">
-            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            Ghi chú
-          </div>
+          <div class="sheet-section-label">Ghi chú</div>
           <input type="text" class="field-input" id="formNote" placeholder="Không bắt buộc" maxlength="120">
         </div>
       </div>
@@ -378,8 +381,8 @@
       </button>
     </div>
     <div class="sheet-body" style="padding: 10px 20px;">
-      <button class="btn btn-block" id="catActionEdit" style="margin-bottom: 8px; justify-content: flex-start; padding-left: 16px;">✏️ Sửa tên danh mục</button>
-      <button class="btn btn-block btn-danger" id="catActionDelete" style="justify-content: flex-start; padding-left: 16px;">🗑️ Xoá danh mục</button>
+      <button class="btn btn-block" id="catActionEdit" style="margin-bottom: 8px; justify-content: flex-start; padding-left: 16px; background: var(--surface-2); color: var(--text);">✏️ Sửa tên danh mục</button>
+      <button class="btn btn-block btn-danger" id="catActionDelete" style="justify-content: flex-start; padding-left: 16px; background: var(--danger-soft); color: var(--danger);">🗑️ Xoá danh mục</button>
     </div>
   </div>
 </div>
@@ -391,8 +394,8 @@
     <div class="sheet-header">
       <div class="sheet-title" id="confirmTitle">Xác nhận</div>
     </div>
-    <div class="confirm-sheet-body" id="confirmMessage">Bạn có chắc?</div>
-    <div class="confirm-sheet-footer">
+    <div class="confirm-sheet-body" id="confirmMessage" style="padding: 20px 24px; color: var(--text-muted); font-size: 15px;">Bạn có chắc?</div>
+    <div class="confirm-sheet-footer" style="padding: 16px 24px; border-top: 1px solid var(--border-soft); display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
       <button class="btn btn-ghost" data-close="confirmModal">Huỷ</button>
       <button class="btn btn-danger" id="confirmOkBtn">Xác nhận</button>
     </div>
