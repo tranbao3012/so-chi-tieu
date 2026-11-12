@@ -11,7 +11,7 @@
 <script>
 /* Inline bootstrap — chạy TRƯỚC khi CSS load để tránh FOUC theme + flash platform. */
 (function () {
-  var theme = 'dark'; /* Mặc định là Dark Mode theo ảnh mẫu */
+  var theme = 'dark'; /* Mặc định là Dark Mode */
   try {
     var raw = localStorage.getItem('expense_tracker_v1');
     if (raw) {
@@ -246,9 +246,9 @@
 
   </main>
 
-  <!-- FAB (ÉP CỨNG KÍCH THƯỚC INLINE) -->
-  <button class="fab" id="fab" aria-label="Thêm chi tiêu" style="width:60px; height:60px; padding:0; margin:0; border:none; -webkit-appearance:none;">
-    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:28px; height:28px; min-width:28px; min-height:28px; display:block;">
+  <!-- FAB (ĐÃ THU NHỎ KÍCH THƯỚC CÒN 48PX) -->
+  <button class="fab" id="fab" aria-label="Thêm chi tiêu" style="width:48px; height:48px; padding:0; margin:0; border:none; -webkit-appearance:none;">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px; min-width:20px; min-height:20px; display:block;">
       <path d="M12 5v14M5 12h14"/>
     </svg>
   </button>
