@@ -1,7 +1,7 @@
-// sw.js — V3.2 (Force Update to Dark UI)
+// sw.js — V3.3 (Force Update to Dark UI v6.0.0)
 // Tăng vọt CACHE_VERSION để ép xóa toàn bộ cache cũ (giao diện lỗi) và nhận giao diện mới.
 
-const CACHE_VERSION = 'expense-tracker-v5.0.0'; // [FIX] Bắt buộc tăng phiên bản
+const CACHE_VERSION = 'expense-tracker-v6.0.0'; // [FIX] Bắt buộc tăng phiên bản
 
 const APP_SHELL = [
   './',
