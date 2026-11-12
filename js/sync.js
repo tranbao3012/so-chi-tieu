@@ -1,4 +1,4 @@
-/* js/sync.js — V4.6 (Auto Sync 5s & Retry)
+/* js/sync.js — V4.7 (Auto Sync & Stable)
    Tự động kéo dữ liệu mỗi 5 giây.
    Tự động đẩy dữ liệu khi có thay đổi (có cơ chế chống kẹt tiến trình). */
 
@@ -20,7 +20,7 @@ export function bindState(getStateFn, setStateFn) {
 }
 
 export function initSync() {
-  console.log('[Sync] Custom Sync Engine V4.6 (Auto 5s) đã sẵn sàng.');
+  console.log('[Sync] Custom Sync Engine V4.7 (Auto 5s) đã sẵn sàng.');
   
   // 1. Quét ngầm định kỳ mỗi 5 giây (5000 ms)
   if (pullInterval) clearInterval(pullInterval);
@@ -128,7 +128,7 @@ function apply(bundle) {
 }
 
 export async function syncNow(isAuto = false) {
-  // [FIX] Nếu đang bận đồng bộ, hãy đợi và thử lại (không bỏ qua)
+  // Nếu đang bận đồng bộ, hãy đợi và thử lại (không bỏ qua)
   if (isSyncing) {
     if (isAuto) {
       setTimeout(() => syncNow(true), 1000); // Thử lại sau 1s
