@@ -1,4 +1,4 @@
-/* css/app.css — V8.0 (PDF Export Fix — Full print stylesheet) */
+/* css/app.css — V8.1 (Compact Reports — Remove KPI grid & uppercase hero labels) */
 
 /* ==================================================================
    1. APP SHELL & LAYOUT
@@ -166,7 +166,7 @@
 .quick-stat-value { font-size: 13px; font-weight: 800; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .quick-stat-label { font-size: 10px; color: var(--text-soft); font-weight: 600; margin-top: 2px; }
 
-/* SECTION TITLE — Phân biệt với nội dung */
+/* SECTION TITLE */
 .section-title {
   display: flex;
   justify-content: space-between;
@@ -250,28 +250,53 @@
 .month-label { flex: 1; text-align: center; font-size: 15px; font-weight: 800; color: var(--text); }
 .btn-export-pdf { padding: 8px 12px; border-radius: 10px; background: var(--primary-soft); color: var(--primary); font-weight: 700; font-size: 12px; display: flex; align-items: center; gap: 4px; }
 
-.report-hero { background: var(--surface); border-radius: 16px; padding: 16px; color: var(--text); margin-bottom: 12px; border: 1px solid var(--border-soft); overflow: hidden; }
-.report-hero-label { color: var(--primary); font-weight: 700; font-size: 11px; display: flex; align-items: center; gap: 4px; text-transform: uppercase; letter-spacing: 0.3px; }
-.report-hero-value { font-size: 28px; font-weight: 800; margin: 4px 0; color: var(--text); word-break: break-word; }
-.report-hero-sub { font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 4px; margin-bottom: 12px; }
-.report-hero-sub.up { color: var(--danger); }
-.report-hero-sub.down { color: var(--primary); }
-.report-hero-stats { display: flex; gap: 20px; padding-top: 12px; border-top: 1px solid var(--border); }
-.report-hero-stat-label { font-size: 10px; font-weight: 700; color: var(--text-soft); margin-bottom: 2px; text-transform: uppercase; }
-.report-hero-stat-value { font-size: 14px; font-weight: 800; color: var(--text); }
-
-.kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
-.kpi {
+/* HERO — compact (không label uppercase, không stats row) */
+.report-hero {
   background: var(--surface);
-  border-radius: 12px;
-  padding: 12px;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 12px;
   border: 1px solid var(--border-soft);
   overflow: hidden;
-  border-left: 3px solid var(--primary);
 }
-.kpi-label { font-size: 9px; font-weight: 700; color: var(--text-soft); margin-bottom: 4px; display: flex; align-items: center; gap: 4px; text-transform: uppercase; letter-spacing: 0.2px; }
-.kpi-value { font-size: 18px; font-weight: 800; color: var(--text); }
-.kpi-sub { font-size: 10px; color: var(--text-soft); margin-top: 2px; font-weight: 500; }
+.report-hero-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  gap: 8px;
+}
+.report-hero-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+  line-height: 1.2;
+}
+.report-hero-trend {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--surface-2);
+  color: var(--text-soft);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.report-hero-trend.up { color: var(--danger); background: var(--danger-soft); }
+.report-hero-trend.down { color: var(--primary); background: var(--primary-soft); }
+.report-hero-value {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.1;
+  margin-bottom: 6px;
+  word-break: break-word;
+}
+.report-hero-meta {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-soft);
+}
 
 /* INSIGHTS */
 .insight-list { display: flex; flex-direction: column; gap: 8px; }
@@ -608,7 +633,7 @@
   .pdf-health-status { font-size: 13pt; color: #065f46; font-weight: 800; }
   .pdf-health-desc { font-size: 8.5pt; color: #047857; }
 
-  /* ---------- KPI GRID ---------- */
+  /* ---------- PDF KPI GRID (cho file PDF, không liên quan on-screen) ---------- */
   .pdf-kpi-grid {
     display: grid; grid-template-columns: repeat(4, 1fr);
     gap: 3mm; margin-bottom: 5mm;
