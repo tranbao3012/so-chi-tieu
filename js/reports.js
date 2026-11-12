@@ -1,5 +1,5 @@
 /* js/reports.js — V1.4
-   V1.4: Dọn dẹp các inline-style, chuyển giao diện về cho file CSS quản lý để tương thích 100% iOS/Android. */
+   V1.4: Bản ổn định - Loại bỏ inline-style, tương thích 100% CSS chuẩn. */
 
 import {
   state, reportState,
