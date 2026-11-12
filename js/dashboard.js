@@ -1,7 +1,6 @@
-/* js/dashboard.js — V1.5
-   Render tab Tổng quan: overview Hôm nay, Streak, Insight, danh sách giao dịch gần đây.
-   V1.5: Xóa Sparkline, xóa Mini-KPI, đổi tên thẻ Hôm nay, cập nhật Insight (chi nhiều nhất hôm nay),
-   thêm tính năng vuốt để Sửa/Xóa cho danh sách giao dịch gần đây. */
+/* js/dashboard.js — V1.6
+   V1.6: Ép cứng Inline Style cho phần Swipe (Sửa/Xóa) để chống vỡ layout nếu mất CSS.
+   Render tab Tổng quan: overview Hôm nay, Streak, Insight, danh sách giao dịch gần đây. */
 
 import {
   state, AI,
@@ -52,10 +51,9 @@ function calculateStreak() {
   let streak = 0;
   let checkDate = new Date();
   
-  // Nếu hôm nay chưa nhập, kiểm tra xem hôm qua có nhập không để duy trì chuỗi
   if (!dates.has(dayIso(checkDate))) {
     checkDate.setDate(checkDate.getDate() - 1);
-    if (!dates.has(dayIso(checkDate))) return 0; // Đứt chuỗi
+    if (!dates.has(dayIso(checkDate))) return 0;
   }
   
   while (dates.has(dayIso(checkDate))) {
@@ -72,7 +70,7 @@ function renderStreakCard() {
   const streak = calculateStreak();
   
   el.innerHTML = `
-    <div class="quick-stat-icon" style="background: linear-gradient(135deg, #f97316, #ea580c); color: #fff; font-size: 20px;">🔥</div>
+    <div class="quick-stat-icon" style="background: linear-gradient(135deg, #f97316, #ea580c); color: #fff; font-size: 18px;">🔥</div>
     <div class="quick-stat-info">
       <div class="quick-stat-value">${streak} ngày</div>
       <div class="quick-stat-label">Chuỗi ghi chép</div>
@@ -102,7 +100,7 @@ function renderInsightCard() {
   }
 
   el.innerHTML = `
-    <div class="quick-stat-icon" style="background: var(--surface-2); font-size: 20px;">${icon}</div>
+    <div class="quick-stat-icon" style="background: var(--surface-2); font-size: 18px;">${icon}</div>
     <div class="quick-stat-info">
       <div class="quick-stat-value" style="color: ${color}; font-size: 12px; line-height: 1.2; margin-bottom: 2px;">${text}</div>
       <div class="quick-stat-label">Chi nhiều nhất hôm nay</div>
@@ -111,7 +109,7 @@ function renderInsightCard() {
 }
 
 /* ==================================================================
-   RECENT LIST & SWIPE
+   RECENT LIST & SWIPE (Ép cứng Inline Style)
    ================================================================== */
 function bindRecentSwipeActions() {
   const rows = document.querySelectorAll('[data-swipe-row]');
@@ -127,7 +125,6 @@ function bindRecentSwipeActions() {
       isDragging = false;
       if (openRow && openRow !== row) {
         openRow.style.transform = 'translate3d(0,0,0)';
-        openRow.classList.remove('swiping');
         openRow = null;
       }
     }, { passive: true });
@@ -138,7 +135,6 @@ function bindRecentSwipeActions() {
       if (Math.abs(dx) > 10) {
         if (!isDragging) {
           isDragging = true;
-          row.classList.add('swiping');
         }
         currentX = Math.max(-152, Math.min(0, dx));
         row.style.transform = `translate3d(${currentX}px,0,0)`;
@@ -147,7 +143,6 @@ function bindRecentSwipeActions() {
 
     row.addEventListener('touchend', () => {
       if (!isDragging) return;
-      row.classList.remove('swiping');
       if (currentX < -SWIPE_THRESHOLD / 2) {
         row.style.transform = 'translate3d(-152px,0,0)';
         openRow = row;
@@ -187,29 +182,30 @@ function renderRecentList() {
   el.innerHTML = recent.map(e => {
     const cat = getCategory(e.categoryId);
     const isAno = AI.isAnomalous(e.id);
-    return `<div class="expense-swipe" style="border-bottom: 1px solid var(--border-soft);">
-      <div class="expense-swipe-actions">
-        <button class="swipe-action-btn edit" data-edit-expense="${e.id}">${ic('edit')}<span>Sửa</span></button>
-        <button class="swipe-action-btn delete" data-del-expense="${e.id}">${ic('trash')}<span>Xoá</span></button>
+    
+    // [FIX] Ép cứng inline style để không bao giờ bị vỡ layout
+    const wrapStyle = "position: relative; overflow: hidden; width: 100%; border-bottom: 1px solid var(--border-soft); background: var(--surface); border-radius: 0;";
+    const actionStyle = "position: absolute; top: 0; right: 0; bottom: 0; display: flex; z-index: 1;";
+    const itemStyle = "position: relative; z-index: 2; background: var(--surface); display: flex; align-items: center; gap: 12px; padding: 12px 8px; width: 100%; touch-action: pan-y; user-select: none; transition: transform 0.2s ease;";
+
+    return `<div class="expense-swipe" style="${wrapStyle}">
+      <div class="expense-swipe-actions" style="${actionStyle}">
+        <button class="swipe-action-btn edit" data-edit-expense="${e.id}" style="width: 76px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--primary); color: #fff; font-size: 10px; font-weight: 700; border: none; cursor: pointer;">${ic('edit', 18)}<span style="margin-top: 2px;">Sửa</span></button>
+        <button class="swipe-action-btn delete" data-del-expense="${e.id}" style="width: 76px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--danger); color: #fff; font-size: 10px; font-weight: 700; border: none; cursor: pointer;">${ic('trash', 18)}<span style="margin-top: 2px;">Xoá</span></button>
       </div>
-      <div class="recent-item" data-swipe-row="${e.id}" style="background: var(--surface); position: relative; z-index: 2; touch-action: pan-y; user-select: none; padding: 10px 8px; border-radius: 0;">
-        <div class="recent-icon" style="background:${cat.color};">${escapeHtml(cat.name.charAt(0).toUpperCase())}</div>
-        <div class="recent-meta">
-          <div class="recent-title">${escapeHtml(cat.name)}${e.note ? ' · ' + escapeHtml(e.note) : ''}${isAno ? ` <span class="anomaly-badge">⚠</span>` : ''}</div>
-          <div class="recent-sub">${fmtDate(e.date)} · ${getPayment(e.paymentMethod).name}</div>
+      <div class="recent-item" data-swipe-row="${e.id}" style="${itemStyle}">
+        <div class="recent-icon" style="background:${cat.color}; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 14px; flex-shrink: 0;">${escapeHtml(cat.name.charAt(0).toUpperCase())}</div>
+        <div class="recent-meta" style="flex: 1; min-width: 0;">
+          <div class="recent-title" style="font-size: 13px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(cat.name)}${e.note ? ' · ' + escapeHtml(e.note) : ''}${isAno ? ` <span style="color:var(--warning);">⚠</span>` : ''}</div>
+          <div class="recent-sub" style="font-size: 11px; color: var(--text-soft); margin-top: 2px;">${fmtDate(e.date)} · ${getPayment(e.paymentMethod).name}</div>
         </div>
-        <div class="recent-amount">${fmtMoney(e.amount)}</div>
+        <div class="recent-amount" style="font-size: 14px; font-weight: 800; color: var(--text); white-space: nowrap;">${fmtMoney(e.amount)}</div>
       </div>
     </div>`;
   }).join('');
 
-  // Xóa border của item cuối cùng
-  const items = el.querySelectorAll('.expense-swipe');
-  if (items.length > 0) items[items.length - 1].style.borderBottom = 'none';
-
   bindRecentSwipeActions();
 
-  // Gắn sự kiện click cho nút Sửa/Xóa (chỉ gắn 1 lần)
   if (!el.dataset.bound) {
     el.dataset.bound = "true";
     el.addEventListener('click', (evt) => {
