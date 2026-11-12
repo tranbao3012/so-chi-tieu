@@ -1,4 +1,4 @@
-/* js/reports.js — V1.7 (Fix Icon & Layout) */
+/* js/reports.js — V1.8 (Fix Chart Interaction & Insight UI) */
 
 import {
   state, reportState,
@@ -33,18 +33,18 @@ export function renderReports() {
 
   let trendHtml = '';
   if (prevTotal > 0) {
-    if (diffPct > 0) { trendHtml = `<div class="report-hero-sub up">${ic('arrowUp', 14)}<span>Tăng ${Math.abs(diffPct).toFixed(0)}% so với tháng trước</span></div>`; }
-    else if (diffPct < 0) { trendHtml = `<div class="report-hero-sub down">${ic('arrowDown', 14)}<span>Giảm ${Math.abs(diffPct).toFixed(0)}% so với tháng trước</span></div>`; }
-    else { trendHtml = `<div class="report-hero-sub">${ic('minus', 14)}<span>Không đổi</span></div>`; }
+    if (diffPct > 0) { trendHtml = `<div class="report-hero-sub up">${ic('arrowUp', 12)}<span>Tăng ${Math.abs(diffPct).toFixed(0)}% so với tháng trước</span></div>`; }
+    else if (diffPct < 0) { trendHtml = `<div class="report-hero-sub down">${ic('arrowDown', 12)}<span>Giảm ${Math.abs(diffPct).toFixed(0)}% so với tháng trước</span></div>`; }
+    else { trendHtml = `<div class="report-hero-sub">${ic('minus', 12)}<span>Không đổi</span></div>`; }
   } else if (total > 0) {
-    trendHtml = `<div class="report-hero-sub" style="color:var(--text-soft);">${ic('minus', 14)}<span>Chưa có dữ liệu tháng trước</span></div>`;
+    trendHtml = `<div class="report-hero-sub" style="color:var(--text-soft);">${ic('minus', 12)}<span>Chưa có dữ liệu tháng trước</span></div>`;
   } else {
-    trendHtml = `<div class="report-hero-sub" style="color:var(--text-soft);">${ic('minus', 14)}<span>Chưa có dữ liệu</span></div>`;
+    trendHtml = `<div class="report-hero-sub" style="color:var(--text-soft);">${ic('minus', 12)}<span>Chưa có dữ liệu</span></div>`;
   }
 
   /* ---------- Hero ---------- */
   document.getElementById('reportHero').innerHTML = `
-    <div class="report-hero-label">${ic('dollarSign', 14)}<span>Tổng chi tháng ${reportMonth.getMonth() + 1}</span></div>
+    <div class="report-hero-label">${ic('dollarSign', 12)}<span>Tổng chi tháng ${reportMonth.getMonth() + 1}</span></div>
     <div class="report-hero-value">${fmtMoney(total)}</div>
     ${trendHtml}
     <div class="report-hero-stats">
@@ -63,49 +63,57 @@ export function renderReports() {
   const budgetPct = budget > 0 ? (total / budget * 100) : 0;
   document.getElementById('reportKpis').innerHTML = `
     <div class="kpi">
-      <div class="kpi-label">${ic('trendUp', 12)} Lớn nhất</div>
+      <div class="kpi-label">${ic('trendUp', 10)} Lớn nhất</div>
       <div class="kpi-value">${fmtMoneyShort(largest)}</div>
       <div class="kpi-sub">GD đắt nhất</div>
     </div>
     <div class="kpi" style="border-left-color: ${diffPct > 0 ? 'var(--danger)' : 'var(--primary)'};">
-      <div class="kpi-label">${ic(diffPct > 0 ? 'arrowUp' : 'arrowDown', 12)} So tháng trước</div>
+      <div class="kpi-label">${ic(diffPct > 0 ? 'arrowUp' : 'arrowDown', 10)} So tháng trước</div>
       <div class="kpi-value">${prevTotal > 0 ? (diffPct >= 0 ? '+' : '') + diffPct.toFixed(0) + '%' : '—'}</div>
       <div class="kpi-sub">${prevTotal > 0 ? fmtMoneyShort(prevTotal) : 'Chưa có'}</div>
     </div>
     <div class="kpi" style="border-left-color: var(--warning);">
-      <div class="kpi-label">${ic('calendar', 12)} Ngày có chi</div>
+      <div class="kpi-label">${ic('calendar', 10)} Ngày có chi</div>
       <div class="kpi-value">${uniqueDays}/${days}</div>
       <div class="kpi-sub">Ngày phát sinh</div>
     </div>
     <div class="kpi" style="border-left-color: ${budget > 0 && budgetPct > 100 ? 'var(--danger)' : 'var(--primary)'};">
-      <div class="kpi-label">${ic('target', 12)} Ngân sách</div>
+      <div class="kpi-label">${ic('target', 10)} Ngân sách</div>
       <div class="kpi-value">${budget > 0 ? budgetPct.toFixed(0) + '%' : '—'}</div>
       <div class="kpi-sub">${budget > 0 ? (budgetPct > 100 ? 'Vượt ' + fmtMoneyShort(total - budget) : 'Còn ' + fmtMoneyShort(budget - total)) : 'Chưa đặt'}</div>
     </div>`;
 
-  /* ---------- Insights ---------- */
+  /* ---------- Insights (Redesigned) ---------- */
   const insights = generateInsights(monthExp, total, prevTotal, days);
   document.getElementById('reportInsights').innerHTML = insights.length === 0
-    ? `<div style="text-align:center;padding:16px;color:var(--text-soft);font-size:13px;">Chưa có dữ liệu để phân tích</div>`
-    : `<div class="section-title"><div class="section-title-left"><span class="section-title-text">Nhận xét</span></div></div><div class="insight-list">${insights.map(i => `<div class="insight-item"><div class="insight-icon">${ic(i.icon, 14)}</div><span>${i.html}</span></div>`).join('')}</div>`;
+    ? `<div style="text-align:center;padding:16px;color:var(--text-soft);font-size:12px;">Chưa có dữ liệu để phân tích</div>`
+    : `<div class="section-title"><div class="section-title-left"><span class="section-title-text">Nhận xét</span></div></div>
+       <div class="insight-list">
+         ${insights.map(i => `
+           <div class="insight-row">
+             <div class="insight-icon-wrap">${ic(i.icon, 14)}</div>
+             <div class="insight-text">${i.html}</div>
+           </div>
+         `).join('')}
+       </div>`;
 
   /* ---------- Donut ---------- */
   const byCat = calcByCategory(monthExp);
   renderDonut(document.getElementById('reportDonut'), byCat.map(b => ({ value: b.value, color: b.category.color })), total);
   
   document.getElementById('reportLegend').innerHTML = byCat.length === 0
-    ? `<div style="text-align:center;padding:16px;color:var(--text-soft);font-size:12px;">Chưa có dữ liệu</div>`
+    ? `<div style="text-align:center;padding:16px;color:var(--text-soft);font-size:11px;">Chưa có dữ liệu</div>`
     : byCat.map(b => {
         const pct = total > 0 ? (b.value / total * 100) : 0;
         return `<div class="legend-item">
           <span class="legend-dot" style="background:${b.category.color};"></span>
           <span class="legend-name">${escapeHtml(b.category.name)}</span>
-          <span class="legend-value">${fmtMoney(b.value)}</span>
+          <span class="legend-value">${fmtMoneyShort(b.value)}</span>
           <span class="legend-pct">${pct.toFixed(0)}%</span>
         </div>`;
       }).join('');
 
-  /* ---------- Bar chart ---------- */
+  /* ---------- Bar chart (Fixed Structure) ---------- */
   const dailyMap = new Map(), dailyCount = new Map();
   monthExp.forEach(e => {
     const d = parseInt(e.date.split('-')[2], 10);
@@ -122,8 +130,9 @@ export function renderReports() {
     const cnt = dailyCount.get(d) || 0;
     const pct = maxDay > 0 ? val / maxDay * 100 : 0;
     const show = days <= 15 || d % 2 === 0 || d === 1 || d === days;
+    // Thêm pointer-events: none cho .bar để sự kiện nhắm vào .bar-col
     barsHtml += `<div class="bar-col" data-day="${d}" data-amount="${val}" data-count="${cnt}">
-      <div class="bar" style="height:${pct}%;"></div>
+      <div class="bar" style="height:${pct}%; pointer-events: none;"></div>
       <div class="bar-label">${show ? d : ''}</div>
     </div>`;
   }
@@ -133,14 +142,14 @@ export function renderReports() {
   const byPayment = calcByPayment(monthExp);
   const maxPay = Math.max(...byPayment.map(p => p.value), 1);
   document.getElementById('reportPayments').innerHTML = byPayment.length === 0
-    ? `<div style="text-align:center;padding:16px;color:var(--text-soft);font-size:12px;">Chưa có dữ liệu</div>`
+    ? `<div style="text-align:center;padding:16px;color:var(--text-soft);font-size:11px;">Chưa có dữ liệu</div>`
     : byPayment.map(p => {
         const pct = total > 0 ? (p.value / total * 100) : 0;
         const widthPct = (p.value / maxPay) * 100;
         return `<div class="payment-row">
           <div class="payment-head">
             <span class="payment-label"><span class="payment-dot" style="background:${p.payment.color};"></span>${escapeHtml(p.payment.name)}</span>
-            <span class="payment-value">${fmtMoney(p.value)} (${pct.toFixed(0)}%)</span>
+            <span class="payment-value">${fmtMoneyShort(p.value)} (${pct.toFixed(0)}%)</span>
           </div>
           <div class="payment-track">
             <div class="payment-fill" style="width:${widthPct}%; background:${p.payment.color};"></div>
@@ -152,7 +161,7 @@ export function renderReports() {
   const allCats = calcByCategory(monthExp);
   document.getElementById('reportTopLabel').textContent = `${allCats.length} danh mục`;
   document.getElementById('reportTop').innerHTML = allCats.length === 0
-    ? `<div style="text-align:center;padding:24px;color:var(--text-soft);font-size:13px;">Chưa có chi tiêu</div>`
+    ? `<div style="text-align:center;padding:24px;color:var(--text-soft);font-size:12px;">Chưa có chi tiêu</div>`
     : `<table class="top-table">
         <thead>
           <tr><th>Danh mục</th><th>Số tiền</th></tr>
@@ -216,6 +225,7 @@ function setupBarInteraction() {
   if (!chart) return;
   barInteractionSetup = true;
 
+  // Sự kiện nhấn giữ (pointer)
   chart.addEventListener('pointerdown', (e) => {
     const bar = e.target.closest('.bar-col');
     if (bar) {
