@@ -1,5 +1,5 @@
-/* css/app.css — V1.9
-   V1.9: Thêm CSS cho Thẻ Thông tin nhanh (Streak & Insight).
+/* css/app.css — V2.0
+   V2.0: Tinh chỉnh giao diện Thẻ Hôm nay (bỏ sparkline) và hỗ trợ swipe cho Recent List.
    Toàn bộ CSS layout + components (đã trừ theme/reset)
    Thứ tự load: theme.css → app.css */
 
@@ -328,15 +328,14 @@
   border-radius: 10px;
 }
 
+/* Đã bỏ sparkline, phóng to số tiền */
 .overview-main-row {
   display: flex;
   align-items: flex-end;
-  justify-content: space-between;
-  gap: 10px;
   margin-bottom: 6px;
 }
 .overview-big {
-  font-size: 26px;
+  font-size: 32px;
   font-weight: 800;
   letter-spacing: -1px;
   line-height: 1.1;
@@ -345,7 +344,6 @@
   min-width: 0;
   word-break: break-word;
 }
-.spark-wrap { width: 80px; height: 32px; flex-shrink: 0; opacity: 0.85; }
 
 .overview-trend {
   display: flex;
@@ -353,37 +351,12 @@
   gap: 4px;
   font-size: 11.5px;
   font-weight: 600;
-  margin-bottom: 12px;
+  margin-bottom: 0; /* Đã bỏ margin-bottom do không còn KPI bên dưới */
 }
 .overview-trend svg { width: 12px; height: 12px; }
 .overview-trend.up { color: var(--danger); }
 .overview-trend.down { color: var(--success); }
 .overview-trend.neutral { color: var(--text-soft); }
-
-.overview-mini-kpis {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  padding-top: 10px;
-  border-top: 1px solid var(--border-soft);
-}
-.mini-kpi { min-width: 0; }
-.mini-kpi-label {
-  font-size: 9px;
-  font-weight: 700;
-  color: var(--text-soft);
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  margin-bottom: 3px;
-}
-.mini-kpi-value {
-  font-size: 12.5px;
-  font-weight: 800;
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
 
 /* ==================================================================
    QUICK STATS GRID (Dashboard - Streak & Insight)
@@ -440,17 +413,40 @@
 }
 
 /* ==================================================================
-   RECENT LIST (dashboard)
+   RECENT LIST (dashboard) + SWIPE
    ================================================================== */
-.recent-list { display: flex; flex-direction: column; gap: 1px; }
-.recent-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 8px;
-  border-radius: var(--radius-sm);
+.recent-list { display: flex; flex-direction: column; gap: 0; }
+
+/* Ghi đè lại để thẻ recent-item có thể vuốt giống hệt tab Giao dịch */
+.recent-list .expense-swipe {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border-soft);
 }
-.recent-item:active { background: var(--surface-2); }
+.recent-list .expense-swipe:last-child { border-bottom: none; }
+
+.recent-list .expense-swipe-actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  z-index: 1;
+}
+
+.recent-list .recent-item {
+  position: relative;
+  z-index: 2;
+  background: var(--surface);
+  touch-action: pan-y;
+  user-select: none;
+  padding: 12px 10px;
+  border-radius: 0;
+  transition: background-color 0.15s ease;
+}
+.recent-list .recent-item:active { background: var(--surface-2); }
+.recent-list .recent-item.swiping { transition: none; will-change: transform; }
+
 .recent-icon {
   width: 34px;
   height: 34px;
