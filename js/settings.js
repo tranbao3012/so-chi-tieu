@@ -1,5 +1,5 @@
-/* js/settings.js — V2.2
-   V2.2: Fix lỗi không lưu được cấu hình (do xóa nhầm nút Sync) và khôi phục điền sẵn PAT/PIN. */
+/* js/settings.js — V2.3
+   V2.3: Dọn dẹp inline-style, tương thích 100% CSS mới. */
 
 import {
   state,
@@ -25,7 +25,7 @@ export function renderSettings() {
   setBudget.value = state.settings.monthlyBudget || 0;
   setIncome.value = state.settings.monthlyIncome || 0;
 
-  // Cập nhật trạng thái form Sync và điền sẵn PAT/PIN
+  // Cập nhật trạng thái form Sync
   updateSyncUI();
 }
 
