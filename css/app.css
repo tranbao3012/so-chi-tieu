@@ -1,4 +1,4 @@
-/* css/app.css — V6.0 (Dark UI & Mint Green - Based on sample) */
+/* css/app.css — V6.1 (Professional Dark UI & Overflow Fix) */
 
 /* ==================================================================
    1. APP SHELL & LAYOUT
@@ -76,7 +76,7 @@
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: calc(var(--tab-bar-h) + env(safe-area-inset-bottom, 0px) + 90px);
+  padding-bottom: calc(var(--tab-bar-h) + env(safe-area-inset-bottom, 0px) + 80px);
 }
 .panel { display: none; padding: 0 20px 20px; }
 .panel.active { display: block; }
@@ -112,25 +112,25 @@
 .tab-btn span { font-size: 11px; font-weight: 600; }
 
 /* ==================================================================
-   5. FAB (FLOATING ACTION BUTTON)
+   5. FAB (FLOATING ACTION BUTTON - ĐÃ THU NHỎ)
    ================================================================== */
 .fab {
   position: fixed;
   right: 20px;
   bottom: calc(var(--tab-bar-h) + env(safe-area-inset-bottom, 0px) + 20px);
-  width: 60px; 
-  height: 60px; 
-  border-radius: 20px;
+  width: 48px; 
+  height: 48px; 
+  border-radius: 16px;
   background: var(--primary); 
-  color: #0f172a; /* Chữ tối trên nền xanh sáng */
+  color: #0f172a;
   display: flex; 
   align-items: center; 
   justify-content: center;
-  box-shadow: 0 8px 24px rgba(52, 211, 153, 0.3); 
+  box-shadow: 0 6px 16px rgba(52, 211, 153, 0.4); 
   z-index: 999;
 }
-.fab svg { width: 28px; height: 28px; }
-[data-platform="ios"] .fab { border-radius: 30px; }
+.fab svg { width: 20px; height: 20px; }
+[data-platform="ios"] .fab { border-radius: 24px; }
 [data-platform="android"] .fab { border-radius: 50%; }
 
 /* ==================================================================
@@ -138,7 +138,7 @@
    ================================================================== */
 .card, .overview-card, .settings-card, .quick-stat-card, .expense-group {
   background: var(--surface); 
-  border-radius: 24px; 
+  border-radius: 20px; 
   border: 1px solid var(--border-soft);
   margin-bottom: 16px; 
   overflow: hidden;
@@ -149,16 +149,12 @@
    7. DASHBOARD TAB
    ================================================================== */
 .overview-grid { margin-bottom: 16px; }
-.overview-card { 
-  padding: 24px; 
-  background: var(--surface); 
-  border: none;
-}
+.overview-card { padding: 24px; background: var(--surface); border: none; }
 .overview-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
 .overview-title { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 800; color: var(--primary); text-transform: uppercase; }
 .overview-icon { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: var(--primary-soft); color: var(--primary); }
 .overview-date { font-size: 13px; color: var(--text-soft); font-weight: 600; }
-.overview-big { font-size: 38px; font-weight: 800; color: var(--text); line-height: 1.1; margin-bottom: 12px; }
+.overview-big { font-size: 36px; font-weight: 800; color: var(--text); line-height: 1.1; margin-bottom: 12px; }
 .overview-trend { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; padding: 6px 12px; border-radius: 12px; background: var(--surface-2); }
 .overview-trend.up { color: var(--danger); }
 .overview-trend.down { color: var(--primary); }
@@ -174,7 +170,7 @@
 .section-title-text { font-size: 18px; font-weight: 800; color: var(--text); }
 
 /* ==================================================================
-   8. SWIPE LIST (RECENT & EXPENSES) - FIXED
+   8. SWIPE LIST (RECENT & EXPENSES)
    ================================================================== */
 .recent-list { display: flex; flex-direction: column; gap: 0; }
 
@@ -195,17 +191,17 @@
   z-index: 1; 
 }
 .swipe-action-btn {
-  width: 80px;
+  width: 76px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 4px;
   color: #fff;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
 }
-.swipe-action-btn svg { width: 20px; height: 20px; }
+.swipe-action-btn svg { width: 18px; height: 18px; }
 .swipe-action-btn.edit { background: var(--surface-3); color: var(--text); }
 .swipe-action-btn.delete { background: var(--danger); }
 
@@ -215,7 +211,7 @@
   background: var(--surface);
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   padding: 16px;
   width: 100%;
   touch-action: pan-y;
@@ -226,24 +222,24 @@
 .expense-row.swiping, .recent-item.swiping { transition: none; }
 
 .expense-icon, .recent-icon {
-  width: 46px;
-  height: 46px;
-  border-radius: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
   font-weight: 800;
-  font-size: 18px;
+  font-size: 16px;
   flex-shrink: 0;
 }
 .expense-body, .recent-meta { flex: 1; min-width: 0; }
 
-.expense-top { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap; }
-.expense-category, .recent-title { font-size: 15px; font-weight: 700; color: var(--text); }
-.expense-payment { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 6px; background: var(--surface-2); color: var(--text-soft); }
+.expense-top { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; flex-wrap: wrap; }
+.expense-category, .recent-title { font-size: 14px; font-weight: 700; color: var(--text); }
+.expense-payment { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; background: var(--surface-2); color: var(--text-soft); }
 .expense-note, .recent-sub { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
-.expense-amount, .recent-amount { font-size: 16px; font-weight: 800; color: var(--text); white-space: nowrap; }
+.expense-amount, .recent-amount { font-size: 15px; font-weight: 800; color: var(--text); white-space: nowrap; }
 
 /* ==================================================================
    9. EXPENSES TAB (Filters, Summary)
@@ -267,21 +263,21 @@
 .group-total { color: var(--primary); }
 
 /* ==================================================================
-   10. REPORTS TAB
+   10. REPORTS TAB (Fix Layout & Text)
    ================================================================== */
-.month-nav { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.month-nav { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; margin-top: 8px; }
 .month-nav-btn { width: 44px; height: 44px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--text); }
 .month-label { flex: 1; text-align: center; font-size: 18px; font-weight: 800; color: var(--text); }
 .btn-export-pdf { padding: 10px 16px; border-radius: 14px; background: var(--primary-soft); color: var(--primary); font-weight: 700; display: flex; align-items: center; gap: 6px; }
 
-.report-hero { background: var(--surface); border-radius: 24px; padding: 24px; color: var(--text); margin-bottom: 16px; border: 1px solid var(--border-soft); }
+.report-hero { background: var(--surface); border-radius: 24px; padding: 24px; color: var(--text); margin-bottom: 16px; border: 1px solid var(--border-soft); overflow: hidden; }
 .report-hero-label { color: var(--primary); font-weight: 700; font-size: 13px; }
-.report-hero-value { font-size: 36px; font-weight: 800; margin: 8px 0; color: var(--text); }
+.report-hero-value { font-size: 34px; font-weight: 800; margin: 8px 0; color: var(--text); word-break: break-word; }
 .report-hero-stats { display: flex; gap: 24px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
 
 .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
-.kpi { background: var(--surface); border-radius: 20px; padding: 16px; border: 1px solid var(--border-soft); }
-.kpi-label { font-size: 11px; font-weight: 700; color: var(--text-soft); margin-bottom: 6px; }
+.kpi { background: var(--surface); border-radius: 20px; padding: 16px; border: 1px solid var(--border-soft); overflow: hidden; }
+.kpi-label { font-size: 11px; font-weight: 700; color: var(--text-soft); margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .kpi-value { font-size: 22px; font-weight: 800; color: var(--text); }
 
 .reports-grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 16px; }
@@ -292,9 +288,9 @@
 .legend { display: flex; flex-direction: column; width: 100%; }
 .legend-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed var(--border); }
 .legend-dot { width: 10px; height: 10px; border-radius: 3px; margin-right: 8px; flex-shrink: 0; }
-.legend-name { flex: 1; font-weight: 700; font-size: 14px; color: var(--text); }
-.legend-value { font-weight: 800; font-size: 14px; color: var(--text); }
-.legend-pct { font-size: 13px; color: var(--text-soft); width: 45px; text-align: right; }
+.legend-name { flex: 1; font-weight: 700; font-size: 13px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.legend-value { font-weight: 800; font-size: 13px; color: var(--text); }
+.legend-pct { font-size: 12px; color: var(--text-soft); width: 40px; text-align: right; }
 
 .chart-bars { display: flex; align-items: flex-end; gap: 6px; height: 160px; padding-top: 10px; border-bottom: 1px solid var(--border); overflow-x: auto; }
 .bar-col { flex: 1; min-width: 12px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
@@ -309,7 +305,7 @@
 .payment-track { height: 8px; background: var(--surface-2); border-radius: 4px; overflow: hidden; }
 .payment-fill { height: 100%; border-radius: 4px; }
 
-.top-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.top-table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .top-table th { text-align: left; padding: 12px 8px; color: var(--text-soft); font-weight: 700; border-bottom: 1px solid var(--border); }
 .top-table th:last-child { text-align: right; }
 .top-table td { padding: 14px 8px; border-bottom: 1px solid var(--border-soft); color: var(--text); font-weight: 600; }
@@ -317,24 +313,25 @@
 .top-cat-cell { display: flex; align-items: center; gap: 8px; }
 
 /* ==================================================================
-   11. SETTINGS TAB
+   11. SETTINGS TAB (Fix Text Overflow)
    ================================================================== */
 .settings-card { padding: 20px; border-radius: 20px; }
 .settings-title { font-size: 15px; font-weight: 800; color: var(--text); margin-bottom: 16px; text-transform: uppercase; }
-.settings-row { display: flex; align-items: center; justify-content: space-between; padding: 16px 0; border-bottom: 1px solid var(--border-soft); gap: 16px; }
+.settings-row { display: flex; align-items: center; justify-content: space-between; padding: 16px 0; border-bottom: 1px solid var(--border-soft); gap: 12px; }
 .settings-row:last-child { border-bottom: none; padding-bottom: 0; }
-.settings-label { font-size: 15px; font-weight: 700; color: var(--text); }
-.settings-desc { font-size: 13px; color: var(--text-soft); margin-top: 4px; }
-.form-input { padding: 12px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--border); font-size: 15px; font-weight: 700; color: var(--text); outline: none; text-align: right; }
+.settings-meta { flex: 1; min-width: 0; }
+.settings-label { font-size: 14px; font-weight: 700; color: var(--text); }
+.settings-desc { font-size: 12px; color: var(--text-soft); margin-top: 4px; line-height: 1.4; }
+.form-input { padding: 12px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--border); font-size: 14px; font-weight: 700; color: var(--text); outline: none; text-align: right; width: 120px; flex-shrink: 0; }
 .form-input:focus { border-color: var(--primary); }
 
-.toggle { position: relative; width: 50px; height: 30px; flex-shrink: 0; background: var(--surface-3); border-radius: 15px; cursor: pointer; }
+.toggle { position: relative; width: 46px; height: 26px; flex-shrink: 0; background: var(--surface-3); border-radius: 13px; cursor: pointer; }
 .toggle.on { background: var(--primary); }
-.toggle::after { content: ''; position: absolute; top: 4px; left: 4px; width: 22px; height: 22px; border-radius: 50%; background: #0f172a; transition: transform 0.2s; }
+.toggle::after { content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #0f172a; transition: transform 0.2s; }
 .toggle.on::after { transform: translateX(20px); background: #fff; }
 
 /* ==================================================================
-   12. BOTTOM SHEETS & MODALS
+   12. BOTTOM SHEETS & MODALS (Fix Error Overlap)
    ================================================================== */
 .sheet-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.8); z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
 .sheet-overlay.active { opacity: 1; pointer-events: auto; }
@@ -347,8 +344,8 @@
 .sheet-title { font-size: 20px; font-weight: 800; color: var(--text); }
 .sheet-close { width: 36px; height: 36px; border-radius: 50%; background: var(--surface-2); display: flex; align-items: center; justify-content: center; color: var(--text); }
 .sheet-body { flex: 1; overflow-y: auto; padding: 20px 24px; }
-.sheet-section { margin-bottom: 24px; }
-.sheet-section-label { font-size: 12px; font-weight: 800; color: var(--text-soft); text-transform: uppercase; margin-bottom: 12px; }
+.sheet-section { margin-bottom: 20px; }
+.sheet-section-label { font-size: 11px; font-weight: 800; color: var(--text-soft); text-transform: uppercase; margin-bottom: 10px; }
 
 .amount-input-wrap { background: var(--surface-2); border: 2px solid var(--primary); border-radius: 16px; padding: 16px; display: flex; align-items: center; }
 .amount-currency-prefix { font-size: 20px; font-weight: 800; color: var(--primary); margin-right: 12px; }
@@ -370,11 +367,15 @@
 .field-input { width: 100%; padding: 14px 16px; border-radius: 14px; background: var(--surface-2); border: 1px solid var(--border); font-size: 15px; color: var(--text); outline: none; }
 .field-input:focus { border-color: var(--primary); }
 
+/* FIX: Ẩn thông báo lỗi mặc định */
+.field-error { font-size: 11px; color: var(--danger); margin-top: 6px; font-weight: 600; display: none !important; }
+.field-error.show { display: block !important; }
+
 .summary-preview { background: var(--surface-2); border-radius: 16px; padding: 16px; }
 .summary-preview-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed var(--border); }
 .summary-preview-row:last-child { border: none; padding-bottom: 0; }
-.summary-preview-label { font-size: 14px; color: var(--text-muted); }
-.summary-preview-value { font-size: 14px; font-weight: 700; color: var(--text); }
+.summary-preview-label { font-size: 13px; color: var(--text-muted); }
+.summary-preview-value { font-size: 13px; font-weight: 700; color: var(--text); }
 .summary-preview-value.big { font-size: 20px; color: var(--primary); font-weight: 800; }
 
 .sheet-footer { padding: 16px 24px; border-top: 1px solid var(--border-soft); display: flex; gap: 12px; }
