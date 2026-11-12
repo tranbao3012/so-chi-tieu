@@ -1,7 +1,7 @@
-// sw.js — V3.0
+// sw.js — V3.1
 // Bắt buộc tăng CACHE_VERSION để xóa triệt để cache lỗi giao diện trên iOS/Android.
 
-const CACHE_VERSION = 'expense-tracker-v4.0.0'; // [FIX] Phiên bản mới nhất
+const CACHE_VERSION = 'expense-tracker-v4.1.0'; // [FIX] Đã tăng lên v4.1.0 cho giao diện Compact UI
 
 const APP_SHELL = [
   './',
