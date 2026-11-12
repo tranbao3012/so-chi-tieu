@@ -69,7 +69,7 @@
   <!-- MAIN CONTENT -->
   <main class="app-content" id="appContent">
 
-    <!-- 1. PANEL TỔNG QUAN -->
+    <!-- PANEL — TỔNG QUAN -->
     <section class="panel active" id="panel-dashboard">
       <div class="overview-grid">
         <div class="overview-card today" id="todayOverview"></div>
@@ -82,17 +82,14 @@
 
       <div class="card">
         <div class="section-title">
-          <div class="section-title-left">
-            <span class="section-title-icon" data-icon="clock"></span>
-            <span class="section-title-text">Gần đây</span>
-          </div>
+          <div class="section-title-left"><span class="section-title-icon" data-icon="clock"></span><span class="section-title-text">Gần đây</span></div>
           <button class="btn btn-sm btn-ghost" data-goto="expenses">Xem tất cả →</button>
         </div>
         <div class="recent-list" id="recentList"></div>
       </div>
     </section>
 
-    <!-- 2. PANEL GIAO DỊCH -->
+    <!-- PANEL — GIAO DỊCH -->
     <section class="panel" id="panel-expenses">
       <div class="smart-filters" id="smartFilters"></div>
       <div class="filter-bar">
@@ -106,7 +103,7 @@
       <div id="expenseList"></div>
     </section>
 
-    <!-- 3. PANEL BÁO CÁO -->
+    <!-- PANEL — BÁO CÁO -->
     <section class="panel" id="panel-reports">
       <div class="month-nav">
         <button class="month-nav-btn" id="prevMonth" aria-label="Tháng trước">
@@ -121,7 +118,6 @@
           PDF
         </button>
       </div>
-      
       <div class="report-hero" id="reportHero"></div>
       <div class="kpi-grid" id="reportKpis"></div>
       <div class="card" id="reportInsights"></div>
@@ -129,10 +125,7 @@
       <div class="reports-grid">
         <div class="card">
           <div class="section-title">
-            <div class="section-title-left">
-              <span class="section-title-icon" data-icon="pieChart"></span>
-              <span class="section-title-text">Danh mục</span>
-            </div>
+            <div class="section-title-left"><span class="section-title-icon" data-icon="pieChart"></span><span class="section-title-text">Danh mục</span></div>
           </div>
           <div class="donut-wrap">
             <div class="donut-container" id="reportDonut"></div>
@@ -141,10 +134,7 @@
         </div>
         <div class="card">
           <div class="section-title">
-            <div class="section-title-left">
-              <span class="section-title-icon" data-icon="barChart"></span>
-              <span class="section-title-text">Theo ngày</span>
-            </div>
+            <div class="section-title-left"><span class="section-title-icon" data-icon="barChart"></span><span class="section-title-text">Theo ngày</span></div>
             <small id="reportBarsLabel"></small>
           </div>
           <div class="chart-wrap">
@@ -158,10 +148,7 @@
       <div class="reports-grid full-width">
         <div class="card">
           <div class="section-title">
-            <div class="section-title-left">
-              <span class="section-title-icon" data-icon="creditCard"></span>
-              <span class="section-title-text">Phương thức</span>
-            </div>
+            <div class="section-title-left"><span class="section-title-icon" data-icon="creditCard"></span><span class="section-title-text">Phương thức</span></div>
           </div>
           <div id="reportPayments"></div>
         </div>
@@ -169,32 +156,23 @@
 
       <div class="card">
         <div class="section-title">
-          <div class="section-title-left">
-            <span class="section-title-icon" data-icon="trendUp"></span>
-            <span class="section-title-text">Top danh mục chi tiêu</span>
-          </div>
+          <div class="section-title-left"><span class="section-title-icon" data-icon="trendUp"></span><span class="section-title-text">Top danh mục chi tiêu</span></div>
           <small id="reportTopLabel"></small>
         </div>
         <div id="reportTop"></div>
       </div>
     </section>
 
-    <!-- 4. PANEL CÀI ĐẶT -->
+    <!-- PANEL — CÀI ĐẶT -->
     <section class="panel" id="panel-settings">
       <div class="settings-card">
         <div class="settings-title"><span data-icon="target"></span>Tài chính</div>
         <div class="settings-row">
-          <div class="settings-meta">
-            <div class="settings-label">Ngân sách tháng</div>
-            <div class="settings-desc">0 = không giới hạn</div>
-          </div>
+          <div class="settings-meta"><div class="settings-label">Ngân sách tháng</div><div class="settings-desc">0 = không giới hạn</div></div>
           <input type="number" class="form-input" id="setBudget" min="0" step="1000" placeholder="0">
         </div>
         <div class="settings-row">
-          <div class="settings-meta">
-            <div class="settings-label">Thu nhập tháng</div>
-            <div class="settings-desc">Dùng cho phân tích 50/30/20</div>
-          </div>
+          <div class="settings-meta"><div class="settings-label">Thu nhập tháng</div><div class="settings-desc">Dùng cho phân tích 50/30/20</div></div>
           <input type="number" class="form-input" id="setIncome" min="0" step="1000" placeholder="0">
         </div>
       </div>
@@ -250,8 +228,8 @@
 
   </main>
 
-  <!-- FAB (ĐÃ ÉP CỨNG KÍCH THƯỚC INLINE) -->
-  <button class="fab" id="fab" aria-label="Thêm chi tiêu" style="width:52px; height:52px; padding:0; margin:0; border:none; -webkit-appearance:none;">
+  <!-- FAB (ÉP CỨNG KÍCH THƯỚC INLINE) -->
+  <button class="fab" id="fab" aria-label="Thêm chi tiêu" style="width:56px; height:56px; padding:0; margin:0; border:none; -webkit-appearance:none;">
     <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:24px; height:24px; min-width:24px; min-height:24px; display:block;">
       <path d="M12 5v14M5 12h14"/>
     </svg>
@@ -260,7 +238,7 @@
   <!-- BOTTOM NAVIGATION -->
   <nav class="tab-bar">
     <button class="tab-btn active" data-tab="dashboard">
-      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <rect x="3" y="3" width="7" height="7" rx="1.5"/>
         <rect x="14" y="3" width="7" height="7" rx="1.5"/>
         <rect x="14" y="14" width="7" height="7" rx="1.5"/>
@@ -269,20 +247,20 @@
       <span>Tổng quan</span>
     </button>
     <button class="tab-btn" data-tab="expenses">
-      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
         <circle cx="4" cy="6" r="1" fill="currentColor"/><circle cx="4" cy="12" r="1" fill="currentColor"/><circle cx="4" cy="18" r="1" fill="currentColor"/>
       </svg>
       <span>Giao dịch</span>
     </button>
     <button class="tab-btn" data-tab="reports">
-      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/>
       </svg>
       <span>Báo cáo</span>
     </button>
     <button class="tab-btn" data-tab="settings">
-      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="3"/>
         <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
       </svg>
@@ -389,7 +367,7 @@
   </div>
 </div>
 
-<!-- MODAL: HÀNH ĐỘNG DANH MỤC (SỬA/XÓA) -->
+<!-- MODAL: HÀNH ĐỘNG DANH MỤC -->
 <div class="sheet-overlay" id="catActionModal">
   <div class="sheet" style="max-height: 250px;">
     <div class="sheet-handle"></div>
@@ -399,7 +377,7 @@
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
-    <div class="sheet-body" style="padding: 10px 16px;">
+    <div class="sheet-body" style="padding: 10px 20px;">
       <button class="btn btn-block" id="catActionEdit" style="margin-bottom: 8px; justify-content: flex-start; padding-left: 16px;">✏️ Sửa tên danh mục</button>
       <button class="btn btn-block btn-danger" id="catActionDelete" style="justify-content: flex-start; padding-left: 16px;">🗑️ Xoá danh mục</button>
     </div>
