@@ -1,7 +1,7 @@
-// sw.js — V1.6
-// Fix: Tăng CACHE_VERSION lên v2.5.0 để áp dụng inline style cho icon và biểu đồ.
+// sw.js — V2.0
+// Bắt buộc tăng CACHE_VERSION để điện thoại (iOS/Android) xóa cache cũ và nhận UI mới.
 
-const CACHE_VERSION = 'expense-tracker-v2.5.0'; // [FIX] Tăng phiên bản
+const CACHE_VERSION = 'expense-tracker-v3.0.0'; // [FIX] Nâng lên v3.0.0
 
 const APP_SHELL = [
   './',
