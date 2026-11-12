@@ -1,6 +1,5 @@
-/* js/reports.js — V1.5 (Dark Theme Compatible)
-   Render tab Báo cáo: month nav, hero KPI, insights, donut, bar chart (tooltip),
-   payment bars, và bảng Top danh mục. */
+/* js/reports.js — V1.6 (Perfect Match with UI Preview)
+   Render tab Báo cáo. */
 
 import {
   state, reportState,
@@ -39,18 +38,18 @@ export function renderReports() {
   const largest = monthExp.reduce((m, e) => Math.max(m, Number(e.amount || 0)), 0);
   const diffPct = prevTotal > 0 ? ((total - prevTotal) / prevTotal * 100) : 0;
 
-  let trendLine = 'Chưa có dữ liệu', trendIcon = 'minus';
+  let trendLine = 'Chưa có dữ liệu', trendIcon = 'minus', trendClass = '';
   if (prevTotal > 0) {
-    if (diffPct > 0) { trendLine = `Tăng ${Math.abs(diffPct).toFixed(0)}% vs tháng trước`; trendIcon = 'arrowUp'; }
-    else if (diffPct < 0) { trendLine = `Giảm ${Math.abs(diffPct).toFixed(0)}% vs tháng trước`; trendIcon = 'arrowDown'; }
+    if (diffPct > 0) { trendLine = `Tăng ${Math.abs(diffPct).toFixed(0)}% so với tháng trước`; trendIcon = 'arrowUp'; trendClass = 'up'; }
+    else if (diffPct < 0) { trendLine = `Giảm ${Math.abs(diffPct).toFixed(0)}% so với tháng trước`; trendIcon = 'arrowDown'; trendClass = 'down'; }
     else trendLine = 'Không đổi';
   }
 
   /* ---------- Hero ---------- */
   document.getElementById('reportHero').innerHTML = `
-    <div class="report-hero-label">${ic('dollarSign')}<span>Tổng chi tháng ${reportMonth.getMonth() + 1}</span></div>
+    <div class="report-hero-label">${ic('dollarSign', 14)}<span>Tổng chi tháng ${reportMonth.getMonth() + 1}</span></div>
     <div class="report-hero-value">${fmtMoney(total)}</div>
-    <div class="report-hero-sub">${ic(trendIcon)}<span>${trendLine}</span></div>
+    <div class="report-hero-sub ${trendClass}">${ic(trendIcon, 14)}<span>${trendLine}</span></div>
     <div class="report-hero-stats">
       <div>
         <div class="report-hero-stat-label">Số GD</div>
@@ -71,17 +70,17 @@ export function renderReports() {
       <div class="kpi-value">${fmtMoneyShort(largest)}</div>
       <div class="kpi-sub">GD đắt nhất</div>
     </div>
-    <div class="kpi" style="border-left-color: ${diffPct > 0 ? 'var(--danger)' : 'var(--primary)'};">
+    <div class="kpi" style="border-left: 3px solid ${diffPct > 0 ? 'var(--danger)' : 'var(--primary)'};">
       <div class="kpi-label">${ic(diffPct > 0 ? 'arrowUp' : 'arrowDown', 12)} So tháng trước</div>
       <div class="kpi-value">${prevTotal > 0 ? (diffPct >= 0 ? '+' : '') + diffPct.toFixed(0) + '%' : '—'}</div>
       <div class="kpi-sub">${prevTotal > 0 ? fmtMoneyShort(prevTotal) : 'Chưa có'}</div>
     </div>
-    <div class="kpi" style="border-left-color: var(--warning);">
+    <div class="kpi" style="border-left: 3px solid var(--warning);">
       <div class="kpi-label">${ic('calendar', 12)} Ngày có chi</div>
       <div class="kpi-value">${uniqueDays}/${days}</div>
       <div class="kpi-sub">Ngày phát sinh</div>
     </div>
-    <div class="kpi" style="border-left-color: ${budget > 0 && budgetPct > 100 ? 'var(--danger)' : 'var(--primary)'};">
+    <div class="kpi" style="border-left: 3px solid ${budget > 0 && budgetPct > 100 ? 'var(--danger)' : 'var(--primary)'};">
       <div class="kpi-label">${ic('target', 12)} Ngân sách</div>
       <div class="kpi-value">${budget > 0 ? budgetPct.toFixed(0) + '%' : '—'}</div>
       <div class="kpi-sub">${budget > 0 ? (budgetPct > 100 ? 'Vượt ' + fmtMoneyShort(total - budget) : 'Còn ' + fmtMoneyShort(budget - total)) : 'Chưa đặt'}</div>
