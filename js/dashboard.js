@@ -1,5 +1,4 @@
-/* js/dashboard.js — V1.6
-   V1.6: Ép cứng Inline Style cho phần Swipe (Sửa/Xóa) để chống vỡ layout nếu mất CSS.
+/* js/dashboard.js — V1.7 (Dark Theme Compatible & Inline Swipe Fix)
    Render tab Tổng quan: overview Hôm nay, Streak, Insight, danh sách giao dịch gần đây. */
 
 import {
@@ -51,9 +50,10 @@ function calculateStreak() {
   let streak = 0;
   let checkDate = new Date();
   
+  // Nếu hôm nay chưa nhập, kiểm tra xem hôm qua có nhập không để duy trì chuỗi
   if (!dates.has(dayIso(checkDate))) {
     checkDate.setDate(checkDate.getDate() - 1);
-    if (!dates.has(dayIso(checkDate))) return 0;
+    if (!dates.has(dayIso(checkDate))) return 0; // Đứt chuỗi
   }
   
   while (dates.has(dayIso(checkDate))) {
@@ -70,7 +70,7 @@ function renderStreakCard() {
   const streak = calculateStreak();
   
   el.innerHTML = `
-    <div class="quick-stat-icon" style="background: linear-gradient(135deg, #f97316, #ea580c); color: #fff; font-size: 18px;">🔥</div>
+    <div class="quick-stat-icon" style="background: linear-gradient(135deg, #f97316, #ea580c); color: #fff; font-size: 20px;">🔥</div>
     <div class="quick-stat-info">
       <div class="quick-stat-value">${streak} ngày</div>
       <div class="quick-stat-label">Chuỗi ghi chép</div>
@@ -100,7 +100,7 @@ function renderInsightCard() {
   }
 
   el.innerHTML = `
-    <div class="quick-stat-icon" style="background: var(--surface-2); font-size: 18px;">${icon}</div>
+    <div class="quick-stat-icon" style="background: var(--surface-2); font-size: 20px;">${icon}</div>
     <div class="quick-stat-info">
       <div class="quick-stat-value" style="color: ${color}; font-size: 12px; line-height: 1.2; margin-bottom: 2px;">${text}</div>
       <div class="quick-stat-label">Chi nhiều nhất hôm nay</div>
@@ -133,9 +133,7 @@ function bindRecentSwipeActions() {
       const dx = e.touches[0].clientX - startX;
       if (dx > 5) return;
       if (Math.abs(dx) > 10) {
-        if (!isDragging) {
-          isDragging = true;
-        }
+        if (!isDragging) isDragging = true;
         currentX = Math.max(-152, Math.min(0, dx));
         row.style.transform = `translate3d(${currentX}px,0,0)`;
       }
@@ -183,23 +181,23 @@ function renderRecentList() {
     const cat = getCategory(e.categoryId);
     const isAno = AI.isAnomalous(e.id);
     
-    // [FIX] Ép cứng inline style để không bao giờ bị vỡ layout
+    // Ép cứng inline style để không bao giờ bị vỡ layout
     const wrapStyle = "position: relative; overflow: hidden; width: 100%; border-bottom: 1px solid var(--border-soft); background: var(--surface); border-radius: 0;";
     const actionStyle = "position: absolute; top: 0; right: 0; bottom: 0; display: flex; z-index: 1;";
-    const itemStyle = "position: relative; z-index: 2; background: var(--surface); display: flex; align-items: center; gap: 12px; padding: 12px 8px; width: 100%; touch-action: pan-y; user-select: none; transition: transform 0.2s ease;";
+    const itemStyle = "position: relative; z-index: 2; background: var(--surface); display: flex; align-items: center; gap: 12px; padding: 16px; width: 100%; touch-action: pan-y; user-select: none; transition: transform 0.2s ease;";
 
     return `<div class="expense-swipe" style="${wrapStyle}">
       <div class="expense-swipe-actions" style="${actionStyle}">
-        <button class="swipe-action-btn edit" data-edit-expense="${e.id}" style="width: 76px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--primary); color: #fff; font-size: 10px; font-weight: 700; border: none; cursor: pointer;">${ic('edit', 18)}<span style="margin-top: 2px;">Sửa</span></button>
+        <button class="swipe-action-btn edit" data-edit-expense="${e.id}" style="width: 76px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--primary); color: #0f172a; font-size: 10px; font-weight: 700; border: none; cursor: pointer;">${ic('edit', 18)}<span style="margin-top: 2px;">Sửa</span></button>
         <button class="swipe-action-btn delete" data-del-expense="${e.id}" style="width: 76px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--danger); color: #fff; font-size: 10px; font-weight: 700; border: none; cursor: pointer;">${ic('trash', 18)}<span style="margin-top: 2px;">Xoá</span></button>
       </div>
       <div class="recent-item" data-swipe-row="${e.id}" style="${itemStyle}">
-        <div class="recent-icon" style="background:${cat.color}; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 14px; flex-shrink: 0;">${escapeHtml(cat.name.charAt(0).toUpperCase())}</div>
+        <div class="recent-icon" style="background:${cat.color}; width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 14px; flex-shrink: 0;">${escapeHtml(cat.name.charAt(0).toUpperCase())}</div>
         <div class="recent-meta" style="flex: 1; min-width: 0;">
-          <div class="recent-title" style="font-size: 13px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(cat.name)}${e.note ? ' · ' + escapeHtml(e.note) : ''}${isAno ? ` <span style="color:var(--warning);">⚠</span>` : ''}</div>
-          <div class="recent-sub" style="font-size: 11px; color: var(--text-soft); margin-top: 2px;">${fmtDate(e.date)} · ${getPayment(e.paymentMethod).name}</div>
+          <div class="recent-title" style="font-size: 14px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(cat.name)}${e.note ? ' · ' + escapeHtml(e.note) : ''}${isAno ? ` <span style="color:var(--warning);">⚠</span>` : ''}</div>
+          <div class="recent-sub" style="font-size: 12px; color: var(--text-soft); margin-top: 2px;">${fmtDate(e.date)} · ${getPayment(e.paymentMethod).name}</div>
         </div>
-        <div class="recent-amount" style="font-size: 14px; font-weight: 800; color: var(--text); white-space: nowrap;">${fmtMoney(e.amount)}</div>
+        <div class="recent-amount" style="font-size: 15px; font-weight: 800; color: var(--text); white-space: nowrap;">${fmtMoney(e.amount)}</div>
       </div>
     </div>`;
   }).join('');
