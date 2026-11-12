@@ -1,7 +1,7 @@
-// sw.js — V2.0
-// Bắt buộc tăng CACHE_VERSION để điện thoại (iOS/Android) xóa cache cũ và nhận UI mới.
+// sw.js — V2.1
+// Bắt buộc tăng CACHE_VERSION để ép điện thoại xóa cache cũ và nhận giao diện ổn định.
 
-const CACHE_VERSION = 'expense-tracker-v3.0.0'; // [FIX] Nâng lên v3.0.0
+const CACHE_VERSION = 'expense-tracker-v3.2.0'; // [FIX] Đã tăng phiên bản
 
 const APP_SHELL = [
   './',
@@ -86,6 +86,7 @@ self.addEventListener('fetch', (event) => {
       fetch(req)
         .then((res) => {
           if (res && res.ok) {
+            // Chỉ cache nếu URL không chứa mã code OAuth (?code=)
             if (!req.url.includes('code=')) {
               const copy = res.clone();
               caches.open(CACHE_VERSION).then((c) => c.put(req, copy));
