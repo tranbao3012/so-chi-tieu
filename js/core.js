@@ -1,4 +1,4 @@
-/* js/core.js — V1.4
+/* js/core.js — V1.4 (Dark Theme Compatible)
    Core module: State, Storage, Utils, Queries, AI, ACCT, UI helpers, PDF 
    (Phiên bản ổn định, ép cứng kích thước icon và donut chống vỡ layout) */
 
@@ -111,7 +111,7 @@ export const state = {
     currency: 'đ',
     monthlyBudget: 0,
     monthlyIncome: 0,
-    theme: 'light',
+    theme: 'dark', /* Mặc định là dark mode cho UI mới */
     aiEnabled: true,
     anomalyEnabled: true,
     suggestEnabled: true,
