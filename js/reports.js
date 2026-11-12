@@ -1,5 +1,5 @@
-/* js/reports.js — V1.3
-   V1.3: Ép cứng inline style cho Legend, Insights, Payments, và Top Table để chống vỡ giao diện trên mobile. */
+/* js/reports.js — V1.4
+   V1.4: Dọn dẹp các inline-style, chuyển giao diện về cho file CSS quản lý để tương thích 100% iOS/Android. */
 
 import {
   state, reportState,
@@ -47,58 +47,64 @@ export function renderReports() {
 
   /* ---------- Hero ---------- */
   document.getElementById('reportHero').innerHTML = `
-    <div class="report-hero-content">
-      <div class="report-hero-label">${ic('dollarSign')}<span>Tổng chi tháng ${reportMonth.getMonth() + 1}</span></div>
-      <div class="report-hero-value">${fmtMoney(total)}</div>
-      <div class="report-hero-sub">${ic(trendIcon)}<span>${trendLine}</span></div>
-    </div>
+    <div class="report-hero-label">${ic('dollarSign')}<span>Tổng chi tháng ${reportMonth.getMonth() + 1}</span></div>
+    <div class="report-hero-value">${fmtMoney(total)}</div>
+    <div class="report-hero-sub">${ic(trendIcon)}<span>${trendLine}</span></div>
     <div class="report-hero-stats">
-      <div class="report-hero-stat"><div class="report-hero-stat-label">Số GD</div><div class="report-hero-stat-value">${count}</div></div>
-      <div class="report-hero-stat"><div class="report-hero-stat-label">TB/Ngày</div><div class="report-hero-stat-value">${fmtMoneyShort(Math.round(avg))}</div></div>
+      <div>
+        <div class="report-hero-stat-label">Số GD</div>
+        <div class="report-hero-stat-value">${count}</div>
+      </div>
+      <div>
+        <div class="report-hero-stat-label">TB/Ngày</div>
+        <div class="report-hero-stat-value">${fmtMoneyShort(Math.round(avg))}</div>
+      </div>
     </div>`;
 
   /* ---------- KPI grid ---------- */
   const budget = state.settings.monthlyBudget || 0;
   const budgetPct = budget > 0 ? (total / budget * 100) : 0;
   document.getElementById('reportKpis').innerHTML = `
-    <div class="kpi"><div class="kpi-label">${ic('trendUp')} Lớn nhất</div><div class="kpi-value">${fmtMoneyShort(largest)}</div><div class="kpi-sub">Giao dịch đắt nhất</div></div>
-    <div class="kpi kpi-${diffPct > 0 ? 'danger' : 'success'}"><div class="kpi-label">${diffPct > 0 ? ic('arrowUp') : ic('arrowDown')} So tháng trước</div><div class="kpi-value">${prevTotal > 0 ? (diffPct >= 0 ? '+' : '') + diffPct.toFixed(0) + '%' : '—'}</div><div class="kpi-sub">${prevTotal > 0 ? fmtMoneyShort(prevTotal) : 'Chưa có'}</div></div>
-    <div class="kpi kpi-warning"><div class="kpi-label">${ic('calendar')} Ngày có chi</div><div class="kpi-value">${uniqueDays}/${days}</div><div class="kpi-sub">Ngày phát sinh</div></div>
-    <div class="kpi ${budget > 0 && budgetPct > 100 ? 'kpi-danger' : 'kpi-success'}"><div class="kpi-label">${ic('target')} Ngân sách</div><div class="kpi-value">${budget > 0 ? budgetPct.toFixed(0) + '%' : '—'}</div><div class="kpi-sub">${budget > 0 ? (budgetPct > 100 ? 'Vượt ' + fmtMoneyShort(total - budget) : 'Còn ' + fmtMoneyShort(budget - total)) : 'Chưa đặt'}</div></div>`;
+    <div class="kpi">
+      <div class="kpi-label">${ic('trendUp', 12)} Lớn nhất</div>
+      <div class="kpi-value">${fmtMoneyShort(largest)}</div>
+      <div class="kpi-sub">GD đắt nhất</div>
+    </div>
+    <div class="kpi" style="border-left-color: ${diffPct > 0 ? 'var(--danger)' : 'var(--success)'};">
+      <div class="kpi-label">${ic(diffPct > 0 ? 'arrowUp' : 'arrowDown', 12)} So tháng trước</div>
+      <div class="kpi-value">${prevTotal > 0 ? (diffPct >= 0 ? '+' : '') + diffPct.toFixed(0) + '%' : '—'}</div>
+      <div class="kpi-sub">${prevTotal > 0 ? fmtMoneyShort(prevTotal) : 'Chưa có'}</div>
+    </div>
+    <div class="kpi" style="border-left-color: var(--warning);">
+      <div class="kpi-label">${ic('calendar', 12)} Ngày có chi</div>
+      <div class="kpi-value">${uniqueDays}/${days}</div>
+      <div class="kpi-sub">Ngày phát sinh</div>
+    </div>
+    <div class="kpi" style="border-left-color: ${budget > 0 && budgetPct > 100 ? 'var(--danger)' : 'var(--success)'};">
+      <div class="kpi-label">${ic('target', 12)} Ngân sách</div>
+      <div class="kpi-value">${budget > 0 ? budgetPct.toFixed(0) + '%' : '—'}</div>
+      <div class="kpi-sub">${budget > 0 ? (budgetPct > 100 ? 'Vượt ' + fmtMoneyShort(total - budget) : 'Còn ' + fmtMoneyShort(budget - total)) : 'Chưa đặt'}</div>
+    </div>`;
 
-  /* ---------- Insights (FIXED INLINE) ---------- */
+  /* ---------- Insights ---------- */
   const insights = generateInsights(monthExp, total, prevTotal, days);
   document.getElementById('reportInsights').innerHTML = insights.length === 0
     ? `<div style="text-align:center;padding:16px;color:var(--text-soft);font-size:12px;">Chưa có dữ liệu để phân tích</div>`
-    : `<div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
-         <span style="display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:7px; background:var(--primary-soft); color:var(--primary);">${ic('infoCircle', 14)}</span>
-         <span style="font-size:14px; font-weight:800; color:var(--text);">Nhận xét</span>
-       </div>
-       <div style="display:flex; flex-direction:column; gap:8px;">
-         ${insights.map(i => `<div style="display:flex; align-items:flex-start; gap:8px; padding:10px 12px; background:var(--surface-2); border-radius:8px; border-left:3px solid var(--primary); font-size:12.5px; line-height:1.5; color:var(--text);">
-           <div style="flex-shrink:0; margin-top:2px;">${ic(i.icon, 16)}</div>
-           <div>${i.html}</div>
-         </div>`).join('')}
-       </div>`;
+    : `<div class="section-title"><div class="section-title-left"><span class="section-title-icon">${ic('infoCircle')}</span><span class="section-title-text">Nhận xét</span></div></div><div class="insight-list">${insights.map(i => `<div class="insight-item"><div class="insight-icon">${ic(i.icon, 14)}</div><span>${i.html}</span></div>`).join('')}</div>`;
 
   /* ---------- Donut (by category) ---------- */
   const byCat = calcByCategory(monthExp);
   renderDonut(document.getElementById('reportDonut'), byCat.map(b => ({ value: b.value, color: b.category.color })), total);
   
-  // Legend (FIXED INLINE)
   document.getElementById('reportLegend').innerHTML = byCat.length === 0
     ? `<div style="text-align:center;padding:16px;color:var(--text-soft);font-size:11.5px;">Chưa có dữ liệu</div>`
     : byCat.map(b => {
         const pct = total > 0 ? (b.value / total * 100) : 0;
-        return `<div style="display:flex; align-items:center; justify-content:space-between; padding:8px 10px; border-bottom:1px solid var(--border-soft);">
-          <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:0;">
-            <span style="background:${b.category.color}; width:10px; height:10px; border-radius:2px; flex-shrink:0;"></span>
-            <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:600; font-size:12px; color:var(--text);">${escapeHtml(b.category.name)}</span>
-          </div>
-          <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
-            <span style="font-weight:700; font-size:11.5px; color:var(--text-muted);">${fmtMoney(b.value)}</span>
-            <span style="font-size:10.5px; color:var(--text-soft); width:32px; text-align:right;">${pct.toFixed(0)}%</span>
-          </div>
+        return `<div class="legend-item">
+          <span class="legend-dot" style="background:${b.category.color};"></span>
+          <span class="legend-name">${escapeHtml(b.category.name)}</span>
+          <span class="legend-value">${fmtMoney(b.value)}</span>
+          <span class="legend-pct">${pct.toFixed(0)}%</span>
         </div>`;
       }).join('');
 
@@ -119,15 +125,14 @@ export function renderReports() {
     const cnt = dailyCount.get(d) || 0;
     const pct = maxDay > 0 ? val / maxDay * 100 : 0;
     const show = days <= 15 || d % 2 === 0 || d === 1 || d === days;
-    // FIXED INLINE STYLE CHO CỘT
-    barsHtml += `<div class="bar-col" data-day="${d}" data-amount="${val}" data-count="${cnt}" style="flex:1; min-width:8px; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; position:relative; touch-action:none; user-select:none;">
-      <div class="bar" style="width:100%; max-width:24px; height:${pct}%; background:var(--primary); border-radius:3px 3px 0 0; min-height:2px;"></div>
-      ${show ? `<div style="font-size:8.5px; color:var(--text-soft); margin-top:4px; pointer-events:none;">${d}</div>` : '<div style="font-size:8.5px; margin-top:4px; pointer-events:none;">&nbsp;</div>'}
+    barsHtml += `<div class="bar-col" data-day="${d}" data-amount="${val}" data-count="${cnt}">
+      <div class="bar" style="height:${pct}%;"></div>
+      <div class="bar-label">${show ? d : ''}</div>
     </div>`;
   }
   document.getElementById('reportBars').innerHTML = barsHtml;
 
-  /* ---------- Payment bars (FIXED INLINE) ---------- */
+  /* ---------- Payment bars ---------- */
   const byPayment = calcByPayment(monthExp);
   const maxPay = Math.max(...byPayment.map(p => p.value), 1);
   document.getElementById('reportPayments').innerHTML = byPayment.length === 0
@@ -135,43 +140,43 @@ export function renderReports() {
     : byPayment.map(p => {
         const pct = total > 0 ? (p.value / total * 100) : 0;
         const widthPct = (p.value / maxPay) * 100;
-        return `<div style="margin-bottom:12px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-            <span style="display:flex; align-items:center; gap:6px; font-weight:700; font-size:12.5px; color:var(--text);">
-              <span style="width:8px; height:8px; border-radius:2px; background:${p.payment.color}; display:inline-block;"></span>
-              ${escapeHtml(p.payment.name)}
-            </span>
-            <span style="font-weight:700; font-size:11.5px; color:var(--text-muted);">${fmtMoney(p.value)} (${pct.toFixed(0)}%)</span>
+        return `<div class="payment-row">
+          <div class="payment-head">
+            <span class="payment-label"><span class="payment-dot" style="background:${p.payment.color};"></span>${escapeHtml(p.payment.name)}</span>
+            <span class="payment-value">${fmtMoney(p.value)} (${pct.toFixed(0)}%)</span>
           </div>
-          <div style="height:8px; background:var(--surface-2); border-radius:4px; overflow:hidden;">
-            <div style="height:100%; width:${widthPct}%; background:${p.payment.color}; border-radius:4px;"></div>
+          <div class="payment-track">
+            <div class="payment-fill" style="width:${widthPct}%; background:${p.payment.color};"></div>
           </div>
         </div>`;
       }).join('');
 
-  /* ---------- Top Danh Mục (FIXED INLINE TABLE) ---------- */
+  /* ---------- Top Danh Mục ---------- */
   const allCats = calcByCategory(monthExp);
   document.getElementById('reportTopLabel').textContent = `${allCats.length} danh mục`;
   document.getElementById('reportTop').innerHTML = allCats.length === 0
     ? `<div style="text-align:center;padding:24px;color:var(--text-soft);font-size:12px;">Chưa có chi tiêu</div>`
-    : `<div style="overflow-x:auto;"><table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left;">
-        <thead><tr style="border-bottom:1px solid var(--border-soft);">
-          <th style="padding:10px 8px; color:var(--text-soft); font-weight:700; font-size:11px;">Danh mục</th>
-          <th style="padding:10px 8px; color:var(--text-soft); font-weight:700; font-size:11px; text-align:right;">Số tiền</th>
-          <th style="padding:10px 8px; color:var(--text-soft); font-weight:700; font-size:11px; text-align:right;">Tỷ trọng</th>
-        </tr></thead>
-        <tbody>${allCats.map(b => {
-          const pct = total > 0 ? (b.value / total * 100) : 0;
-          return `<tr style="border-bottom:1px solid var(--border-soft);">
-            <td style="padding:12px 8px; font-weight:600; color:var(--text); display:flex; align-items:center; gap:8px;">
-              <span style="width:10px; height:10px; border-radius:2px; background:${b.category.color}; display:inline-block; flex-shrink:0;"></span>
-              ${escapeHtml(b.category.name)}
-            </td>
-            <td style="padding:12px 8px; text-align:right; font-weight:700; color:var(--text);">${fmtMoney(b.value)}</td>
-            <td style="padding:12px 8px; text-align:right; font-weight:600; color:var(--text-soft);">${pct.toFixed(1)}%</td>
-          </tr>`;
-        }).join('')}</tbody>
-      </table></div>`;
+    : `<table class="top-table">
+        <thead>
+          <tr>
+            <th>Danh mục</th>
+            <th>Số tiền</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${allCats.map(b => {
+            return `<tr>
+              <td>
+                <div class="top-cat-cell">
+                  <span class="top-cat-dot" style="background:${b.category.color};"></span>
+                  ${escapeHtml(b.category.name)}
+                </div>
+              </td>
+              <td>${fmtMoney(b.value)}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>`;
 }
 
 /* ==================================================================
@@ -182,6 +187,7 @@ function showBarTooltip(el) {
   const amount = Number(el.dataset.amount || 0);
   const count = Number(el.dataset.count || 0);
   const tt = document.getElementById('barTooltip');
+  if (!tt) return;
 
   if (currentBarActive) currentBarActive.classList.remove('active');
   el.classList.add('active');
