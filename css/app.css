@@ -1,5 +1,5 @@
-/* css/app.css — V2.0
-   V2.0: Tinh chỉnh giao diện Thẻ Hôm nay (bỏ sparkline) và hỗ trợ swipe cho Recent List.
+/* css/app.css — V2.1
+   V2.1: Fix lỗi CSS Báo cáo (Bảng Top danh mục bị ép nhỏ, thẻ Phương thức bị chia cột).
    Toàn bộ CSS layout + components (đã trừ theme/reset)
    Thứ tự load: theme.css → app.css */
 
@@ -328,7 +328,6 @@
   border-radius: 10px;
 }
 
-/* Đã bỏ sparkline, phóng to số tiền */
 .overview-main-row {
   display: flex;
   align-items: flex-end;
@@ -351,7 +350,7 @@
   gap: 4px;
   font-size: 11.5px;
   font-weight: 600;
-  margin-bottom: 0; /* Đã bỏ margin-bottom do không còn KPI bên dưới */
+  margin-bottom: 0;
 }
 .overview-trend svg { width: 12px; height: 12px; }
 .overview-trend.up { color: var(--danger); }
@@ -417,7 +416,6 @@
    ================================================================== */
 .recent-list { display: flex; flex-direction: column; gap: 0; }
 
-/* Ghi đè lại để thẻ recent-item có thể vuốt giống hệt tab Giao dịch */
 .recent-list .expense-swipe {
   position: relative;
   overflow: hidden;
@@ -923,6 +921,9 @@
 .reports-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 12px; }
 @media (min-width: 720px) { .reports-grid { grid-template-columns: 1fr 1fr; } }
 
+/* [FIX] Thẻ Phương thức luôn full chiều ngang */
+.reports-grid.full-width { grid-template-columns: 1fr !important; }
+
 /* ==================================================================
    BAR CHART
    ================================================================== */
@@ -1082,26 +1083,14 @@
   background: var(--surface-2);
   border-bottom: 1px solid var(--border-soft);
 }
-.top-table th:first-child { width: 32px; text-align: center; }
+
+/* [FIX] Xóa width cố định 32px của cột đầu tiên (trước kia là cột STT) */
+.top-table th:first-child { text-align: left; }
 .top-table th.right { text-align: right; }
 .top-table td { padding: 10px; border-bottom: 1px solid var(--border-soft); color: var(--text); font-weight: 500; }
-.top-table td:first-child { text-align: center; }
+.top-table td:first-child { text-align: left; }
 .top-table tr:last-child td { border-bottom: none; }
-.rank-badge {
-  width: 22px;
-  height: 22px;
-  border-radius: 6px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  font-weight: 800;
-  background: var(--surface-3);
-  color: var(--text-muted);
-}
-.top-table tbody tr:nth-child(1) .rank-badge { background: #f59e0b; color: #fff; }
-.top-table tbody tr:nth-child(2) .rank-badge { background: #94a3b8; color: #fff; }
-.top-table tbody tr:nth-child(3) .rank-badge { background: #c2410c; color: #fff; }
+
 .top-cat-cell { display: flex; align-items: center; gap: 6px; font-size: 11.5px; }
 .top-cat-dot { width: 7px; height: 7px; border-radius: 2px; flex-shrink: 0; }
 .top-note-cell { color: var(--text-soft); font-size: 10.5px; max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
