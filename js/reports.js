@@ -1,8 +1,6 @@
-/* js/reports.js — V2.2 (Compact — Remove KPI grid & uppercase labels)
-   Thay đổi:
-   - Xóa renderKpis() và mọi tham chiếu
-   - renderHero(): bỏ label uppercase "SỐ GD" / "TB/NGÀY", gộp thành 1 dòng meta
-   - Trend hiển thị dạng chip nhỏ ở góc phải trên */
+/* js/reports.js — V2.3 (Hero dùng section-title + amount có nền surface-2)
+   - renderHero(): bỏ meta, dùng .section-title + .report-hero-amount
+   - Bỏ tham số count/avg không dùng */
 
 import {
   state, reportState,
@@ -32,14 +30,13 @@ export function renderReports() {
     const reportMonth = reportState.month;
     const monthExp = getMonthExpenses(reportMonth);
     const prevExp = getMonthExpenses(new Date(reportMonth.getFullYear(), reportMonth.getMonth() - 1, 1));
-    const { total, count } = calcSummary(monthExp);
+    const { total } = calcSummary(monthExp);
     const prevTotal = calcSummary(prevExp).total;
     const days = daysInMonth(reportMonth.getFullYear(), reportMonth.getMonth());
     const uniqueDays = new Set(monthExp.map(e => e.date)).size;
-    const avg = total / days;
     const diffPct = prevTotal > 0 ? ((total - prevTotal) / prevTotal * 100) : 0;
 
-    try { renderHero(reportMonth, total, count, avg, diffPct, prevTotal); }
+    try { renderHero(reportMonth, total, diffPct, prevTotal); }
     catch (e) { console.error('[Reports] Hero:', e); }
 
     try { renderInsights(monthExp, total, prevTotal, days); }
@@ -58,9 +55,9 @@ export function renderReports() {
 }
 
 /* ==================================================================
-   HERO — compact, không label uppercase
+   HERO — dùng .section-title + .report-hero-amount
    ================================================================== */
-function renderHero(month, total, count, avg, diffPct, prevTotal) {
+function renderHero(month, total, diffPct, prevTotal) {
   const monthLabelEl = safe('reportMonthLabel');
   if (monthLabelEl) monthLabelEl.textContent = monthLabel(month);
 
@@ -76,12 +73,13 @@ function renderHero(month, total, count, avg, diffPct, prevTotal) {
   }
 
   heroEl.innerHTML = `
-    <div class="report-hero-top">
-      <div class="report-hero-title">Tổng chi tháng ${month.getMonth() + 1}</div>
+    <div class="section-title">
+      <div class="section-title-left">
+        <span class="section-title-text">Tổng chi tháng ${month.getMonth() + 1}</span>
+      </div>
       ${trendText ? `<div class="report-hero-trend ${trendClass}">${trendText}</div>` : ''}
     </div>
-    <div class="report-hero-value">${fmtMoney(total)}</div>
-    <div class="report-hero-meta">${count} giao dịch · ${fmtMoneyShort(Math.round(avg))}/ngày</div>
+    <div class="report-hero-amount">${fmtMoney(total)}</div>
   `;
 }
 
@@ -113,7 +111,7 @@ function renderInsights(monthExp, total, prevTotal, days) {
 }
 
 /* ==================================================================
-   BAR CHART — defensive parse + inline fallback
+   BAR CHART
    ================================================================== */
 function renderBarChart(monthExp, days, uniqueDays) {
   const barsEl = safe('reportBars');
