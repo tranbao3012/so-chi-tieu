@@ -69,10 +69,19 @@
 
     <!-- PANEL — TỔNG QUAN -->
     <section class="panel active" id="panel-dashboard">
+      
+      <!-- Thẻ Hôm nay -->
       <div class="overview-grid">
         <div class="overview-card today" id="todayOverview"></div>
       </div>
       
+      <!-- [MỚI] Thẻ Thông tin nhanh (Streak & Insight) -->
+      <div class="quick-stats-grid">
+        <div class="quick-stat-card" id="streakCard"></div>
+        <div class="quick-stat-card" id="insightCard"></div>
+      </div>
+
+      <!-- Danh sách Gần đây -->
       <div class="card">
         <div class="section-title">
           <div class="section-title-left"><span class="section-title-icon" data-icon="clock"></span><span class="section-title-text">Gần đây</span></div>
@@ -300,8 +309,6 @@
         </div>
         <div class="payment-row-modal" id="formPayments"></div>
       </div>
-      
-      <!-- ĐÃ TÁCH THÀNH 2 DÒNG DỌC -->
       <div class="sheet-section">
         <div style="margin-bottom: 12px;">
           <div class="sheet-section-label">
@@ -318,7 +325,6 @@
           <input type="text" class="field-input" id="formNote" placeholder="Không bắt buộc" maxlength="120">
         </div>
       </div>
-      
       <div class="sheet-section">
         <div class="summary-preview">
           <div class="summary-preview-title">Tóm tắt</div>
