@@ -2,16 +2,19 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0, minimum-scale=1.0">
+<meta name="format-detection" content="telephone=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0f172a">
 <meta name="apple-mobile-web-app-title" content="Chi Tiêu">
+<meta name="application-name" content="Chi Tiêu">
+<meta name="msapplication-TileColor" content="#0f172a">
+<meta name="color-scheme" content="dark light">
 <script>
-/* Inline bootstrap — chạy TRƯỚC khi CSS load để tránh FOUC theme + flash platform. */
 (function () {
-  var theme = 'dark'; /* Mặc định là Dark Mode */
+  var theme = 'dark';
   try {
     var raw = localStorage.getItem('expense_tracker_v1');
     if (raw) {
@@ -34,7 +37,10 @@
 </script>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="152x152" href="icons/icon-192.png">
+<link rel="apple-touch-icon" sizes="167x167" href="icons/icon-192.png">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <title>Quản Lý Chi Tiêu</title>
 <link rel="stylesheet" href="css/theme.css">
 <link rel="stylesheet" href="css/app.css">
@@ -42,7 +48,6 @@
 <body>
 
 <div class="app">
-  <!-- HEADER -->
   <header class="app-bar" id="appBar">
     <div class="app-bar-inner">
       <div class="app-bar-title-wrap">
@@ -56,7 +61,6 @@
               <polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
             </svg>
           </button>
-          
           <button class="bar-icon-btn" id="themeBtn" aria-label="Đổi giao diện">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="themeIcon">
               <circle cx="12" cy="12" r="4"/>
@@ -68,20 +72,16 @@
     </div>
   </header>
 
-  <!-- MAIN CONTENT -->
   <main class="app-content" id="appContent">
 
-    <!-- 1. PANEL TỔNG QUAN -->
     <section class="panel active" id="panel-dashboard">
       <div class="overview-grid">
         <div class="overview-card today" id="todayOverview"></div>
       </div>
-      
       <div class="quick-stats-grid">
         <div class="quick-stat-card" id="streakCard"></div>
         <div class="quick-stat-card" id="insightCard"></div>
       </div>
-
       <div class="card">
         <div class="section-title">
           <div class="section-title-left">
@@ -93,7 +93,6 @@
       </div>
     </section>
 
-    <!-- 2. PANEL GIAO DỊCH -->
     <section class="panel" id="panel-expenses">
       <div class="smart-filters" id="smartFilters"></div>
       <div class="filter-bar">
@@ -107,7 +106,6 @@
       <div id="expenseList"></div>
     </section>
 
-    <!-- 3. PANEL BÁO CÁO -->
     <section class="panel" id="panel-reports">
       <div class="month-nav">
         <button class="month-nav-btn" id="prevMonth" aria-label="Tháng trước">
@@ -122,11 +120,8 @@
           PDF
         </button>
       </div>
-      
       <div class="report-hero" id="reportHero"></div>
       <div class="card" id="reportInsights"></div>
-      
-      <!-- Bar chart "Theo ngày" (full-width, card độc lập) -->
       <div class="card">
         <div class="section-title">
           <div class="section-title-left">
@@ -139,8 +134,6 @@
           <div class="chart-bars" id="reportBars"></div>
         </div>
       </div>
-
-      <!-- Top danh mục chi tiêu -->
       <div class="card">
         <div class="section-title">
           <div class="section-title-left">
@@ -152,7 +145,6 @@
       </div>
     </section>
 
-    <!-- 4. PANEL CÀI ĐẶT -->
     <section class="panel" id="panel-settings">
       <div class="settings-card">
         <div class="settings-title">Tài chính</div>
@@ -161,14 +153,14 @@
             <div class="settings-label">Ngân sách tháng</div>
             <div class="settings-desc">0 = không giới hạn</div>
           </div>
-          <input type="number" class="form-input" id="setBudget" min="0" step="1000" placeholder="0">
+          <input type="number" class="form-input" id="setBudget" min="0" step="1000" placeholder="0" inputmode="numeric">
         </div>
         <div class="settings-row">
           <div class="settings-meta">
             <div class="settings-label">Thu nhập tháng</div>
             <div class="settings-desc">Dùng cho phân tích 50/30/20</div>
           </div>
-          <input type="number" class="form-input" id="setIncome" min="0" step="1000" placeholder="0">
+          <input type="number" class="form-input" id="setIncome" min="0" step="1000" placeholder="0" inputmode="numeric">
         </div>
       </div>
 
@@ -183,11 +175,11 @@
         <div class="settings-row" style="flex-direction: column; align-items: stretch; gap: 8px; border-bottom: none; padding-top: 8px;">
           <div>
             <div class="settings-label" style="font-size: 11px; margin-bottom: 4px;">GitHub Token (PAT)</div>
-            <input type="password" class="form-input" id="syncToken" placeholder="ghp_..." style="width: 100%; text-align: left;">
+            <input type="password" class="form-input" id="syncToken" placeholder="ghp_..." style="width: 100%; text-align: left;" autocomplete="off" autocapitalize="off" spellcheck="false">
           </div>
           <div>
             <div class="settings-label" style="font-size: 11px; margin-bottom: 4px;">Mã PIN bảo mật (Dùng chung cho các thiết bị)</div>
-            <input type="password" class="form-input" id="syncPin" placeholder="Nhập ít nhất 4 ký tự..." style="width: 100%; text-align: left;">
+            <input type="password" class="form-input" id="syncPin" placeholder="Nhập ít nhất 4 ký tự..." style="width: 100%; text-align: left;" autocomplete="off" autocapitalize="off" spellcheck="false">
           </div>
           <button class="btn btn-sm btn-primary" id="saveSyncConfigBtn" style="width: 100%; margin-top: 4px;">Lưu cấu hình</button>
         </div>
@@ -209,7 +201,7 @@
         <div class="settings-row">
           <div class="settings-meta"><div class="settings-label">Nhập JSON</div><div class="settings-desc">Khôi phục từ file sao lưu</div></div>
           <button class="btn btn-sm" id="importBtn">Chọn</button>
-          <input type="file" accept=".json" id="importFile" style="display:none;">
+          <input type="file" accept=".json,application/json" id="importFile" style="display:none;">
         </div>
       </div>
 
@@ -223,14 +215,12 @@
 
   </main>
 
-  <!-- FAB -->
   <button class="fab" id="fab" aria-label="Thêm chi tiêu" style="width:48px; height:48px; padding:0; margin:0; border:none; -webkit-appearance:none;">
     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px; min-width:20px; min-height:20px; display:block;">
       <path d="M12 5v14M5 12h14"/>
     </svg>
   </button>
 
-  <!-- BOTTOM NAVIGATION -->
   <nav class="tab-bar">
     <button class="tab-btn active" data-tab="dashboard">
       <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -264,7 +254,6 @@
   </nav>
 </div>
 
-<!-- MODAL: THÊM/SỬA CHI TIÊU -->
 <div class="sheet-overlay" id="expenseModal">
   <div class="sheet">
     <div class="sheet-handle"></div>
@@ -279,7 +268,7 @@
         <div class="sheet-section-label">Số tiền</div>
         <div class="amount-input-wrap">
           <span class="amount-currency-prefix" id="amountCurrencyPrefix">đ</span>
-          <input type="text" class="amount-input" id="formAmount" placeholder="0" inputmode="numeric">
+          <input type="text" class="amount-input" id="formAmount" placeholder="0" inputmode="numeric" autocomplete="off">
         </div>
         <div class="quick-amounts" id="aiAmountChips"></div>
         <div class="field-error" id="errAmount">Vui lòng nhập số tiền hợp lệ</div>
@@ -302,7 +291,7 @@
         </div>
         <div>
           <div class="sheet-section-label">Ghi chú</div>
-          <input type="text" class="field-input" id="formNote" placeholder="Không bắt buộc" maxlength="120">
+          <input type="text" class="field-input" id="formNote" placeholder="Không bắt buộc" maxlength="120" autocomplete="off">
         </div>
       </div>
       <div class="sheet-section">
@@ -325,7 +314,6 @@
   </div>
 </div>
 
-<!-- MODAL: TẠO DANH MỤC NHANH -->
 <div class="sheet-overlay" id="quickCatModal">
   <div class="sheet" style="max-height: 250px;">
     <div class="sheet-handle"></div>
@@ -347,7 +335,6 @@
   </div>
 </div>
 
-<!-- MODAL: HÀNH ĐỘNG DANH MỤC -->
 <div class="sheet-overlay" id="catActionModal">
   <div class="sheet" style="max-height: 250px;">
     <div class="sheet-handle"></div>
@@ -364,7 +351,6 @@
   </div>
 </div>
 
-<!-- MODAL: XÁC NHẬN -->
 <div class="sheet-overlay" id="confirmModal">
   <div class="sheet" style="max-height:340px;">
     <div class="sheet-handle"></div>
@@ -379,7 +365,6 @@
   </div>
 </div>
 
-<!-- MISC -->
 <div class="bar-tooltip" id="barTooltip"></div>
 <div id="pdfReport"></div>
 <div class="toast-container" id="toastContainer"></div>
