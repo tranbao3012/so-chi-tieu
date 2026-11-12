@@ -1,6 +1,3 @@
-/* js/main.js — V2.2
-   V2.2: Gia cố try/catch toàn bộ, đảm bảo nút Sync trên Header hoạt động độc lập 100%. */
-
 import {
   state, saveState, toast,
   PLATFORM,
@@ -21,14 +18,8 @@ import { renderReportsTab, bindReportTabEvents } from './reports.js';
 
 import { renderSettings, bindSettingsTabEvents } from './settings.js';
 
-/* ==================================================================
-   Platform attribute
-   ================================================================== */
 document.documentElement.setAttribute('data-platform', PLATFORM);
 
-/* ==================================================================
-   Tab metadata
-   ================================================================== */
 const TAB_TITLES = {
   dashboard: 'Tổng quan',
   expenses: 'Giao dịch',
@@ -46,9 +37,6 @@ const TAB_SUBTITLES = {
 let currentTab = 'dashboard';
 let syncModule = null;
 
-/* ==================================================================
-   Render dispatcher
-   ================================================================== */
 function renderTab(tabId) {
   try {
     if (tabId === 'dashboard') renderDashboard();
@@ -61,9 +49,6 @@ function renderTab(tabId) {
   }
 }
 
-/* ==================================================================
-   Tab switching
-   ================================================================== */
 function switchTab(tabId) {
   if (currentTab === tabId) return;
   currentTab = tabId;
@@ -118,22 +103,17 @@ function bindSheets() {
   });
 }
 
-/* ==================================================================
-   Bind App Bar (Theme & Quick Sync)
-   ================================================================== */
 function bindAppBar() {
   const themeBtn = document.getElementById('themeBtn');
   if (themeBtn) themeBtn.addEventListener('click', toggleTheme);
-  
+
   const fab = document.getElementById('fab');
   if (fab) fab.addEventListener('click', () => openExpenseModal());
-  
-  // Nút Đồng bộ nhanh trên Header
+
   const quickSyncBtn = document.getElementById('quickSyncBtn');
   if (quickSyncBtn) {
     quickSyncBtn.addEventListener('click', async () => {
       try {
-        // Dynamic import đảm bảo lấy được hàm mới nhất từ sync.js
         const mod = await import('./sync.js');
         if (mod && typeof mod.syncNow === 'function') {
           mod.syncNow();
@@ -196,69 +176,120 @@ function handleQueryParams() {
   if (pendingOpenAdd) setTimeout(() => openExpenseModal(), 80);
 }
 
-function registerSW() {
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js').catch((err) => {
-        console.warn('SW registration failed:', err);
-      });
+function setupKeyboardHandling() {
+  const vv = window.visualViewport;
+  if (vv) {
+    let lastHeight = vv.height;
+    vv.addEventListener('resize', () => {
+      const diff = lastHeight - vv.height;
+      lastHeight = vv.height;
+      if (diff > 100) {
+        const active = document.activeElement;
+        if (active && /^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName)) {
+          setTimeout(() => {
+            try { active.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (err) {}
+          }, 100);
+        }
+      }
     });
   }
+
+  document.addEventListener('focusin', (e) => {
+    const el = e.target;
+    if (el && /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)) {
+      setTimeout(() => {
+        try { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (err) {}
+      }, 350);
+    }
+  });
 }
 
-/* ==================================================================
-   SYNC ENGINE (Dynamic Import for initialization)
-   ================================================================== */
+function registerSW() {
+  if (!('serviceWorker' in navigator)) return;
+
+  const hadController = !!navigator.serviceWorker.controller;
+  let refreshing = false;
+
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!hadController) return;
+    if (refreshing) return;
+    refreshing = true;
+    window.location.reload();
+  });
+
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').then((reg) => {
+      reg.addEventListener('updatefound', () => {
+        const nw = reg.installing;
+        if (!nw) return;
+        nw.addEventListener('statechange', () => {
+          if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+            toast('Đã có bản cập nhật. Đang tải lại...', 'info');
+          }
+        });
+      });
+
+      setInterval(() => {
+        reg.update().catch(() => {});
+      }, 60 * 60 * 1000);
+
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          reg.update().catch(() => {});
+        }
+      });
+    }).catch((err) => {
+      console.warn('SW registration failed:', err);
+    });
+  });
+}
+
 async function setupSync() {
   try {
     syncModule = await import('./sync.js');
-    
+
     syncModule.bindState(
-      () => state, 
-      (newState) => { 
+      () => state,
+      (newState) => {
         state.expenses = newState.expenses || [];
         state.categories = newState.categories || [];
         state.settings = newState.settings || {};
-        
+
         if (newState._lastUpdated) {
           state._lastUpdated = newState._lastUpdated;
         }
-        
-        saveState(); 
+
+        saveState();
         document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'sync' } }));
       }
     );
 
     syncModule.initSync();
-    
   } catch (err) {
-    console.warn('[Sync] Lỗi tải module sync (App vẫn chạy bình thường):', err);
+    console.warn('[Sync] Lỗi tải module sync:', err);
   }
 }
 
-/* ==================================================================
-   Init
-   ================================================================== */
 function init() {
   loadState();
   applyTheme();
 
-  // Gia cố từng bước bind để nếu 1 file lỗi, App vẫn chạy
-  try { bindTabs(); } catch(e) { console.error('bindTabs', e); }
-  try { bindSheets(); } catch(e) { console.error('bindSheets', e); }
-  try { bindAppBar(); } catch(e) { console.error('bindAppBar', e); }
-  try { bindExpenseTabEvents(); } catch(e) { console.error('bindExpenseTabEvents', e); }
-  try { bindExpenseFormEvents(); } catch(e) { console.error('bindExpenseFormEvents', e); }
-  try { bindReportTabEvents(); } catch(e) { console.error('bindReportTabEvents', e); }
-  try { bindSettingsTabEvents(); } catch(e) { console.error('bindSettingsTabEvents', e); }
-  try { bindConfirmOK(); } catch(e) { console.error('bindConfirmOK', e); }
-  try { bindStateChanged(); } catch(e) { console.error('bindStateChanged', e); }
-  try { setupScrollBehavior(); } catch(e) { console.error('setupScrollBehavior', e); }
+  try { bindTabs(); } catch (e) { console.error('bindTabs', e); }
+  try { bindSheets(); } catch (e) { console.error('bindSheets', e); }
+  try { bindAppBar(); } catch (e) { console.error('bindAppBar', e); }
+  try { bindExpenseTabEvents(); } catch (e) { console.error('bindExpenseTabEvents', e); }
+  try { bindExpenseFormEvents(); } catch (e) { console.error('bindExpenseFormEvents', e); }
+  try { bindReportTabEvents(); } catch (e) { console.error('bindReportTabEvents', e); }
+  try { bindSettingsTabEvents(); } catch (e) { console.error('bindSettingsTabEvents', e); }
+  try { bindConfirmOK(); } catch (e) { console.error('bindConfirmOK', e); }
+  try { bindStateChanged(); } catch (e) { console.error('bindStateChanged', e); }
+  try { setupScrollBehavior(); } catch (e) { console.error('setupScrollBehavior', e); }
+  try { setupKeyboardHandling(); } catch (e) { console.error('setupKeyboardHandling', e); }
 
   renderTab('dashboard');
-  
+
   setupSync().then(() => {
-    try { handleQueryParams(); } catch(e) {}
+    try { handleQueryParams(); } catch (e) {}
   });
 
   registerSW();
