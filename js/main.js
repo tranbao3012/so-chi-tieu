@@ -7,7 +7,7 @@ import {
   closeSheet, bindConfirmOK
 } from './core.js';
 
-import { renderDashboard } from './dashboard.js';
+import { renderDashboard, bindBalanceEvents } from './dashboard.js';
 
 import {
   renderExpensesTab, openExpenseModal, closeExpenseModal,
@@ -281,6 +281,7 @@ function init() {
   try { bindExpenseFormEvents(); } catch (e) { console.error('bindExpenseFormEvents', e); }
   try { bindReportTabEvents(); } catch (e) { console.error('bindReportTabEvents', e); }
   try { bindSettingsTabEvents(); } catch (e) { console.error('bindSettingsTabEvents', e); }
+  try { bindBalanceEvents(); } catch (e) { console.error('bindBalanceEvents', e); }
   try { bindConfirmOK(); } catch (e) { console.error('bindConfirmOK', e); }
   try { bindStateChanged(); } catch (e) { console.error('bindStateChanged', e); }
   try { setupScrollBehavior(); } catch (e) { console.error('setupScrollBehavior', e); }
