@@ -3,7 +3,7 @@ import {
   ic, escapeHtml,
   fmtMoney, fmtDate, dayIso,
   getDayExpenses,
-  calcSummary, calcByCategory, calcTrend,
+  calcSummary, calcTrend,
   getCategory, getCategoryIcon, getPayment,
   showConfirm, toast, hapticTap, hapticSuccess,
   saveState
@@ -31,67 +31,6 @@ function renderTodayOverview() {
       <div class="overview-big">${fmtMoney(total)}</div>
     </div>
     <div class="overview-trend ${trend.type}">${ic(trend.icon)}<span>${trend.text}</span></div>
-  `;
-}
-
-function calculateStreak() {
-  if (!state.expenses || state.expenses.length === 0) return 0;
-
-  const dates = new Set(state.expenses.map(e => e.date));
-  let streak = 0;
-  let checkDate = new Date();
-
-  if (!dates.has(dayIso(checkDate))) {
-    checkDate.setDate(checkDate.getDate() - 1);
-    if (!dates.has(dayIso(checkDate))) return 0;
-  }
-
-  while (dates.has(dayIso(checkDate))) {
-    streak++;
-    checkDate.setDate(checkDate.getDate() - 1);
-  }
-  return streak;
-}
-
-function renderStreakCard() {
-  const el = document.getElementById('streakCard');
-  if (!el) return;
-
-  const streak = calculateStreak();
-
-  el.innerHTML = `
-    <div class="quick-stat-icon">${ic('flame', 20)}</div>
-    <div class="quick-stat-info">
-      <div class="quick-stat-value">${streak} ngày</div>
-      <div class="quick-stat-label">Chuỗi ghi chép</div>
-    </div>
-  `;
-}
-
-function renderInsightCard() {
-  const el = document.getElementById('insightCard');
-  if (!el) return;
-
-  const todayExp = getDayExpenses(new Date());
-  const byCat = calcByCategory(todayExp);
-
-  let iconName = 'clock';
-  let text = 'Chưa chi tiêu';
-  let textColor = 'var(--text-muted)';
-
-  if (byCat.length > 0) {
-    const top = byCat[0];
-    iconName = getCategoryIcon(top.category);
-    text = `Nhiều nhất: ${escapeHtml(top.category.name)}`;
-    textColor = 'var(--text)';
-  }
-
-  el.innerHTML = `
-    <div class="quick-stat-icon">${ic(iconName, 20)}</div>
-    <div class="quick-stat-info">
-      <div class="quick-stat-value" style="color: ${textColor}; font-size: 12px; line-height: 1.2; margin-bottom: 2px;">${text}</div>
-      <div class="quick-stat-label">Chi nhiều nhất hôm nay</div>
-    </div>
   `;
 }
 
@@ -198,7 +137,5 @@ function renderRecentList() {
 
 export function renderDashboard() {
   renderTodayOverview();
-  renderStreakCard();
-  renderInsightCard();
   renderRecentList();
 }
