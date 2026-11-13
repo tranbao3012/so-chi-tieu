@@ -308,11 +308,6 @@
 .form-input { padding: 8px 10px; border-radius: 8px; background: var(--surface-2); border: 1px solid var(--border); font-size: 13px; font-weight: 700; color: var(--text); outline: none; text-align: right; width: 100px; flex-shrink: 0; -webkit-appearance: none; appearance: none; }
 .form-input:focus { border-color: var(--primary); }
 
-.toggle { position: relative; width: 40px; height: 22px; flex-shrink: 0; background: var(--surface-3); border-radius: 11px; cursor: pointer; }
-.toggle.on { background: var(--primary); }
-.toggle::after { content: ''; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #0f172a; transition: transform 0.2s; }
-.toggle.on::after { transform: translateX(18px); background: #fff; }
-
 .settings-collapse-header {
   display: flex;
   align-items: center;
@@ -332,31 +327,36 @@
 }
 .settings-collapse-header:active { background: var(--surface-2); }
 .settings-collapse-header .settings-title { margin: 0; }
-.sync-chevron { color: var(--text-soft); transition: transform 0.3s ease, color 0.3s ease; flex-shrink: 0; }
-.settings-collapse-header[aria-expanded="true"] .sync-chevron { transform: rotate(180deg); color: var(--primary); }
+.settings-chevron { color: var(--text-soft); transition: transform 0.3s ease, color 0.3s ease; flex-shrink: 0; }
+.settings-collapse-header[aria-expanded="true"] .settings-chevron { transform: rotate(180deg); color: var(--primary); }
 
-.sync-progress-track {
+.settings-progress-track {
   height: 4px;
   background: var(--surface-3);
   margin: 0 -16px;
   overflow: hidden;
   position: relative;
 }
-.sync-progress-fill {
+.settings-progress-fill {
   height: 100%;
   width: 100%;
   background: var(--danger);
   transition: background-color 0.3s ease;
 }
-.sync-progress-fill.connected { background: var(--primary); }
+.settings-progress-fill.connected { background: var(--primary); }
 
-.sync-collapse-body {
+.settings-collapse-body {
   max-height: 0;
   overflow: hidden;
   transition: max-height 0.3s ease;
   margin: 0 -16px;
 }
-.sync-collapse-body.open { max-height: 600px; }
+.settings-collapse-body.open { max-height: 600px; }
+
+.collapse-content {
+  padding: 16px 16px 0 16px;
+}
+
 .sync-body-inner {
   padding: 16px 16px 0 16px;
   display: flex;
