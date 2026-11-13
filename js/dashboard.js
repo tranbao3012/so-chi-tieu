@@ -1,13 +1,10 @@
-/* js/dashboard.js — V1.7 (Dark Theme Compatible & Inline Swipe Fix)
-   Render tab Tổng quan: overview Hôm nay, Streak, Insight, danh sách giao dịch gần đây. */
-
 import {
   state, AI,
   ic, escapeHtml,
   fmtMoney, fmtDate, dayIso,
   getDayExpenses,
   calcSummary, calcByCategory, calcTrend,
-  getCategory, getPayment,
+  getCategory, getCategoryEmoji, getPayment,
   showConfirm, toast, hapticTap, hapticSuccess,
   saveState
 } from './core.js';
@@ -15,9 +12,6 @@ import {
 import { markLocalChange } from './sync.js';
 import { openExpenseModal } from './expenses.js';
 
-/* ==================================================================
-   OVERVIEW — Hôm nay
-   ================================================================== */
 function renderTodayOverview() {
   const el = document.getElementById('todayOverview');
   if (!el) return;
@@ -40,22 +34,18 @@ function renderTodayOverview() {
   `;
 }
 
-/* ==================================================================
-   STREAK — Đếm chuỗi ngày ghi chép liên tiếp
-   ================================================================== */
 function calculateStreak() {
   if (!state.expenses || state.expenses.length === 0) return 0;
-  
+
   const dates = new Set(state.expenses.map(e => e.date));
   let streak = 0;
   let checkDate = new Date();
-  
-  // Nếu hôm nay chưa nhập, kiểm tra xem hôm qua có nhập không để duy trì chuỗi
+
   if (!dates.has(dayIso(checkDate))) {
     checkDate.setDate(checkDate.getDate() - 1);
-    if (!dates.has(dayIso(checkDate))) return 0; // Đứt chuỗi
+    if (!dates.has(dayIso(checkDate))) return 0;
   }
-  
+
   while (dates.has(dayIso(checkDate))) {
     streak++;
     checkDate.setDate(checkDate.getDate() - 1);
@@ -68,7 +58,7 @@ function renderStreakCard() {
   if (!el) return;
 
   const streak = calculateStreak();
-  
+
   el.innerHTML = `
     <div class="quick-stat-icon" style="background: linear-gradient(135deg, #f97316, #ea580c); color: #fff; font-size: 20px;">🔥</div>
     <div class="quick-stat-info">
@@ -78,23 +68,21 @@ function renderStreakCard() {
   `;
 }
 
-/* ==================================================================
-   INSIGHT — Nhận xét hôm nay chi gì nhiều nhất
-   ================================================================== */
 function renderInsightCard() {
   const el = document.getElementById('insightCard');
   if (!el) return;
-  
+
   const todayExp = getDayExpenses(new Date());
   const byCat = calcByCategory(todayExp);
-  
+
   let icon = '💤';
   let text = 'Chưa chi tiêu';
   let color = 'var(--text-muted)';
-  
+
   if (byCat.length > 0) {
     const top = byCat[0];
-    text = `Nhiều nhất: ${escapeHtml(top.category.name)}`;
+    const emoji = getCategoryEmoji(top.category);
+    text = `Nhiều nhất: ${emoji} ${escapeHtml(top.category.name)}`;
     icon = '🛍️';
     color = 'var(--text)';
   }
@@ -108,9 +96,6 @@ function renderInsightCard() {
   `;
 }
 
-/* ==================================================================
-   RECENT LIST & SWIPE (Ép cứng Inline Style)
-   ================================================================== */
 function bindRecentSwipeActions() {
   const rows = document.querySelectorAll('[data-swipe-row]');
   const SWIPE_THRESHOLD = 140;
@@ -179,25 +164,22 @@ function renderRecentList() {
 
   el.innerHTML = recent.map(e => {
     const cat = getCategory(e.categoryId);
+    const emoji = getCategoryEmoji(cat);
+    const pay = getPayment(e.paymentMethod);
     const isAno = AI.isAnomalous(e.id);
-    
-    // Ép cứng inline style để không bao giờ bị vỡ layout
-    const wrapStyle = "position: relative; overflow: hidden; width: 100%; border-bottom: 1px solid var(--border-soft); background: var(--surface); border-radius: 0;";
-    const actionStyle = "position: absolute; top: 0; right: 0; bottom: 0; display: flex; z-index: 1;";
-    const itemStyle = "position: relative; z-index: 2; background: var(--surface); display: flex; align-items: center; gap: 12px; padding: 16px; width: 100%; touch-action: pan-y; user-select: none; transition: transform 0.2s ease;";
 
-    return `<div class="expense-swipe" style="${wrapStyle}">
-      <div class="expense-swipe-actions" style="${actionStyle}">
-        <button class="swipe-action-btn edit" data-edit-expense="${e.id}" style="width: 76px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--primary); color: #0f172a; font-size: 10px; font-weight: 700; border: none; cursor: pointer;">${ic('edit', 18)}<span style="margin-top: 2px;">Sửa</span></button>
-        <button class="swipe-action-btn delete" data-del-expense="${e.id}" style="width: 76px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--danger); color: #fff; font-size: 10px; font-weight: 700; border: none; cursor: pointer;">${ic('trash', 18)}<span style="margin-top: 2px;">Xoá</span></button>
+    return `<div class="expense-swipe">
+      <div class="expense-swipe-actions">
+        <button class="swipe-action-btn edit" data-edit-expense="${e.id}">${ic('edit', 18)}<span>Sửa</span></button>
+        <button class="swipe-action-btn delete" data-del-expense="${e.id}">${ic('trash', 18)}<span>Xoá</span></button>
       </div>
-      <div class="recent-item" data-swipe-row="${e.id}" style="${itemStyle}">
-        <div class="recent-icon" style="background:${cat.color}; width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 14px; flex-shrink: 0;">${escapeHtml(cat.name.charAt(0).toUpperCase())}</div>
-        <div class="recent-meta" style="flex: 1; min-width: 0;">
-          <div class="recent-title" style="font-size: 14px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(cat.name)}${e.note ? ' · ' + escapeHtml(e.note) : ''}${isAno ? ` <span style="color:var(--warning);">⚠</span>` : ''}</div>
-          <div class="recent-sub" style="font-size: 12px; color: var(--text-soft); margin-top: 2px;">${fmtDate(e.date)} · ${getPayment(e.paymentMethod).name}</div>
+      <div class="recent-item" data-swipe-row="${e.id}">
+        <div class="recent-icon" style="background:${cat.color};">${emoji}</div>
+        <div class="recent-meta">
+          <div class="recent-title">${escapeHtml(cat.name)}${e.note ? ' · ' + escapeHtml(e.note) : ''}${isAno ? ' <span class="anomaly-badge">⚠</span>' : ''}</div>
+          <div class="recent-sub">${fmtDate(e.date)} · ${pay.emoji} ${pay.name}</div>
         </div>
-        <div class="recent-amount" style="font-size: 15px; font-weight: 800; color: var(--text); white-space: nowrap;">${fmtMoney(e.amount)}</div>
+        <div class="recent-amount">${fmtMoney(e.amount)}</div>
       </div>
     </div>`;
   }).join('');
@@ -215,9 +197,6 @@ function renderRecentList() {
   }
 }
 
-/* ==================================================================
-   ENTRY — gọi từ main.js
-   ================================================================== */
 export function renderDashboard() {
   renderTodayOverview();
   renderStreakCard();
