@@ -171,7 +171,7 @@
   letter-spacing: 0.2px;
 }
 
-/* ==================== RECENT LIST (DASHBOARD ONLY — PILL STYLE) ==================== */
+/* ==================== RECENT LIST (DASHBOARD — PILL STYLE) ==================== */
 .recent-list {
   display: flex;
   flex-direction: column;
@@ -225,12 +225,12 @@
 .recent-list .swipe-action-btn.edit { background: var(--primary); color: #0f172a; }
 .recent-list .swipe-action-btn.delete { background: var(--danger); }
 
-/* ==================== EXPENSE LIST (EXPENSES TAB — ROW STYLE) ==================== */
+/* ==================== EXPENSE LIST (EXPENSES TAB — ROW STYLE + DIVIDER) ==================== */
 .expense-swipe {
   position: relative;
   overflow: hidden;
   width: 100%;
-  border-bottom: 1px solid var(--border-soft);
+  border-bottom: 1px solid var(--border);
 }
 .expense-swipe:last-child { border-bottom: none; }
 
