@@ -171,11 +171,12 @@
   letter-spacing: 0.2px;
 }
 
-/* ==================== RECENT LIST (DASHBOARD — PILL STYLE) ==================== */
+/* ==================== RECENT LIST (DASHBOARD — DIVIDER STYLE) ==================== */
 .recent-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0;
+  margin: 0 -16px;
   padding-top: 4px;
 }
 
@@ -183,20 +184,24 @@
   position: relative;
   overflow: hidden;
   width: 100%;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  border-left: none;
+  background: transparent;
+}
+
+.recent-list .expense-swipe:last-child {
   border-bottom: none;
-  border-radius: 12px;
-  border-left: 3px solid var(--primary);
-  background: var(--surface-2);
 }
 
 .recent-list .recent-item {
   position: relative;
   z-index: 2;
-  background: var(--surface-2);
+  background: var(--surface);
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 14px;
+  padding: 12px 16px;
   width: 100%;
   touch-action: pan-y;
   -webkit-user-select: none;
@@ -205,25 +210,6 @@
 }
 
 .recent-list .recent-item.swiping { transition: none; }
-
-.recent-list .swipe-action-btn {
-  width: 76px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  color: #fff;
-  font-size: 10px;
-  font-weight: 700;
-  -webkit-appearance: none;
-  appearance: none;
-  border: none;
-  cursor: pointer;
-}
-.recent-list .swipe-action-btn svg { width: 18px; height: 18px; }
-.recent-list .swipe-action-btn.edit { background: var(--primary); color: #0f172a; }
-.recent-list .swipe-action-btn.delete { background: var(--danger); }
 
 /* ==================== EXPENSE LIST (EXPENSES TAB — ROW STYLE + DIVIDER) ==================== */
 .expense-swipe {
