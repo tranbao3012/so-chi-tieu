@@ -125,7 +125,7 @@ function renderExpenses() {
             <button class="swipe-action-btn delete" data-del-expense="${e.id}">${ic('trash', 18)}<span>Xoá</span></button>
           </div>
           <div class="expense-row${isAno ? ' anomaly' : ''}" data-swipe-row="${e.id}">
-            <div class="expense-icon" style="background:${cat.color};">${ic(iconName, 20)}</div>
+            <div class="expense-icon">${ic(iconName, 20)}</div>
             <div class="expense-body">
               <div class="expense-top">
                 <span class="expense-category">${escapeHtml(cat.name)}</span>
@@ -230,7 +230,7 @@ function renderFormChips(suggestedCat = null) {
   let html = state.categories.map(c => {
     const iconName = getCategoryIcon(c);
     return `<button class="cat-option ${formState.formCategory === c.id ? 'active' : ''} ${suggestedCat === c.id ? 'suggested' : ''}" data-cat-id="${c.id}">
-      <div class="cat-option-icon" style="background:${c.color};">${ic(iconName, 18)}</div>
+      <div class="cat-option-icon">${ic(iconName, 18)}</div>
       <div class="cat-option-name">${escapeHtml(c.name)}</div>
     </button>`;
   }).join('');
@@ -244,7 +244,7 @@ function renderFormChips(suggestedCat = null) {
 
   document.getElementById('formPayments').innerHTML = PAYMENT_METHODS.map(p =>
     `<button class="payment-option ${formState.formPayment === p.id ? 'active' : ''}" data-pay-id="${p.id}">
-      <div class="payment-emoji" style="background:${p.color};">${ic(p.icon, 18)}</div>
+      <div class="payment-emoji">${ic(p.icon, 18)}</div>
       <span>${escapeHtml(p.name)}</span>
     </button>`
   ).join('');
@@ -267,10 +267,8 @@ function updateSummaryPreview() {
   if (catIconEl) {
     if (cat) {
       catIconEl.innerHTML = ic(getCategoryIcon(cat), 18);
-      catIconEl.style.background = cat.color;
     } else {
       catIconEl.innerHTML = ic('tag', 18);
-      catIconEl.style.background = '';
     }
   }
   if (catValueEl) {
@@ -283,7 +281,6 @@ function updateSummaryPreview() {
   if (dateValueEl) dateValueEl.textContent = date ? fmtDate(date) : '—';
   if (payIconEl) {
     payIconEl.innerHTML = ic(pay.icon, 18);
-    payIconEl.style.background = pay.color;
   }
   if (payValueEl) payValueEl.textContent = pay.name;
   if (amountEl) amountEl.textContent = fmtMoney(amount);
