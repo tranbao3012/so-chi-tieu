@@ -61,38 +61,17 @@ function applySmartFilter(list) {
   return list;
 }
 
-export function populateCategoryFilter() {
-  const sel = document.getElementById('filterCategory');
-  if (!sel) return;
-  const v = sel.value;
-  sel.innerHTML = '<option value="">Tất cả</option>' + state.categories.map(c =>
-    `<option value="${c.id}">${escapeHtml(c.name)}</option>`
-  ).join('');
-  if (v) sel.value = v;
-}
-
 function renderExpenses() {
-  const from = document.getElementById('filterFrom').value;
-  const to = document.getElementById('filterTo').value;
-  const catFilter = document.getElementById('filterCategory').value;
-  const search = document.getElementById('filterSearch').value.trim().toLowerCase();
-
   let list = state.expenses.slice();
   list = applySmartFilter(list);
-  if (from) list = list.filter(e => e.date >= from);
-  if (to) list = list.filter(e => e.date <= to);
-  if (catFilter) list = list.filter(e => e.categoryId === catFilter);
-  if (search) list = list.filter(e => (e.note || '').toLowerCase().includes(search));
   list.sort((a, b) => (b.date || '').localeCompare(a.date || '') || b.id.localeCompare(a.id));
 
   const total = list.reduce((s, e) => s + Number(e.amount || 0), 0);
-  const avg = list.length > 0 ? total / list.length : 0;
   const days = new Set(list.map(e => e.date)).size;
 
   document.getElementById('summaryBar').innerHTML = `
     <div class="summary-stat"><div class="summary-stat-label">Tổng</div><div class="summary-stat-value">${fmtMoneyShort(total)}</div></div>
     <div class="summary-stat"><div class="summary-stat-label">Số GD</div><div class="summary-stat-value">${list.length}</div></div>
-    <div class="summary-stat"><div class="summary-stat-label">TB/GD</div><div class="summary-stat-value">${fmtMoneyShort(Math.round(avg))}</div></div>
     <div class="summary-stat"><div class="summary-stat-label">Số ngày</div><div class="summary-stat-value">${days}</div></div>`;
 
   const c = document.getElementById('expenseList');
@@ -476,7 +455,6 @@ function saveQuickCat() {
 
 export function renderExpensesTab() {
   renderSmartFilters();
-  populateCategoryFilter();
   renderExpenses();
 }
 
@@ -489,21 +467,6 @@ export function bindExpenseTabEvents() {
     document.querySelectorAll('[data-smart-filter]').forEach(b =>
       b.classList.toggle('active', b.dataset.smartFilter === activeSmartFilter)
     );
-    renderExpenses();
-  });
-
-  ['filterFrom', 'filterTo', 'filterCategory', 'filterSearch'].forEach(id => {
-    document.getElementById(id).addEventListener('input', renderExpenses);
-    document.getElementById(id).addEventListener('change', renderExpenses);
-  });
-
-  document.getElementById('filterReset').addEventListener('click', () => {
-    hapticTap();
-    ['filterFrom', 'filterTo', 'filterCategory', 'filterSearch'].forEach(id => {
-      document.getElementById(id).value = '';
-    });
-    activeSmartFilter = 'all';
-    renderSmartFilters();
     renderExpenses();
   });
 
