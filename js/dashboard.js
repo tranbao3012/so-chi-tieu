@@ -60,7 +60,7 @@ function renderStreakCard() {
   const streak = calculateStreak();
 
   el.innerHTML = `
-    <div class="quick-stat-icon" style="background: linear-gradient(135deg, #f97316, #ea580c); color: #fff;">${ic('flame', 20)}</div>
+    <div class="quick-stat-icon">${ic('flame', 20)}</div>
     <div class="quick-stat-info">
       <div class="quick-stat-value">${streak} ngày</div>
       <div class="quick-stat-label">Chuỗi ghi chép</div>
@@ -76,22 +76,18 @@ function renderInsightCard() {
   const byCat = calcByCategory(todayExp);
 
   let iconName = 'clock';
-  let iconColor = 'var(--text-soft)';
-  let iconBg = 'var(--surface-2)';
   let text = 'Chưa chi tiêu';
   let textColor = 'var(--text-muted)';
 
   if (byCat.length > 0) {
     const top = byCat[0];
     iconName = getCategoryIcon(top.category);
-    iconBg = top.category.color;
-    iconColor = '#fff';
     text = `Nhiều nhất: ${escapeHtml(top.category.name)}`;
     textColor = 'var(--text)';
   }
 
   el.innerHTML = `
-    <div class="quick-stat-icon" style="background: ${iconBg}; color: ${iconColor};">${ic(iconName, 20)}</div>
+    <div class="quick-stat-icon">${ic(iconName, 20)}</div>
     <div class="quick-stat-info">
       <div class="quick-stat-value" style="color: ${textColor}; font-size: 12px; line-height: 1.2; margin-bottom: 2px;">${text}</div>
       <div class="quick-stat-label">Chi nhiều nhất hôm nay</div>
@@ -177,7 +173,7 @@ function renderRecentList() {
         <button class="swipe-action-btn delete" data-del-expense="${e.id}">${ic('trash', 18)}<span>Xoá</span></button>
       </div>
       <div class="recent-item" data-swipe-row="${e.id}">
-        <div class="recent-icon" style="background:${cat.color};">${ic(iconName, 20)}</div>
+        <div class="recent-icon">${ic(iconName, 20)}</div>
         <div class="recent-meta">
           <div class="recent-title">${escapeHtml(cat.name)}${e.note ? ' · ' + escapeHtml(e.note) : ''}${isAno ? ` <span class="anomaly-badge">${ic('alertTriangle', 12)}</span>` : ''}</div>
           <div class="recent-sub">${fmtDate(e.date)} · ${ic(pay.icon, 10)} ${escapeHtml(pay.name)}</div>
