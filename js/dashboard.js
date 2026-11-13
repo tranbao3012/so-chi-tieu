@@ -4,7 +4,7 @@ import {
   fmtMoney, fmtDate, dayIso,
   getDayExpenses,
   calcSummary, calcByCategory, calcTrend,
-  getCategory, getCategoryEmoji, getPayment,
+  getCategory, getCategoryIcon, getPayment,
   showConfirm, toast, hapticTap, hapticSuccess,
   saveState
 } from './core.js';
@@ -60,7 +60,7 @@ function renderStreakCard() {
   const streak = calculateStreak();
 
   el.innerHTML = `
-    <div class="quick-stat-icon" style="background: linear-gradient(135deg, #f97316, #ea580c); color: #fff; font-size: 20px;">🔥</div>
+    <div class="quick-stat-icon" style="background: linear-gradient(135deg, #f97316, #ea580c); color: #fff;">${ic('flame', 20)}</div>
     <div class="quick-stat-info">
       <div class="quick-stat-value">${streak} ngày</div>
       <div class="quick-stat-label">Chuỗi ghi chép</div>
@@ -75,22 +75,25 @@ function renderInsightCard() {
   const todayExp = getDayExpenses(new Date());
   const byCat = calcByCategory(todayExp);
 
-  let icon = '💤';
+  let iconName = 'clock';
+  let iconColor = 'var(--text-soft)';
+  let iconBg = 'var(--surface-2)';
   let text = 'Chưa chi tiêu';
-  let color = 'var(--text-muted)';
+  let textColor = 'var(--text-muted)';
 
   if (byCat.length > 0) {
     const top = byCat[0];
-    const emoji = getCategoryEmoji(top.category);
-    text = `Nhiều nhất: ${emoji} ${escapeHtml(top.category.name)}`;
-    icon = '🛍️';
-    color = 'var(--text)';
+    iconName = getCategoryIcon(top.category);
+    iconBg = top.category.color;
+    iconColor = '#fff';
+    text = `Nhiều nhất: ${escapeHtml(top.category.name)}`;
+    textColor = 'var(--text)';
   }
 
   el.innerHTML = `
-    <div class="quick-stat-icon" style="background: var(--surface-2); font-size: 20px;">${icon}</div>
+    <div class="quick-stat-icon" style="background: ${iconBg}; color: ${iconColor};">${ic(iconName, 20)}</div>
     <div class="quick-stat-info">
-      <div class="quick-stat-value" style="color: ${color}; font-size: 12px; line-height: 1.2; margin-bottom: 2px;">${text}</div>
+      <div class="quick-stat-value" style="color: ${textColor}; font-size: 12px; line-height: 1.2; margin-bottom: 2px;">${text}</div>
       <div class="quick-stat-label">Chi nhiều nhất hôm nay</div>
     </div>
   `;
@@ -164,7 +167,7 @@ function renderRecentList() {
 
   el.innerHTML = recent.map(e => {
     const cat = getCategory(e.categoryId);
-    const emoji = getCategoryEmoji(cat);
+    const iconName = getCategoryIcon(cat);
     const pay = getPayment(e.paymentMethod);
     const isAno = AI.isAnomalous(e.id);
 
@@ -174,10 +177,10 @@ function renderRecentList() {
         <button class="swipe-action-btn delete" data-del-expense="${e.id}">${ic('trash', 18)}<span>Xoá</span></button>
       </div>
       <div class="recent-item" data-swipe-row="${e.id}">
-        <div class="recent-icon" style="background:${cat.color};">${emoji}</div>
+        <div class="recent-icon" style="background:${cat.color};">${ic(iconName, 20)}</div>
         <div class="recent-meta">
-          <div class="recent-title">${escapeHtml(cat.name)}${e.note ? ' · ' + escapeHtml(e.note) : ''}${isAno ? ' <span class="anomaly-badge">⚠</span>' : ''}</div>
-          <div class="recent-sub">${fmtDate(e.date)} · ${pay.emoji} ${pay.name}</div>
+          <div class="recent-title">${escapeHtml(cat.name)}${e.note ? ' · ' + escapeHtml(e.note) : ''}${isAno ? ` <span class="anomaly-badge">${ic('alertTriangle', 12)}</span>` : ''}</div>
+          <div class="recent-sub">${fmtDate(e.date)} · ${ic(pay.icon, 10)} ${escapeHtml(pay.name)}</div>
         </div>
         <div class="recent-amount">${fmtMoney(e.amount)}</div>
       </div>
