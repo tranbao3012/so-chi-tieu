@@ -171,6 +171,7 @@
   letter-spacing: 0.2px;
 }
 
+/* ==================== RECENT LIST (DASHBOARD ONLY — PILL STYLE) ==================== */
 .recent-list {
   display: flex;
   flex-direction: column;
@@ -178,14 +179,61 @@
   padding-top: 4px;
 }
 
-.expense-swipe {
+.recent-list .expense-swipe {
   position: relative;
   overflow: hidden;
   width: 100%;
+  border-bottom: none;
   border-radius: 12px;
   border-left: 3px solid var(--primary);
   background: var(--surface-2);
 }
+
+.recent-list .recent-item {
+  position: relative;
+  z-index: 2;
+  background: var(--surface-2);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  width: 100%;
+  touch-action: pan-y;
+  -webkit-user-select: none;
+  user-select: none;
+  transition: transform 0.2s ease;
+}
+
+.recent-list .recent-item.swiping { transition: none; }
+
+.recent-list .swipe-action-btn {
+  width: 76px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  -webkit-appearance: none;
+  appearance: none;
+  border: none;
+  cursor: pointer;
+}
+.recent-list .swipe-action-btn svg { width: 18px; height: 18px; }
+.recent-list .swipe-action-btn.edit { background: var(--primary); color: #0f172a; }
+.recent-list .swipe-action-btn.delete { background: var(--danger); }
+
+/* ==================== EXPENSE LIST (EXPENSES TAB — ROW STYLE) ==================== */
+.expense-swipe {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  border-bottom: 1px solid var(--border-soft);
+}
+.expense-swipe:last-child { border-bottom: none; }
+
 .expense-swipe-actions {
   position: absolute;
   top: 0;
@@ -213,24 +261,23 @@
 .swipe-action-btn.edit { background: var(--primary); color: #0f172a; }
 .swipe-action-btn.delete { background: var(--danger); }
 
-.recent-item {
+.expense-row {
   position: relative;
   z-index: 2;
-  background: var(--surface-2);
+  background: var(--surface);
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 14px;
+  padding: 12px 16px;
   width: 100%;
   touch-action: pan-y;
   -webkit-user-select: none;
   user-select: none;
   transition: transform 0.2s ease;
 }
-.recent-item.swiping { transition: none; }
-
 .expense-row.swiping { transition: none; }
 
+/* ==================== SHARED ICON STYLES ==================== */
 .recent-icon, .expense-icon {
   width: 40px;
   height: 40px;
@@ -251,12 +298,34 @@
 }
 
 .recent-meta, .expense-body { flex: 1; min-width: 0; }
-.recent-title { font-size: 14px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.recent-sub { font-size: 12px; color: var(--text-soft); margin-top: 2px; display: flex; align-items: center; gap: 3px; }
+.recent-title, .expense-category { font-size: 14px; font-weight: 700; color: var(--text); }
+.recent-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.recent-sub, .expense-note { font-size: 12px; color: var(--text-soft); margin-top: 2px; display: flex; align-items: center; gap: 3px; }
 .recent-sub svg { width: 10px; height: 10px; color: var(--primary); stroke-width: 2.2; }
-.recent-amount { font-size: 15px; font-weight: 800; color: var(--text); white-space: nowrap; flex-shrink: 0; }
+.recent-amount, .expense-amount { font-size: 15px; font-weight: 800; color: var(--text); white-space: nowrap; flex-shrink: 0; }
+
 .anomaly-badge { color: var(--warning); display: inline-flex; align-items: center; }
 .anomaly-badge svg { width: 12px; height: 12px; }
+
+.expense-top { display: flex; align-items: center; gap: 6px; margin-bottom: 2px; flex-wrap: wrap; }
+.expense-payment {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--surface-2);
+  color: var(--text-soft);
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.expense-payment svg {
+  width: 10px;
+  height: 10px;
+  color: var(--primary);
+  stroke-width: 2.2;
+}
+.expense-note { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
 
 .smart-filters { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
 .smart-filters::-webkit-scrollbar { display: none; }
