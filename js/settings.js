@@ -134,7 +134,6 @@ function importJson(file) {
 export function bindSettingsTabEvents() {
   setupCollapse('syncToggle', 'syncBody');
   setupCollapse('backupToggle', 'backupBody');
-  setupCollapse('aboutToggle', 'aboutBody');
 
   const saveSyncBtn = document.getElementById('saveSyncConfigBtn');
   if (saveSyncBtn) {
