@@ -1,19 +1,11 @@
 import {
-  state,
   toast,
-  hapticTap,
-  saveState
+  hapticTap
 } from './core.js';
 
-import { logout, markLocalChange, saveConfig } from './sync.js';
+import { logout, saveConfig } from './sync.js';
 
 export function renderSettings() {
-  const setBudget = document.getElementById('setBudget');
-  const setIncome = document.getElementById('setIncome');
-
-  if (setBudget) setBudget.value = state.settings.monthlyBudget || 0;
-  if (setIncome) setIncome.value = state.settings.monthlyIncome || 0;
-
   updateSyncUI();
 }
 
@@ -36,26 +28,6 @@ function updateSyncUI() {
 }
 
 export function bindSettingsTabEvents() {
-  const setBudget = document.getElementById('setBudget');
-  if (setBudget) {
-    setBudget.addEventListener('change', (e) => {
-      state.settings.monthlyBudget = Math.max(0, Number(e.target.value) || 0);
-      saveState();
-      markLocalChange();
-      document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'budget' } }));
-    });
-  }
-
-  const setIncome = document.getElementById('setIncome');
-  if (setIncome) {
-    setIncome.addEventListener('change', (e) => {
-      state.settings.monthlyIncome = Math.max(0, Number(e.target.value) || 0);
-      saveState();
-      markLocalChange();
-      document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'income' } }));
-    });
-  }
-
   const syncToggle = document.getElementById('syncToggle');
   const syncBody = document.getElementById('syncBody');
   if (syncToggle && syncBody) {
