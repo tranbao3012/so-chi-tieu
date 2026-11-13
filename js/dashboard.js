@@ -5,12 +5,107 @@ import {
   getDayExpenses,
   calcSummary, calcTrend,
   getCategory, getCategoryIcon, getPayment,
-  showConfirm, toast, hapticTap, hapticSuccess,
-  saveState
+  showConfirm, toast, hapticTap, hapticSuccess, hapticWarning,
+  openSheet, closeSheet, saveState
 } from './core.js';
 
 import { markLocalChange } from './sync.js';
 import { openExpenseModal } from './expenses.js';
+
+function renderBalanceCard() {
+  const el = document.getElementById('balanceCard');
+  if (!el) return;
+
+  const balance = Number(state.settings.balance) || 0;
+  const isNegative = balance < 0;
+
+  el.innerHTML = `
+    <div class="overview-header">
+      <div class="overview-title">
+        <span class="overview-icon balance">${ic('wallet')}</span>
+        SỐ DƯ HIỆN CÒN
+      </div>
+      <button class="balance-settings-btn" id="balanceSettingsBtn" aria-label="Chỉnh số dư" type="button">
+        ${ic('settings', 16)}
+      </button>
+    </div>
+    <div class="overview-main-row">
+      <div class="overview-big balance-amount ${isNegative ? 'negative' : ''}">${fmtMoney(balance)}</div>
+    </div>
+  `;
+
+  const btn = document.getElementById('balanceSettingsBtn');
+  if (btn) {
+    btn.addEventListener('click', () => {
+      hapticTap();
+      openBalanceModal();
+    });
+  }
+}
+
+function openBalanceModal() {
+  const input = document.getElementById('formBalance');
+  if (input) {
+    const val = Number(state.settings.balance) || 0;
+    input.value = val.toLocaleString('vi-VN');
+  }
+  openSheet('balanceModal');
+  setTimeout(() => {
+    const el = document.getElementById('formBalance');
+    if (el) {
+      el.focus();
+      try { el.select(); } catch (e) {}
+    }
+  }, 300);
+}
+
+function saveBalance() {
+  const rawInput = document.getElementById('formBalance').value;
+  const isNeg = rawInput.trim().startsWith('-');
+  const raw = rawInput.replace(/\./g, '').replace(/,/g, '').trim();
+
+  if (!raw || raw === '-' || isNaN(Number(raw))) {
+    toast('Số dư không hợp lệ', 'error');
+    hapticWarning();
+    return;
+  }
+
+  const num = Number(raw);
+  state.settings.balance = num;
+  state.settings.updatedAt = Date.now();
+  saveState();
+  markLocalChange();
+  hapticSuccess();
+  closeSheet('balanceModal');
+  toast('Đã cập nhật số dư');
+
+  document.dispatchEvent(new CustomEvent('state:changed', { detail: { source: 'balance' } }));
+}
+
+export function bindBalanceEvents() {
+  const input = document.getElementById('formBalance');
+  if (input) {
+    input.addEventListener('input', (e) => {
+      const raw = e.target.value;
+      const isNeg = raw.trim().startsWith('-');
+      const digits = raw.replace(/\D/g, '');
+      if (digits) {
+        e.target.value = (isNeg ? '-' : '') + Number(digits).toLocaleString('vi-VN');
+      } else {
+        e.target.value = isNeg ? '-' : '';
+      }
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') saveBalance();
+    });
+  }
+
+  const saveBtn = document.getElementById('saveBalanceBtn');
+  if (saveBtn) {
+    saveBtn.addEventListener('click', saveBalance);
+  }
+}
 
 function renderTodayOverview() {
   const el = document.getElementById('todayOverview');
@@ -78,6 +173,11 @@ function bindRecentSwipeActions() {
 
 function handleDelete(id) {
   showConfirm('Xoá giao dịch', 'Bạn có chắc muốn xoá giao dịch này?', () => {
+    const exp = state.expenses.find(e => e.id === id);
+    if (exp) {
+      const currentBalance = Number(state.settings.balance) || 0;
+      state.settings.balance = currentBalance + Number(exp.amount || 0);
+    }
     state.expenses = state.expenses.filter(e => e.id !== id);
     saveState();
     markLocalChange();
@@ -136,6 +236,7 @@ function renderRecentList() {
 }
 
 export function renderDashboard() {
+  renderBalanceCard();
   renderTodayOverview();
   renderRecentList();
 }
