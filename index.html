@@ -187,21 +187,21 @@
                 <div class="settings-label">Xuất JSON</div>
                 <div class="settings-desc">Sao lưu toàn bộ dữ liệu</div>
               </div>
-              <button class="btn btn-sm" id="exportBtn">Tải</button>
+              <button class="btn btn-sm btn-outline" id="exportBtn">Tải</button>
             </div>
             <div class="settings-row">
               <div class="settings-meta">
                 <div class="settings-label">Xuất CSV</div>
                 <div class="settings-desc">Mở bằng Excel</div>
               </div>
-              <button class="btn btn-sm" id="exportCsvBtn">Tải</button>
+              <button class="btn btn-sm btn-outline" id="exportCsvBtn">Tải</button>
             </div>
             <div class="settings-row">
               <div class="settings-meta">
                 <div class="settings-label">Nhập JSON</div>
                 <div class="settings-desc">Khôi phục từ file sao lưu</div>
               </div>
-              <button class="btn btn-sm" id="importBtn">Chọn</button>
+              <button class="btn btn-sm btn-outline" id="importBtn">Chọn</button>
               <input type="file" accept=".json,application/json" id="importFile" style="display:none;">
             </div>
           </div>
@@ -209,18 +209,9 @@
       </div>
 
       <div class="settings-card">
-        <button class="settings-collapse-header" id="aboutToggle" type="button" aria-expanded="false" aria-controls="aboutBody">
-          <span class="settings-title" style="margin: 0;">Về ứng dụng</span>
-          <svg class="settings-chevron" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="6 9 12 15 18 9"/>
-          </svg>
-        </button>
-        <div class="settings-collapse-body" id="aboutBody">
-          <div class="collapse-content">
-            <div style="font-size:12px;color:var(--text-muted);line-height:1.65;">
-              <strong style="color:var(--text);">Quản Lý Chi Tiêu &copy; Trần Bảo</strong>
-            </div>
-          </div>
+        <div class="settings-title">Về ứng dụng</div>
+        <div style="font-size:12px;color:var(--text-muted);line-height:1.65;">
+          <strong style="color:var(--text);">Quản Lý Chi Tiêu &copy; Trần Bảo</strong>
         </div>
       </div>
 
