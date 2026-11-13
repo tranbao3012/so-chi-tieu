@@ -142,9 +142,11 @@
 .overview-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
 .overview-title { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 800; color: var(--primary); text-transform: uppercase; }
 .overview-icon { width: 26px; height: 26px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: var(--primary-soft); color: var(--primary); }
+.overview-icon svg { width: 14px; height: 14px; stroke-width: 2.2; }
 .overview-date { font-size: 11px; color: var(--text-soft); font-weight: 600; }
 .overview-big { font-size: 30px; font-weight: 800; color: var(--text); line-height: 1.1; margin-bottom: 8px; }
 .overview-trend { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 8px; background: var(--surface-2); }
+.overview-trend svg { width: 12px; height: 12px; }
 .overview-trend.up { color: var(--danger); }
 .overview-trend.down { color: var(--primary); }
 
@@ -158,11 +160,13 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  background: var(--surface-2);
+  background: transparent;
+  color: var(--primary);
 }
 .quick-stat-icon svg {
   width: 20px;
   height: 20px;
+  color: var(--primary);
   stroke-width: 2.2;
 }
 .quick-stat-info { flex: 1; min-width: 0; }
@@ -223,15 +227,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  background: transparent;
+  color: var(--primary);
   flex-shrink: 0;
   line-height: 1;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
 }
 .expense-icon svg, .recent-icon svg {
-  width: 20px;
-  height: 20px;
-  color: #fff;
+  width: 22px;
+  height: 22px;
+  color: var(--primary);
   stroke-width: 2.2;
 }
 
@@ -252,10 +256,11 @@
 .expense-payment svg {
   width: 10px;
   height: 10px;
+  color: var(--primary);
   stroke-width: 2.2;
 }
 .expense-note, .recent-sub { font-size: 12px; color: var(--text-soft); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 3px; }
-.recent-sub svg { width: 10px; height: 10px; stroke-width: 2.2; }
+.recent-sub svg { width: 10px; height: 10px; color: var(--primary); stroke-width: 2.2; }
 .expense-amount, .recent-amount { font-size: 15px; font-weight: 800; color: var(--text); white-space: nowrap; flex-shrink: 0; }
 .anomaly-badge { color: var(--warning); display: inline-flex; align-items: center; }
 .anomaly-badge svg { width: 12px; height: 12px; }
@@ -278,7 +283,7 @@
 .expense-group { margin-bottom: 12px; border-radius: 16px; }
 .group-header { padding: 10px 16px; background: var(--surface-2); display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; color: var(--text-muted); border-bottom: 1px solid var(--border); }
 .group-header-left { display: flex; align-items: center; gap: 6px; }
-.group-header-left svg { width: 12px; height: 12px; }
+.group-header-left svg { width: 12px; height: 12px; color: var(--primary); }
 .group-total { color: var(--primary); }
 
 .month-nav { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; margin-top: 4px; }
@@ -295,8 +300,8 @@
 
 .insight-list { display: flex; flex-direction: column; gap: 8px; }
 .insight-row { display: flex; align-items: flex-start; gap: 10px; padding: 12px; background: var(--surface-2); border-radius: 10px; border-left: 3px solid var(--primary); }
-.insight-icon-wrap { width: 28px; height: 28px; border-radius: 8px; background: rgba(52, 211, 153, 0.15); color: var(--primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.insight-icon-wrap svg { width: 14px; height: 14px; stroke-width: 2.2; }
+.insight-icon-wrap { width: 28px; height: 28px; border-radius: 8px; background: transparent; color: var(--primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.insight-icon-wrap svg { width: 14px; height: 14px; color: var(--primary); stroke-width: 2.2; }
 .insight-text { flex: 1; font-size: 12.5px; color: var(--text); line-height: 1.45; }
 .insight-text strong { color: var(--primary); font-weight: 800; }
 
@@ -557,11 +562,13 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  background: transparent;
+  color: var(--primary);
 }
 .cat-option-icon svg {
-  width: 18px;
-  height: 18px;
-  color: #fff;
+  width: 20px;
+  height: 20px;
+  color: var(--primary);
   stroke-width: 2.2;
 }
 .cat-option-name {
@@ -613,11 +620,13 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  background: transparent;
+  color: var(--primary);
 }
 .payment-emoji svg {
-  width: 18px;
-  height: 18px;
-  color: #fff;
+  width: 20px;
+  height: 20px;
+  color: var(--primary);
   stroke-width: 2.2;
 }
 
@@ -703,18 +712,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--surface-3);
+  background: transparent;
+  color: var(--primary);
   flex-shrink: 0;
 }
 .summary-cell-icon svg {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   color: var(--primary);
   stroke-width: 2.2;
 }
-.summary-cell-date .summary-cell-icon svg { color: var(--info); }
-.summary-cell-pay .summary-cell-icon svg { color: var(--warning); }
-.summary-cell-total .summary-cell-icon svg { color: var(--success); }
 
 .summary-cell-body { flex: 1; min-width: 0; }
 .summary-cell-label {
