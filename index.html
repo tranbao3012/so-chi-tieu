@@ -299,12 +299,36 @@
         </div>
       </div>
       <div class="sheet-section">
-        <div class="summary-preview">
-          <div class="summary-preview-title">Tóm tắt</div>
-          <div class="summary-preview-row"><span class="summary-preview-label">Danh mục</span><span class="summary-preview-value" id="sumCategory">—</span></div>
-          <div class="summary-preview-row"><span class="summary-preview-label">Ngày</span><span class="summary-preview-value" id="sumDate">—</span></div>
-          <div class="summary-preview-row"><span class="summary-preview-label">Phương thức</span><span class="summary-preview-value" id="sumPayment">—</span></div>
-          <div class="summary-preview-row"><span class="summary-preview-label" style="font-weight:800;color:var(--text);">Tổng</span><span class="summary-preview-value big" id="sumAmount">0 đ</span></div>
+        <div class="summary-title">Tóm tắt</div>
+        <div class="summary-grid">
+          <div class="summary-cell summary-cell-cat">
+            <div class="summary-cell-icon" id="sumCategoryIcon">❓</div>
+            <div class="summary-cell-body">
+              <div class="summary-cell-label">Danh mục</div>
+              <div class="summary-cell-value" id="sumCategory">Chưa chọn</div>
+            </div>
+          </div>
+          <div class="summary-cell summary-cell-date">
+            <div class="summary-cell-icon">📅</div>
+            <div class="summary-cell-body">
+              <div class="summary-cell-label">Ngày</div>
+              <div class="summary-cell-value" id="sumDate">—</div>
+            </div>
+          </div>
+          <div class="summary-cell summary-cell-pay">
+            <div class="summary-cell-icon" id="sumPaymentIcon">💵</div>
+            <div class="summary-cell-body">
+              <div class="summary-cell-label">Phương thức</div>
+              <div class="summary-cell-value" id="sumPayment">Tiền mặt</div>
+            </div>
+          </div>
+          <div class="summary-cell summary-cell-total">
+            <div class="summary-cell-icon">💰</div>
+            <div class="summary-cell-body">
+              <div class="summary-cell-label">Tổng</div>
+              <div class="summary-cell-value summary-total" id="sumAmount">0 đ</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -319,7 +343,7 @@
 </div>
 
 <div class="sheet-overlay" id="quickCatModal">
-  <div class="sheet" style="max-height: 250px;">
+  <div class="sheet" style="max-height: 480px;">
     <div class="sheet-handle"></div>
     <div class="sheet-header">
       <div class="sheet-title" id="quickCatTitle">Tạo danh mục mới</div>
@@ -329,7 +353,12 @@
     </div>
     <div class="sheet-body">
       <div class="sheet-section">
-        <input type="text" class="field-input" id="quickCatName" placeholder="Tên danh mục..." maxlength="20" autocomplete="off">
+        <div class="sheet-section-label">Tên danh mục</div>
+        <input type="text" class="field-input" id="quickCatName" placeholder="VD: Cà phê, Gym..." maxlength="20" autocomplete="off">
+      </div>
+      <div class="sheet-section">
+        <div class="sheet-section-label">Biểu tượng</div>
+        <div class="emoji-picker" id="quickCatEmojis"></div>
       </div>
     </div>
     <div class="sheet-footer">
