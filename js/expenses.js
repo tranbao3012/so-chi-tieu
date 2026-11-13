@@ -1,8 +1,8 @@
 import {
-  state, formState, PAYMENT_METHODS, COLOR_PALETTE, EMOJI_PALETTE,
+  state, formState, PAYMENT_METHODS, COLOR_PALETTE, CATEGORY_ICONS,
   ic, escapeHtml,
   fmtMoney, fmtMoneyShort, fmtDate, todayIso, dayIso, monthKey,
-  getCategory, getCategoryEmoji, getPayment,
+  getCategory, getCategoryIcon, getPayment,
   AI, toast, openSheet, closeSheet, showConfirm,
   hapticTap, hapticSuccess, hapticWarning,
   uid, saveState
@@ -115,7 +115,8 @@ function renderExpenses() {
       </div>
       ${items.map(e => {
         const cat = getCategory(e.categoryId);
-        const emoji = getCategoryEmoji(cat);
+        const iconName = getCategoryIcon(cat);
+        const pay = getPayment(e.paymentMethod);
         const isAno = anomalies.has(e.id);
 
         return `<div class="expense-swipe" data-expense-id="${e.id}">
@@ -124,12 +125,12 @@ function renderExpenses() {
             <button class="swipe-action-btn delete" data-del-expense="${e.id}">${ic('trash', 18)}<span>Xoá</span></button>
           </div>
           <div class="expense-row${isAno ? ' anomaly' : ''}" data-swipe-row="${e.id}">
-            <div class="expense-icon" style="background:${cat.color};">${emoji}</div>
+            <div class="expense-icon" style="background:${cat.color};">${ic(iconName, 20)}</div>
             <div class="expense-body">
               <div class="expense-top">
                 <span class="expense-category">${escapeHtml(cat.name)}</span>
-                <span class="expense-payment">${getPayment(e.paymentMethod).emoji} ${getPayment(e.paymentMethod).name}</span>
-                ${isAno ? `<span class="anomaly-badge">⚠</span>` : ''}
+                <span class="expense-payment">${ic(pay.icon, 10)} ${escapeHtml(pay.name)}</span>
+                ${isAno ? `<span class="anomaly-badge">${ic('alertTriangle', 12)}</span>` : ''}
               </div>
               <div class="expense-note">${escapeHtml(e.note || 'Không có ghi chú')}</div>
             </div>
@@ -227,9 +228,9 @@ export function closeExpenseModal() {
 
 function renderFormChips(suggestedCat = null) {
   let html = state.categories.map(c => {
-    const emoji = getCategoryEmoji(c);
+    const iconName = getCategoryIcon(c);
     return `<button class="cat-option ${formState.formCategory === c.id ? 'active' : ''} ${suggestedCat === c.id ? 'suggested' : ''}" data-cat-id="${c.id}">
-      <div class="cat-option-icon" style="background:${c.color};">${emoji}</div>
+      <div class="cat-option-icon" style="background:${c.color};">${ic(iconName, 18)}</div>
       <div class="cat-option-name">${escapeHtml(c.name)}</div>
     </button>`;
   }).join('');
@@ -243,7 +244,7 @@ function renderFormChips(suggestedCat = null) {
 
   document.getElementById('formPayments').innerHTML = PAYMENT_METHODS.map(p =>
     `<button class="payment-option ${formState.formPayment === p.id ? 'active' : ''}" data-pay-id="${p.id}">
-      <div class="payment-emoji" style="background:${p.color};">${p.emoji}</div>
+      <div class="payment-emoji" style="background:${p.color};">${ic(p.icon, 18)}</div>
       <span>${escapeHtml(p.name)}</span>
     </button>`
   ).join('');
@@ -263,7 +264,15 @@ function updateSummaryPreview() {
   const payValueEl = document.getElementById('sumPayment');
   const amountEl = document.getElementById('sumAmount');
 
-  if (catIconEl) catIconEl.textContent = cat ? getCategoryEmoji(cat) : '❓';
+  if (catIconEl) {
+    if (cat) {
+      catIconEl.innerHTML = ic(getCategoryIcon(cat), 18);
+      catIconEl.style.background = cat.color;
+    } else {
+      catIconEl.innerHTML = ic('tag', 18);
+      catIconEl.style.background = '';
+    }
+  }
   if (catValueEl) {
     if (cat) {
       catValueEl.innerHTML = `<span class="summary-dot" style="background:${cat.color};"></span>${escapeHtml(cat.name)}`;
@@ -272,7 +281,10 @@ function updateSummaryPreview() {
     }
   }
   if (dateValueEl) dateValueEl.textContent = date ? fmtDate(date) : '—';
-  if (payIconEl) payIconEl.textContent = pay.emoji;
+  if (payIconEl) {
+    payIconEl.innerHTML = ic(pay.icon, 18);
+    payIconEl.style.background = pay.color;
+  }
   if (payValueEl) payValueEl.textContent = pay.name;
   if (amountEl) amountEl.textContent = fmtMoney(amount);
 }
@@ -288,7 +300,7 @@ function updateAISuggestions() {
   const sug = AI.suggestCategory(note);
   if (sug && !formState.formCategory) {
     const cat = getCategory(sug.categoryId);
-    banner.innerHTML = `<div class="ai-hint-banner">${ic('sparkles')}<div>Gợi ý: <strong>${getCategoryEmoji(cat)} ${escapeHtml(cat.name)}</strong> <button id="applyAiCat" data-suggested="${sug.categoryId}">Áp dụng</button></div></div>`;
+    banner.innerHTML = `<div class="ai-hint-banner">${ic('sparkles')}<div>Gợi ý: <strong>${ic(getCategoryIcon(cat), 12)} ${escapeHtml(cat.name)}</strong> <button id="applyAiCat" data-suggested="${sug.categoryId}">Áp dụng</button></div></div>`;
   } else {
     banner.innerHTML = '';
   }
@@ -382,11 +394,11 @@ function deleteExpense(id) {
   });
 }
 
-function renderEmojiPicker() {
-  const el = document.getElementById('quickCatEmojis');
+function renderIconPicker() {
+  const el = document.getElementById('quickCatIcons');
   if (!el) return;
-  el.innerHTML = EMOJI_PALETTE.map(emoji =>
-    `<button class="emoji-pick ${formState.editingCatEmoji === emoji ? 'active' : ''}" data-emoji="${emoji}" type="button">${emoji}</button>`
+  el.innerHTML = CATEGORY_ICONS.map(name =>
+    `<button class="icon-pick ${formState.editingCatIcon === name ? 'active' : ''}" data-icon-name="${name}" type="button">${ic(name, 22)}</button>`
   ).join('');
 }
 
@@ -394,8 +406,8 @@ function openQuickCatModal() {
   editingCatId = null;
   document.getElementById('quickCatTitle').textContent = 'Tạo danh mục mới';
   document.getElementById('quickCatName').value = '';
-  formState.editingCatEmoji = '📦';
-  renderEmojiPicker();
+  formState.editingCatIcon = 'tag';
+  renderIconPicker();
   openSheet('quickCatModal');
   setTimeout(() => document.getElementById('quickCatName').focus(), 300);
 }
@@ -406,8 +418,8 @@ function openEditCatModal(catId) {
   editingCatId = cat.id;
   document.getElementById('quickCatTitle').textContent = 'Sửa danh mục';
   document.getElementById('quickCatName').value = cat.name;
-  formState.editingCatEmoji = cat.emoji || getCategoryEmoji(cat);
-  renderEmojiPicker();
+  formState.editingCatIcon = getCategoryIcon(cat);
+  renderIconPicker();
   openSheet('quickCatModal');
   setTimeout(() => document.getElementById('quickCatName').focus(), 300);
 }
@@ -423,7 +435,7 @@ function saveQuickCat() {
     const idx = state.categories.findIndex(c => c.id === editingCatId);
     if (idx !== -1) {
       state.categories[idx].name = name;
-      state.categories[idx].emoji = formState.editingCatEmoji;
+      state.categories[idx].icon = formState.editingCatIcon;
       state.categories[idx].updatedAt = Date.now();
     }
     toast('Đã cập nhật danh mục');
@@ -434,7 +446,7 @@ function saveQuickCat() {
       id: newId,
       name: name,
       color: randomColor,
-      emoji: formState.editingCatEmoji,
+      icon: formState.editingCatIcon,
       type: 'discretionary',
       updatedAt: Date.now()
     });
@@ -672,15 +684,15 @@ export function bindExpenseFormEvents() {
     }
   });
 
-  const emojiGrid = document.getElementById('quickCatEmojis');
-  if (emojiGrid) {
-    emojiGrid.addEventListener('click', (e) => {
-      const btn = e.target.closest('[data-emoji]');
+  const iconGrid = document.getElementById('quickCatIcons');
+  if (iconGrid) {
+    iconGrid.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-icon-name]');
       if (!btn) return;
       hapticTap();
-      formState.editingCatEmoji = btn.dataset.emoji;
-      emojiGrid.querySelectorAll('.emoji-pick').forEach(b =>
-        b.classList.toggle('active', b.dataset.emoji === formState.editingCatEmoji)
+      formState.editingCatIcon = btn.dataset.iconName;
+      iconGrid.querySelectorAll('.icon-pick').forEach(b =>
+        b.classList.toggle('active', b.dataset.iconName === formState.editingCatIcon)
       );
     });
   }
