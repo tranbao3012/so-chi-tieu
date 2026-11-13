@@ -351,14 +351,18 @@ function saveExpense() {
   if (err) { hapticWarning(); return; }
   if (!date) { toast('Chọn ngày', 'error'); return; }
 
+  const currentBalance = Number(state.settings.balance) || 0;
+
   if (formState.editingExpenseId) {
     const idx = state.expenses.findIndex(x => x.id === formState.editingExpenseId);
     if (idx !== -1) {
+      const oldAmount = Number(state.expenses[idx].amount) || 0;
       state.expenses[idx] = {
         ...state.expenses[idx],
         amount, categoryId: formState.formCategory, paymentMethod: formState.formPayment, date, note,
         updatedAt: Date.now()
       };
+      state.settings.balance = currentBalance + oldAmount - amount;
     }
     toast('Đã cập nhật');
   } else {
@@ -369,6 +373,7 @@ function saveExpense() {
       date, note, createdAt: Date.now(),
       updatedAt: Date.now()
     });
+    state.settings.balance = currentBalance - amount;
     toast('Đã thêm giao dịch');
   }
 
@@ -382,6 +387,11 @@ function saveExpense() {
 
 function deleteExpense(id) {
   showConfirm('Xoá giao dịch', 'Bạn có chắc muốn xoá giao dịch này?', () => {
+    const exp = state.expenses.find(e => e.id === id);
+    if (exp) {
+      const currentBalance = Number(state.settings.balance) || 0;
+      state.settings.balance = currentBalance + Number(exp.amount || 0);
+    }
     state.expenses = state.expenses.filter(e => e.id !== id);
     saveState();
     markLocalChange();
