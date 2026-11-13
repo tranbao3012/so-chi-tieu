@@ -1,11 +1,8 @@
-/* js/expenses.js — V2.1 (Dark Theme Compatible & Error State Fix)
-   Render tab Giao dịch và xử lý form thêm/sửa chi tiêu. */
-
 import {
-  state, formState, PAYMENT_METHODS, COLOR_PALETTE,
+  state, formState, PAYMENT_METHODS, COLOR_PALETTE, EMOJI_PALETTE,
   ic, escapeHtml,
   fmtMoney, fmtMoneyShort, fmtDate, todayIso, dayIso, monthKey,
-  getCategory, getPayment,
+  getCategory, getCategoryEmoji, getPayment,
   AI, toast, openSheet, closeSheet, showConfirm,
   hapticTap, hapticSuccess, hapticWarning,
   uid, saveState
@@ -13,18 +10,12 @@ import {
 
 import { markLocalChange } from './sync.js';
 
-/* ==================================================================
-   STATE (module-private)
-   ================================================================== */
 let activeSmartFilter = 'all';
 let actionTargetCatId = null;
 let editingCatId = null;
 let isLongPress = false;
 let pressTimer = null;
 
-/* ==================================================================
-   SMART FILTERS
-   ================================================================== */
 function renderSmartFilters() {
   const el = document.getElementById('smartFilters');
   if (!el) return;
@@ -37,7 +28,7 @@ function renderSmartFilters() {
     { id: 'top10', label: 'Top 10%', icon: 'trendUp' },
     { id: 'anomaly', label: 'Bất thường', icon: 'alertTriangle' }
   ];
-  el.innerHTML = filters.map(f => 
+  el.innerHTML = filters.map(f =>
     `<button class="filter-chip ${activeSmartFilter === f.id ? 'active' : ''}" data-smart-filter="${f.id}">${ic(f.icon)}<span>${f.label}</span></button>`
   ).join('');
 }
@@ -74,15 +65,12 @@ export function populateCategoryFilter() {
   const sel = document.getElementById('filterCategory');
   if (!sel) return;
   const v = sel.value;
-  sel.innerHTML = '<option value="">Tất cả</option>' + state.categories.map(c => 
+  sel.innerHTML = '<option value="">Tất cả</option>' + state.categories.map(c =>
     `<option value="${c.id}">${escapeHtml(c.name)}</option>`
   ).join('');
   if (v) sel.value = v;
 }
 
-/* ==================================================================
-   EXPENSE LIST (Ép cứng Inline Style)
-   ================================================================== */
 function renderExpenses() {
   const from = document.getElementById('filterFrom').value;
   const to = document.getElementById('filterTo').value;
@@ -119,39 +107,33 @@ function renderExpenses() {
 
   c.innerHTML = Array.from(groups.entries()).map(([date, items]) => {
     const dayTotal = items.reduce((s, e) => s + Number(e.amount || 0), 0);
-    
-    const groupStyle = "margin-bottom: 16px; background: var(--surface); border-radius: 20px; overflow: hidden; border: 1px solid var(--border-soft);";
-    const groupHeaderStyle = "padding: 12px 20px; background: var(--surface-2); display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: var(--text-soft);";
 
-    return `<div class="expense-group" style="${groupStyle}">
-      <div class="group-header" style="${groupHeaderStyle}">
-        <div class="group-header-left" style="display: flex; align-items: center; gap: 6px;">${ic('calendar')}<span>${fmtDate(date)}</span></div>
-        <span class="group-total" style="color: var(--primary);">${fmtMoney(dayTotal)}</span>
+    return `<div class="expense-group">
+      <div class="group-header">
+        <div class="group-header-left">${ic('calendar')}<span>${fmtDate(date)}</span></div>
+        <span class="group-total">${fmtMoney(dayTotal)}</span>
       </div>
       ${items.map(e => {
         const cat = getCategory(e.categoryId);
+        const emoji = getCategoryEmoji(cat);
         const isAno = anomalies.has(e.id);
-        
-        const wrapStyle = "position: relative; overflow: hidden; width: 100%; border-bottom: 1px solid var(--border-soft); background: var(--surface);";
-        const actionStyle = "position: absolute; top: 0; right: 0; bottom: 0; display: flex; z-index: 1;";
-        const rowStyle = "position: relative; z-index: 2; background: var(--surface); display: flex; align-items: center; gap: 12px; padding: 14px 16px; width: 100%; touch-action: pan-y; user-select: none; transition: transform 0.2s ease;";
 
-        return `<div class="expense-swipe" data-expense-id="${e.id}" style="${wrapStyle}">
-          <div class="expense-swipe-actions" style="${actionStyle}">
-            <button class="swipe-action-btn edit" data-edit-expense="${e.id}" style="width: 76px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--surface-3); color: var(--text); font-size: 10px; font-weight: 700; border: none; cursor: pointer;">${ic('edit', 18)}<span style="margin-top: 2px;">Sửa</span></button>
-            <button class="swipe-action-btn delete" data-del-expense="${e.id}" style="width: 76px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--danger); color: #fff; font-size: 10px; font-weight: 700; border: none; cursor: pointer;">${ic('trash', 18)}<span style="margin-top: 2px;">Xoá</span></button>
+        return `<div class="expense-swipe" data-expense-id="${e.id}">
+          <div class="expense-swipe-actions">
+            <button class="swipe-action-btn edit" data-edit-expense="${e.id}">${ic('edit', 18)}<span>Sửa</span></button>
+            <button class="swipe-action-btn delete" data-del-expense="${e.id}">${ic('trash', 18)}<span>Xoá</span></button>
           </div>
-          <div class="expense-row${isAno ? ' anomaly' : ''}" data-swipe-row="${e.id}" style="${rowStyle}">
-            <div class="expense-icon" style="background:${cat.color}; width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 14px; flex-shrink: 0;">${escapeHtml(cat.name.charAt(0).toUpperCase())}</div>
-            <div class="expense-body" style="flex: 1; min-width: 0;">
-              <div class="expense-top" style="display: flex; align-items: center; gap: 6px; margin-bottom: 2px; flex-wrap: wrap;">
-                <span class="expense-category" style="font-size: 14px; font-weight: 700; color: var(--text);">${escapeHtml(cat.name)}</span>
-                <span class="expense-payment" style="font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; background: var(--surface-2); color: var(--text-soft);">${getPayment(e.paymentMethod).name}</span>
-                ${isAno ? `<span style="color:var(--warning); font-size:12px;">⚠</span>` : ''}
+          <div class="expense-row${isAno ? ' anomaly' : ''}" data-swipe-row="${e.id}">
+            <div class="expense-icon" style="background:${cat.color};">${emoji}</div>
+            <div class="expense-body">
+              <div class="expense-top">
+                <span class="expense-category">${escapeHtml(cat.name)}</span>
+                <span class="expense-payment">${getPayment(e.paymentMethod).emoji} ${getPayment(e.paymentMethod).name}</span>
+                ${isAno ? `<span class="anomaly-badge">⚠</span>` : ''}
               </div>
-              <div class="expense-note" style="font-size: 12px; color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(e.note || 'Không có ghi chú')}</div>
+              <div class="expense-note">${escapeHtml(e.note || 'Không có ghi chú')}</div>
             </div>
-            <div class="expense-amount" style="font-size: 15px; font-weight: 800; color: var(--text); white-space: nowrap; flex-shrink: 0;">${fmtMoney(e.amount)}</div>
+            <div class="expense-amount">${fmtMoney(e.amount)}</div>
           </div>
         </div>`;
       }).join('')}
@@ -161,9 +143,6 @@ function renderExpenses() {
   bindSwipeActions();
 }
 
-/* ==================================================================
-   SWIPE — GPU transform only
-   ================================================================== */
 function bindSwipeActions() {
   const rows = document.querySelectorAll('[data-swipe-row]');
   const SWIPE_THRESHOLD = 140;
@@ -206,22 +185,18 @@ function bindSwipeActions() {
   });
 }
 
-/* ==================================================================
-   EXPENSE FORM (bottom sheet)
-   ================================================================== */
 export function openExpenseModal(id = null) {
   formState.editingExpenseId = id;
   document.getElementById('expenseModalTitle').textContent = id ? 'Sửa chi tiêu' : 'Thêm chi tiêu';
   document.getElementById('formAmount').value = '';
   document.getElementById('formDate').value = todayIso();
   document.getElementById('formNote').value = '';
-  
+
   document.getElementById('amountCurrencyPrefix').textContent = state.settings.currency || 'đ';
-  
+
   formState.formCategory = null;
   formState.formPayment = 'cash';
-  
-  // FIX: Ẩn các thông báo lỗi khi mở form
+
   document.getElementById('errAmount').classList.remove('show');
   document.getElementById('errCategory').classList.remove('show');
 
@@ -251,25 +226,24 @@ export function closeExpenseModal() {
 }
 
 function renderFormChips(suggestedCat = null) {
-  let html = state.categories.map(c => 
-    `<button class="cat-option ${formState.formCategory === c.id ? 'active' : ''} ${suggestedCat === c.id ? 'suggested' : ''}" data-cat-id="${c.id}">
-      <div class="cat-option-icon" style="background:${c.color};">${escapeHtml(c.name.charAt(0).toUpperCase())}</div>
+  let html = state.categories.map(c => {
+    const emoji = getCategoryEmoji(c);
+    return `<button class="cat-option ${formState.formCategory === c.id ? 'active' : ''} ${suggestedCat === c.id ? 'suggested' : ''}" data-cat-id="${c.id}">
+      <div class="cat-option-icon" style="background:${c.color};">${emoji}</div>
       <div class="cat-option-name">${escapeHtml(c.name)}</div>
-    </button>`
-  ).join('');
+    </button>`;
+  }).join('');
 
-  html += `
-    <button class="cat-option" id="btnAddQuickCat" style="border-style: dashed; justify-content: center; background: var(--surface-2);">
-      <div class="cat-option-icon" style="background: transparent; color: var(--text-muted); font-size: 24px; font-weight: 400; line-height: 1;">+</div>
-      <div class="cat-option-name" style="color: var(--text-muted);">Mới</div>
-    </button>
-  `;
+  html += `<button class="cat-option cat-option-add" id="btnAddQuickCat">
+      <div class="cat-option-icon">+</div>
+      <div class="cat-option-name">Mới</div>
+    </button>`;
 
   document.getElementById('formCategories').innerHTML = html;
 
-  document.getElementById('formPayments').innerHTML = PAYMENT_METHODS.map(p => 
+  document.getElementById('formPayments').innerHTML = PAYMENT_METHODS.map(p =>
     `<button class="payment-option ${formState.formPayment === p.id ? 'active' : ''}" data-pay-id="${p.id}">
-      <div class="payment-dot-icon" style="background:${p.color};">${ic(p.icon)}</div>
+      <div class="payment-emoji" style="background:${p.color};">${p.emoji}</div>
       <span>${escapeHtml(p.name)}</span>
     </button>`
   ).join('');
@@ -280,13 +254,27 @@ function updateSummaryPreview() {
   const amount = Number(rawAmount) || 0;
   const date = document.getElementById('formDate').value;
   const cat = formState.formCategory ? getCategory(formState.formCategory) : null;
+  const pay = getPayment(formState.formPayment);
 
-  document.getElementById('sumCategory').innerHTML = cat
-    ? `<span style="display:inline-flex;align-items:center;gap:5px;"><span style="width:9px;height:9px;border-radius:2px;background:${cat.color};"></span>${escapeHtml(cat.name)}</span>`
-    : '—';
-  document.getElementById('sumDate').textContent = date ? fmtDate(date) : '—';
-  document.getElementById('sumPayment').textContent = getPayment(formState.formPayment).name;
-  document.getElementById('sumAmount').textContent = fmtMoney(amount);
+  const catIconEl = document.getElementById('sumCategoryIcon');
+  const catValueEl = document.getElementById('sumCategory');
+  const dateValueEl = document.getElementById('sumDate');
+  const payIconEl = document.getElementById('sumPaymentIcon');
+  const payValueEl = document.getElementById('sumPayment');
+  const amountEl = document.getElementById('sumAmount');
+
+  if (catIconEl) catIconEl.textContent = cat ? getCategoryEmoji(cat) : '❓';
+  if (catValueEl) {
+    if (cat) {
+      catValueEl.innerHTML = `<span class="summary-dot" style="background:${cat.color};"></span>${escapeHtml(cat.name)}`;
+    } else {
+      catValueEl.textContent = 'Chưa chọn';
+    }
+  }
+  if (dateValueEl) dateValueEl.textContent = date ? fmtDate(date) : '—';
+  if (payIconEl) payIconEl.textContent = pay.emoji;
+  if (payValueEl) payValueEl.textContent = pay.name;
+  if (amountEl) amountEl.textContent = fmtMoney(amount);
 }
 
 function updateAISuggestions() {
@@ -300,7 +288,7 @@ function updateAISuggestions() {
   const sug = AI.suggestCategory(note);
   if (sug && !formState.formCategory) {
     const cat = getCategory(sug.categoryId);
-    banner.innerHTML = `<div class="ai-hint-banner">${ic('sparkles')}<div>Gợi ý: <strong>${escapeHtml(cat.name)}</strong> <button id="applyAiCat" data-suggested="${sug.categoryId}">Áp dụng</button></div></div>`;
+    banner.innerHTML = `<div class="ai-hint-banner">${ic('sparkles')}<div>Gợi ý: <strong>${getCategoryEmoji(cat)} ${escapeHtml(cat.name)}</strong> <button id="applyAiCat" data-suggested="${sug.categoryId}">Áp dụng</button></div></div>`;
   } else {
     banner.innerHTML = '';
   }
@@ -339,7 +327,6 @@ function saveExpense() {
   const note = document.getElementById('formNote').value.trim();
   let err = false;
 
-  // FIX: Hiện thông báo lỗi nếu chưa nhập
   if (!amountRaw || isNaN(amount) || amount <= 0) {
     document.getElementById('errAmount').classList.add('show');
     err = true;
@@ -395,13 +382,32 @@ function deleteExpense(id) {
   });
 }
 
-/* ==================================================================
-   QUICK CATEGORY (CREATE / EDIT)
-   ================================================================== */
+function renderEmojiPicker() {
+  const el = document.getElementById('quickCatEmojis');
+  if (!el) return;
+  el.innerHTML = EMOJI_PALETTE.map(emoji =>
+    `<button class="emoji-pick ${formState.editingCatEmoji === emoji ? 'active' : ''}" data-emoji="${emoji}" type="button">${emoji}</button>`
+  ).join('');
+}
+
 function openQuickCatModal() {
   editingCatId = null;
   document.getElementById('quickCatTitle').textContent = 'Tạo danh mục mới';
   document.getElementById('quickCatName').value = '';
+  formState.editingCatEmoji = '📦';
+  renderEmojiPicker();
+  openSheet('quickCatModal');
+  setTimeout(() => document.getElementById('quickCatName').focus(), 300);
+}
+
+function openEditCatModal(catId) {
+  const cat = state.categories.find(c => c.id === catId);
+  if (!cat) return;
+  editingCatId = cat.id;
+  document.getElementById('quickCatTitle').textContent = 'Sửa danh mục';
+  document.getElementById('quickCatName').value = cat.name;
+  formState.editingCatEmoji = cat.emoji || getCategoryEmoji(cat);
+  renderEmojiPicker();
   openSheet('quickCatModal');
   setTimeout(() => document.getElementById('quickCatName').focus(), 300);
 }
@@ -417,6 +423,7 @@ function saveQuickCat() {
     const idx = state.categories.findIndex(c => c.id === editingCatId);
     if (idx !== -1) {
       state.categories[idx].name = name;
+      state.categories[idx].emoji = formState.editingCatEmoji;
       state.categories[idx].updatedAt = Date.now();
     }
     toast('Đã cập nhật danh mục');
@@ -427,6 +434,7 @@ function saveQuickCat() {
       id: newId,
       name: name,
       color: randomColor,
+      emoji: formState.editingCatEmoji,
       type: 'discretionary',
       updatedAt: Date.now()
     });
@@ -447,25 +455,19 @@ function saveQuickCat() {
   updateAISuggestions();
 }
 
-/* ==================================================================
-   ENTRY — render tab
-   ================================================================== */
 export function renderExpensesTab() {
   renderSmartFilters();
   populateCategoryFilter();
   renderExpenses();
 }
 
-/* ==================================================================
-   BIND EVENTS (called once by main.js)
-   ================================================================== */
 export function bindExpenseTabEvents() {
   document.getElementById('smartFilters').addEventListener('click', (e) => {
     const btn = e.target.closest('[data-smart-filter]');
     if (!btn) return;
     hapticTap();
     activeSmartFilter = btn.dataset.smartFilter;
-    document.querySelectorAll('[data-smart-filter]').forEach(b => 
+    document.querySelectorAll('[data-smart-filter]').forEach(b =>
       b.classList.toggle('active', b.dataset.smartFilter === activeSmartFilter)
     );
     renderExpenses();
@@ -509,7 +511,7 @@ export function bindExpenseFormEvents() {
   const startPress = (e) => {
     const btn = e.target.closest('[data-cat-id]');
     if (!btn) return;
-    
+
     if (e.type === 'touchstart') {
       startX = e.touches[0].clientX;
       startY = e.touches[0].clientY;
@@ -517,7 +519,7 @@ export function bindExpenseFormEvents() {
       startX = e.clientX;
       startY = e.clientY;
     }
-    
+
     isDragging = false;
     isLongPress = false;
 
@@ -530,7 +532,7 @@ export function bindExpenseFormEvents() {
         document.getElementById('catActionTitle').textContent = cat ? cat.name : 'Danh mục';
         openSheet('catActionModal');
       }
-    }, 600); 
+    }, 600);
   };
 
   const cancelPress = (e) => {
@@ -572,12 +574,12 @@ export function bindExpenseFormEvents() {
       openQuickCatModal();
       return;
     }
-    
+
     const btn = e.target.closest('[data-cat-id]');
     if (!btn) return;
     hapticTap();
     formState.formCategory = btn.dataset.catId;
-    document.getElementById('errCategory').classList.remove('show'); // Tắt lỗi khi chọn
+    document.getElementById('errCategory').classList.remove('show');
     renderFormChips();
     updateSummaryPreview();
     updateAISuggestions();
@@ -586,14 +588,7 @@ export function bindExpenseFormEvents() {
   document.getElementById('catActionEdit').addEventListener('click', () => {
     closeSheet('catActionModal');
     if (!actionTargetCatId) return;
-    const cat = state.categories.find(c => c.id === actionTargetCatId);
-    if (!cat) return;
-
-    editingCatId = cat.id;
-    document.getElementById('quickCatTitle').textContent = 'Sửa danh mục';
-    document.getElementById('quickCatName').value = cat.name;
-    openSheet('quickCatModal');
-    setTimeout(() => document.getElementById('quickCatName').focus(), 300);
+    openEditCatModal(actionTargetCatId);
   });
 
   document.getElementById('catActionDelete').addEventListener('click', () => {
@@ -603,7 +598,7 @@ export function bindExpenseFormEvents() {
     if (!cat) return;
 
     const expCount = state.expenses.filter(e => e.categoryId === cat.id).length;
-    const msg = expCount > 0 
+    const msg = expCount > 0
       ? `Có ${expCount} giao dịch thuộc danh mục này. Xoá sẽ chuyển sang "Khác". Tiếp tục?`
       : 'Bạn có chắc muốn xoá danh mục này?';
 
@@ -618,7 +613,7 @@ export function bindExpenseFormEvents() {
         });
       }
       state.categories = state.categories.filter(c => c.id !== cat.id);
-      
+
       if (formState.formCategory === cat.id) {
         formState.formCategory = null;
       }
@@ -627,7 +622,7 @@ export function bindExpenseFormEvents() {
       markLocalChange();
       hapticSuccess();
       toast('Đã xoá danh mục');
-      
+
       renderFormChips();
       updateSummaryPreview();
       updateAISuggestions();
@@ -676,6 +671,19 @@ export function bindExpenseFormEvents() {
       updateAISuggestions();
     }
   });
+
+  const emojiGrid = document.getElementById('quickCatEmojis');
+  if (emojiGrid) {
+    emojiGrid.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-emoji]');
+      if (!btn) return;
+      hapticTap();
+      formState.editingCatEmoji = btn.dataset.emoji;
+      emojiGrid.querySelectorAll('.emoji-pick').forEach(b =>
+        b.classList.toggle('active', b.dataset.emoji === formState.editingCatEmoji)
+      );
+    });
+  }
 
   document.getElementById('quickSaveCatBtn').addEventListener('click', saveQuickCat);
   document.getElementById('quickCatName').addEventListener('keydown', (e) => {
