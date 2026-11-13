@@ -1,36 +1,37 @@
-/* js/core.js — V1.4 (Dark Theme Compatible)
-   Core module: State, Storage, Utils, Queries, AI, ACCT, UI helpers, PDF 
-   (Phiên bản ổn định, ép cứng kích thước icon và donut chống vỡ layout) */
-
-/* ==================================================================
-   CONSTANTS
-   ================================================================== */
 export const STORAGE_KEY = 'expense_tracker_v1';
 
-const _now = Date.now(); 
+const _now = Date.now();
 export const DEFAULT_CATEGORIES = [
-  { id: 'food', name: 'Ăn uống', color: '#f97316', type: 'essential', updatedAt: _now },
-  { id: 'transport', name: 'Di chuyển', color: '#3b82f6', type: 'essential', updatedAt: _now },
-  { id: 'shopping', name: 'Mua sắm', color: '#ec4899', type: 'discretionary', updatedAt: _now },
-  { id: 'bills', name: 'Hoá đơn', color: '#ef4444', type: 'essential', updatedAt: _now },
-  { id: 'entertainment', name: 'Giải trí', color: '#8b5cf6', type: 'discretionary', updatedAt: _now },
-  { id: 'health', name: 'Sức khoẻ', color: '#10b981', type: 'essential', updatedAt: _now },
-  { id: 'education', name: 'Giáo dục', color: '#6366f1', type: 'essential', updatedAt: _now },
-  { id: 'other', name: 'Khác', color: '#64748b', type: 'discretionary', updatedAt: _now }
+  { id: 'food', name: 'Ăn uống', color: '#f97316', emoji: '🍔', type: 'essential', updatedAt: _now },
+  { id: 'transport', name: 'Di chuyển', color: '#3b82f6', emoji: '🚗', type: 'essential', updatedAt: _now },
+  { id: 'shopping', name: 'Mua sắm', color: '#ec4899', emoji: '🛍️', type: 'discretionary', updatedAt: _now },
+  { id: 'bills', name: 'Hoá đơn', color: '#ef4444', emoji: '💡', type: 'essential', updatedAt: _now },
+  { id: 'entertainment', name: 'Giải trí', color: '#8b5cf6', emoji: '🎮', type: 'discretionary', updatedAt: _now },
+  { id: 'health', name: 'Sức khoẻ', color: '#10b981', emoji: '💊', type: 'essential', updatedAt: _now },
+  { id: 'education', name: 'Giáo dục', color: '#6366f1', emoji: '📚', type: 'essential', updatedAt: _now },
+  { id: 'other', name: 'Khác', color: '#64748b', emoji: '📦', type: 'discretionary', updatedAt: _now }
 ];
 
 export const PAYMENT_METHODS = [
-  { id: 'cash', name: 'Tiền mặt', color: '#6366f1', icon: 'cash' },
-  { id: 'card', name: 'Thẻ', color: '#8b5cf6', icon: 'creditCard' },
-  { id: 'transfer', name: 'CK', color: '#ec4899', icon: 'transfer' },
-  { id: 'wallet', name: 'Ví ĐT', color: '#f59e0b', icon: 'wallet' }
+  { id: 'cash', name: 'Tiền mặt', color: '#6366f1', emoji: '💵' },
+  { id: 'card', name: 'Thẻ', color: '#8b5cf6', emoji: '💳' },
+  { id: 'transfer', name: 'CK', color: '#ec4899', emoji: '🏦' },
+  { id: 'wallet', name: 'Ví ĐT', color: '#f59e0b', emoji: '📱' }
 ];
 
 export const COLOR_PALETTE = ['#f97316', '#ef4444', '#ec4899', '#a855f7','#8b5cf6', '#6366f1', '#3b82f6', '#0ea5e9','#06b6d4', '#14b8a6', '#10b981', '#22c55e','#84cc16', '#eab308', '#f59e0b', '#64748b'];
 
-/* ==================================================================
-   ICONS
-   ================================================================== */
+export const EMOJI_PALETTE = [
+  '🍔', '🍕', '🍜', '🍱', '☕',
+  '🍰', '🍺', '🚗', '🚕', '🚌',
+  '⛽', '🏍️', '🛍️', '👕', '👟',
+  '💄', '🎁', '💍', '💡', '💧',
+  '🔥', '📱', '🌐', '🏠', '📮',
+  '🎬', '🎮', '🎵', '🎤', '🎯',
+  '💊', '🏥', '🏋️', '💪', '🩺',
+  '📚', '🎓', '✏️', '📝', '📦'
+];
+
 export const ICONS = {
   pieChart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>',
   clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
@@ -63,7 +64,6 @@ export const ICONS = {
   piggyBank: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 5c-1.5 0-2.8 1.4-3 2-3.5-1.5-11-.3-11 5 0 1.8 0 3 2 4.5V20h4v-2h3v2h4v-4c1-.5 1.7-1 2-2h2v-4h-2c0-1-.5-1.5-1-2V5z"/><path d="M2 9v1c0 1.1.9 2 2 2h1"/><path d="M16 11h.01"/></svg>'
 };
 
-// Ép cứng style inline cho mọi icon để chống vỡ layout kể cả khi mất CSS
 export const ic = (n, size = 16) => {
   const svg = ICONS[n] || '';
   if (!svg) return '';
@@ -78,9 +78,6 @@ export function fillIcons() {
   });
 }
 
-/* ==================================================================
-   PLATFORM + HAPTIC
-   ================================================================== */
 export const PLATFORM = (() => {
   const ua = navigator.userAgent || '';
   if (/iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) return 'ios';
@@ -101,9 +98,6 @@ export const hapticTap = () => haptic(PLATFORM === 'android' ? 10 : 6);
 export const hapticSuccess = () => haptic([10, 40, 10]);
 export const hapticWarning = () => haptic([25, 25, 25]);
 
-/* ==================================================================
-   STATE
-   ================================================================== */
 export const state = {
   expenses: [],
   categories: [],
@@ -111,7 +105,7 @@ export const state = {
     currency: 'đ',
     monthlyBudget: 0,
     monthlyIncome: 0,
-    theme: 'dark', /* Mặc định là dark mode cho UI mới */
+    theme: 'dark',
     aiEnabled: true,
     anomalyEnabled: true,
     suggestEnabled: true,
@@ -125,18 +119,15 @@ export const formState = {
   formCategory: null,
   formPayment: 'cash',
   editingCategoryId: null,
-  editingCatColor: COLOR_PALETTE[0]
+  editingCatColor: COLOR_PALETTE[0],
+  editingCatEmoji: '📦'
 };
 
 export const reportState = { month: new Date() };
 
-/* Anomaly cache (module-private) */
 let _anomalyCache = null;
 let _anomalyCacheDirty = true;
 
-/* ==================================================================
-   STORAGE
-   ================================================================== */
 export function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -163,9 +154,6 @@ export function saveState() {
   }
 }
 
-/* ==================================================================
-   UTILS
-   ================================================================== */
 export const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 
 export const dayIso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -184,7 +172,13 @@ export const fmtMoneyShort = (n) => {
   return String(n);
 };
 
-export const getCategory = (id) => state.categories.find(c => c.id === id) || { id: 'unknown', name: 'Khác', color: '#64748b', type: 'discretionary' };
+export const getCategory = (id) => state.categories.find(c => c.id === id) || { id: 'unknown', name: 'Khác', color: '#64748b', emoji: '📦', type: 'discretionary' };
+export const getCategoryEmoji = (cat) => {
+  if (!cat) return '📦';
+  if (cat.emoji) return cat.emoji;
+  if (cat.name) return cat.name.charAt(0).toUpperCase();
+  return '📦';
+};
 export const getPayment = (id) => PAYMENT_METHODS.find(p => p.id === id) || PAYMENT_METHODS[0];
 
 export const monthKey = (d = new Date()) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
@@ -193,9 +187,6 @@ export const daysInMonth = (y, m) => new Date(y, m + 1, 0).getDate();
 
 export const escapeHtml = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
-/* ==================================================================
-   QUERIES
-   ================================================================== */
 export const getDayExpenses = (d = new Date()) => { const iso = dayIso(d); return state.expenses.filter(e => e.date === iso); };
 export const getMonthExpenses = (d = new Date()) => { const key = monthKey(d); return state.expenses.filter(e => e.date && e.date.startsWith(key)); };
 
@@ -239,9 +230,6 @@ export const calcTrend = (cur, prev, label) => {
   return { text: `Không đổi`, type: 'neutral', icon: 'minus' };
 };
 
-/* ==================================================================
-   AI ENGINE
-   ================================================================== */
 export const AI = {
   forecastMonthEnd() {
     const now = new Date();
@@ -394,9 +382,6 @@ export const AI = {
   }
 };
 
-/* ==================================================================
-   ACCOUNTING
-   ================================================================== */
 export const ACCT = {
   getIncome() { return Number(state.settings.monthlyIncome) || Number(state.settings.monthlyBudget) || 0; },
   analyze503020() {
@@ -458,9 +443,6 @@ export const ACCT = {
   }
 };
 
-/* ==================================================================
-   UI HELPERS — Toast, Sheet, Confirm
-   ================================================================== */
 export function toast(msg, type = 'success') {
   const c = document.getElementById('toastContainer');
   if (!c) return;
@@ -501,9 +483,6 @@ export function bindConfirmOK() {
   });
 }
 
-/* ==================================================================
-   THEME
-   ================================================================== */
 export function applyTheme() {
   document.documentElement.setAttribute('data-theme', state.settings.theme || 'light');
   const icon = document.getElementById('themeIcon');
@@ -521,14 +500,11 @@ export function applyTheme() {
 export function toggleTheme() {
   hapticTap();
   state.settings.theme = state.settings.theme === 'dark' ? 'light' : 'dark';
-  state.settings.updatedAt = Date.now(); 
+  state.settings.updatedAt = Date.now();
   saveState();
   applyTheme();
 }
 
-/* ==================================================================
-   UI HELPERS — SVG render
-   ================================================================== */
 export function renderSparkline(container, data, color = 'var(--primary)') {
   if (!container) return;
   if (!data || data.length === 0) { container.innerHTML = ''; return; }
@@ -540,12 +516,11 @@ export function renderSparkline(container, data, color = 'var(--primary)') {
   container.innerHTML = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="100%" preserveAspectRatio="none"><path d="${area}" fill="${color}" opacity="0.15"/><polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 }
 
-// Ép cứng inline style cho container và donut center
 export function renderDonut(container, segments, total) {
   if (!container) return;
   const size = 160, cx = 80, cy = 80, r = 58;
   const circ = 2 * Math.PI * r;
-  
+
   container.style.width = size + 'px';
   container.style.height = size + 'px';
   container.style.margin = '0 auto';
@@ -555,7 +530,7 @@ export function renderDonut(container, segments, total) {
     container.innerHTML = `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}"><circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--surface-3)" stroke-width="16"/></svg><div class="donut-center" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;"><div class="donut-center-label" style="font-size:9.5px;color:var(--text-soft);font-weight:700;">Tổng</div><div class="donut-center-value" style="font-size:17px;font-weight:800;color:var(--text);">0</div></div>`;
     return;
   }
-  
+
   let offset = 0;
   let svg = `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}"><circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--surface-3)" stroke-width="16"/>`;
   segments.forEach(s => {
@@ -569,9 +544,6 @@ export function renderDonut(container, segments, total) {
   container.innerHTML = svg;
 }
 
-/* ==================================================================
-   INSIGHTS (dùng chung cho Reports và PDF)
-   ================================================================== */
 export function generateInsights(monthExp, total, prevTotal, days) {
   if (monthExp.length === 0) return [];
   const ins = [];
@@ -596,9 +568,6 @@ export function generateInsights(monthExp, total, prevTotal, days) {
   return ins;
 }
 
-/* ==================================================================
-   PDF EXPORT
-   ================================================================== */
 export function exportPDF() {
   const html = buildPdfReport();
   document.getElementById('pdfReport').innerHTML = html;
