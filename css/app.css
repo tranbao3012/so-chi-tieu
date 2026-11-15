@@ -150,7 +150,6 @@
 .overview-trend.up { color: var(--danger); }
 .overview-trend.down { color: var(--primary); }
 
-/* ==================== BALANCE CARD ==================== */
 .overview-card.balance {
   background: linear-gradient(135deg, var(--surface) 0%, var(--surface-2) 100%);
   border: 1px solid var(--border-soft);
@@ -198,7 +197,6 @@
   color: var(--danger);
 }
 
-/* ==================== SECTION TITLE ==================== */
 .section-title {
   display: flex;
   justify-content: space-between;
@@ -220,7 +218,6 @@
   letter-spacing: 0.2px;
 }
 
-/* ==================== RECENT LIST (DASHBOARD — DIVIDER STYLE) ==================== */
 .recent-list {
   display: flex;
   flex-direction: column;
@@ -260,7 +257,6 @@
 
 .recent-list .recent-item.swiping { transition: none; }
 
-/* ==================== EXPENSE LIST (EXPENSES TAB — ROW STYLE + DIVIDER) ==================== */
 .expense-swipe {
   position: relative;
   overflow: hidden;
@@ -312,7 +308,6 @@
 }
 .expense-row.swiping { transition: none; }
 
-/* ==================== SHARED ICON STYLES ==================== */
 .recent-icon, .expense-icon {
   width: 40px;
   height: 40px;
@@ -335,31 +330,35 @@
 .recent-meta, .expense-body { flex: 1; min-width: 0; }
 .recent-title, .expense-category { font-size: 14px; font-weight: 700; color: var(--text); }
 .recent-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.recent-sub, .expense-note { font-size: 12px; color: var(--text-soft); margin-top: 2px; display: flex; align-items: center; gap: 3px; }
+.recent-sub, .expense-note { font-size: 12px; color: var(--text-soft); margin-top: 2px; display: flex; align-items: center; gap: 6px; }
 .recent-sub svg { width: 10px; height: 10px; color: var(--primary); stroke-width: 2.2; }
 .recent-amount, .expense-amount { font-size: 15px; font-weight: 800; color: var(--text); white-space: nowrap; flex-shrink: 0; }
 
-.anomaly-badge { color: var(--warning); display: inline-flex; align-items: center; }
-.anomaly-badge svg { width: 12px; height: 12px; }
-
-.expense-top { display: flex; align-items: center; gap: 6px; margin-bottom: 2px; flex-wrap: wrap; }
-.expense-payment {
-  font-size: 10px;
-  font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: var(--surface-2);
-  color: var(--text-soft);
+.badge-payment, .badge-anomaly {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.4;
 }
-.expense-payment svg {
-  width: 10px;
-  height: 10px;
+.badge-payment {
+  background: rgba(52, 211, 153, 0.15);
   color: var(--primary);
-  stroke-width: 2.2;
 }
+.badge-anomaly {
+  background: rgba(251, 191, 36, 0.15);
+  color: var(--warning);
+}
+.badge-payment svg, .badge-anomaly svg {
+  width: 12px;
+  height: 12px;
+  stroke-width: 2.5;
+}
+
+.expense-top { display: flex; align-items: center; gap: 6px; margin-bottom: 2px; flex-wrap: wrap; }
 .expense-note { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
 
 .smart-filters { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
@@ -368,7 +367,6 @@
 .filter-chip svg { width: 14px; height: 14px; stroke-width: 2.2; }
 .filter-chip.active { background: var(--primary); border-color: var(--primary); color: #0f172a; }
 
-/* ==================== SUMMARY BAR (3 CỘT CÂN ĐỐI) ==================== */
 .summary-bar {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -427,47 +425,57 @@
 .insight-text { flex: 1; font-size: 12.5px; color: var(--text); line-height: 1.45; }
 .insight-text strong { color: var(--primary); font-weight: 800; }
 
-.chart-wrap { position: relative; width: 100%; overflow: hidden; }
-.chart-bars {
-  display: flex;
-  height: 140px;
-  gap: 3px;
-  padding: 8px 0 22px;
-  border-bottom: 1px solid var(--border);
-  overflow-x: auto;
-  overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
-  touch-action: manipulation;
-  scrollbar-width: thin;
-}
-.chart-bars::-webkit-scrollbar { height: 3px; }
-.chart-bars::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 2px; }
-
-.bar-col {
-  flex: 1 0 auto;
-  min-width: 12px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: center;
-  height: 100%;
+.chart-wrap { position: relative; width: 100%; }
+.chart-svg-wrap {
   position: relative;
-  padding-bottom: 18px;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-}
-.bar {
   width: 100%;
-  max-width: 18px;
-  border-radius: 4px 4px 0 0;
-  pointer-events: none;
-  transition: filter 0.15s ease, box-shadow 0.15s ease;
+  height: 180px;
+  margin-top: 8px;
 }
-.bar.has-value { background: linear-gradient(180deg, var(--primary) 0%, var(--primary-hover) 100%); min-height: 3px; }
-.bar.is-empty { background: transparent; }
-.bar-col.active .bar.has-value { filter: brightness(1.2); box-shadow: 0 0 8px rgba(52, 211, 153, 0.55), 0 0 2px rgba(52, 211, 153, 0.8); }
-.bar-label { position: absolute; bottom: 0; left: 0; right: 0; text-align: center; font-size: 9px; color: var(--text-soft); font-weight: 700; pointer-events: none; line-height: 1; }
+.chart-svg-wrap svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.chart-grid-line {
+  stroke: var(--border);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+  opacity: 0.5;
+}
+.chart-area {
+  fill: url(#chartAreaGradient);
+}
+.chart-line {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.chart-point {
+  fill: var(--surface);
+  stroke: var(--primary);
+  stroke-width: 2.5;
+  transition: r 0.15s ease, fill 0.15s ease;
+  cursor: pointer;
+}
+.chart-point.active {
+  fill: var(--primary);
+  r: 6;
+}
+.chart-label {
+  font-size: 9px;
+  fill: var(--text-soft);
+  font-weight: 600;
+  text-anchor: middle;
+}
+.chart-y-label {
+  font-size: 9px;
+  fill: var(--text-soft);
+  font-weight: 600;
+  text-anchor: end;
+}
 
 .top-table { width: 100%; border-collapse: collapse; font-size: 12px; }
 .top-table th { text-align: left; padding: 8px 10px; color: var(--primary); font-weight: 800; border-bottom: 2px solid var(--border); font-size: 10px; text-transform: uppercase; letter-spacing: 0.3px; }
@@ -903,11 +911,35 @@
 .toast.success { border-color: var(--primary); }
 .toast.error { border-color: var(--danger); }
 
-.bar-tooltip { position: fixed; z-index: 3000; pointer-events: none; background: #0f172a; border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); opacity: 0; transform: translateY(6px); transition: opacity 0.15s ease, transform 0.15s ease; font-size: 11px; }
+.bar-tooltip { 
+  position: fixed; 
+  z-index: 3000; 
+  pointer-events: none; 
+  background: var(--surface-3); 
+  border: 1px solid var(--primary); 
+  border-radius: 12px; 
+  padding: 10px 14px; 
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4); 
+  opacity: 0; 
+  transform: translateY(6px); 
+  transition: opacity 0.15s ease, transform 0.15s ease; 
+}
+.bar-tooltip::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 12px;
+  height: 12px;
+  background: var(--surface-3);
+  border-right: 1px solid var(--primary);
+  border-bottom: 1px solid var(--primary);
+}
 .bar-tooltip.show { opacity: 1; transform: translateY(0); }
-.bar-tooltip-label { font-size: 9px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 2px; letter-spacing: 0.3px; }
-.bar-tooltip-value { font-size: 13px; font-weight: 800; color: #fff; }
-.bar-tooltip-sub { font-size: 9px; color: #cbd5e1; margin-top: 2px; font-weight: 600; }
+.bar-tooltip-label { font-size: 9px; font-weight: 800; color: var(--text-soft); text-transform: uppercase; margin-bottom: 2px; letter-spacing: 0.3px; }
+.bar-tooltip-value { font-size: 13px; font-weight: 800; color: var(--text); }
+.bar-tooltip-sub { font-size: 9px; color: var(--text-muted); margin-top: 2px; font-weight: 600; }
 
 @media (pointer: coarse) {
   .form-input,
