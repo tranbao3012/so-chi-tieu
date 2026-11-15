@@ -108,8 +108,8 @@ function renderExpenses() {
             <div class="expense-body">
               <div class="expense-top">
                 <span class="expense-category">${escapeHtml(cat.name)}</span>
-                <span class="expense-payment">${ic(pay.icon, 10)} ${escapeHtml(pay.name)}</span>
-                ${isAno ? `<span class="anomaly-badge">${ic('alertTriangle', 12)}</span>` : ''}
+                <span class="badge-payment">${ic(pay.icon, 10)} ${escapeHtml(pay.name)}</span>
+                ${isAno ? `<span class="badge-anomaly">${ic('alertTriangle', 12)}</span>` : ''}
               </div>
               <div class="expense-note">${escapeHtml(e.note || 'Không có ghi chú')}</div>
             </div>
@@ -135,6 +135,7 @@ function bindSwipeActions() {
       startX = e.touches[0].clientX;
       currentX = 0;
       isDragging = false;
+      row.classList.add('swiping');
       if (openRow && openRow !== row) {
         openRow.style.transform = 'translate3d(0,0,0)';
         openRow = null;
@@ -152,6 +153,7 @@ function bindSwipeActions() {
     }, { passive: true });
 
     row.addEventListener('touchend', () => {
+      row.classList.remove('swiping');
       if (!isDragging) return;
       if (currentX < -SWIPE_THRESHOLD / 2) {
         row.style.transform = 'translate3d(-152px,0,0)';
