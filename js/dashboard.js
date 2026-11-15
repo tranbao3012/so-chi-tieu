@@ -141,6 +141,7 @@ function bindRecentSwipeActions() {
       startX = e.touches[0].clientX;
       currentX = 0;
       isDragging = false;
+      row.classList.add('swiping');
       if (openRow && openRow !== row) {
         openRow.style.transform = 'translate3d(0,0,0)';
         openRow = null;
@@ -158,6 +159,7 @@ function bindRecentSwipeActions() {
     }, { passive: true });
 
     row.addEventListener('touchend', () => {
+      row.classList.remove('swiping');
       if (!isDragging) return;
       if (currentX < -SWIPE_THRESHOLD / 2) {
         row.style.transform = 'translate3d(-152px,0,0)';
@@ -214,8 +216,11 @@ function renderRecentList() {
       <div class="recent-item" data-swipe-row="${e.id}">
         <div class="recent-icon">${ic(iconName, 20)}</div>
         <div class="recent-meta">
-          <div class="recent-title">${escapeHtml(cat.name)}${e.note ? ' · ' + escapeHtml(e.note) : ''}${isAno ? ` <span class="anomaly-badge">${ic('alertTriangle', 12)}</span>` : ''}</div>
-          <div class="recent-sub">${fmtDate(e.date)} · ${ic(pay.icon, 10)} ${escapeHtml(pay.name)}</div>
+          <div class="recent-title">${escapeHtml(cat.name)}${e.note ? ' · ' + escapeHtml(e.note) : ''}${isAno ? ` <span class="badge-anomaly">${ic('alertTriangle', 12)}</span>` : ''}</div>
+          <div class="recent-sub">
+            <span>${fmtDate(e.date)}</span>
+            <span class="badge-payment">${ic(pay.icon, 10)} ${escapeHtml(pay.name)}</span>
+          </div>
         </div>
         <div class="recent-amount">${fmtMoney(e.amount)}</div>
       </div>
