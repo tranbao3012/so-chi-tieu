@@ -197,13 +197,15 @@
   color: var(--danger);
 }
 
+/* ═══════════════ SECTION TITLE (Variant 2 · Mint mờ) ═══════════════ */
 .section-title {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px dashed var(--border);
+  margin: -16px -16px 12px -16px;
+  padding: 12px 16px;
+  background: linear-gradient(90deg, rgba(52, 211, 153, 0.18) 0%, rgba(34, 211, 238, 0.06) 100%);
+  border-bottom: 1px solid rgba(52, 211, 153, 0.15);
 }
 .section-title-left { display: flex; align-items: center; gap: 6px; }
 .section-title-text {
@@ -212,8 +214,6 @@
   color: var(--primary);
   display: inline-flex;
   align-items: center;
-  padding-left: 8px;
-  border-left: 3px solid var(--primary);
   line-height: 1.1;
   letter-spacing: 0.2px;
 }
@@ -412,7 +412,6 @@
 .btn-export-pdf { padding: 8px 12px; border-radius: 10px; background: var(--primary-soft); color: var(--primary); font-weight: 700; font-size: 12px; display: flex; align-items: center; gap: 4px; flex-shrink: 0; -webkit-appearance: none; appearance: none; }
 
 .report-hero { background: var(--surface); border-radius: 16px; padding: 16px; margin-bottom: 12px; border: 1px solid var(--border-soft); overflow: hidden; }
-.report-hero .section-title { margin-bottom: 12px; }
 .report-hero-trend { font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 6px; background: var(--surface-2); color: var(--text-soft); white-space: nowrap; flex-shrink: 0; }
 .report-hero-trend.up { color: var(--danger); background: var(--danger-soft); }
 .report-hero-trend.down { color: var(--primary); background: var(--primary-soft); }
