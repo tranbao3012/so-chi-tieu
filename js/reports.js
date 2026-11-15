@@ -1,6 +1,6 @@
-/* js/reports.js — V2.3 (Hero dùng section-title + amount có nền surface-2)
-   - renderHero(): bỏ meta, dùng .section-title + .report-hero-amount
-   - Bỏ tham số count/avg không dùng */
+/* js/reports.js — V2.4 (Line/Area Chart + Tooltip Bubble)
+   - renderBarChart() -> renderLineChart(): Vẽ SVG mượt mà.
+   - Cập nhật logic show tooltip cho SVG circle. */
 
 import {
   state, reportState,
@@ -13,8 +13,7 @@ import {
   hapticTap
 } from './core.js';
 
-let barInteractionSetup = false;
-let currentBarActive = null;
+let currentPointActive = null;
 
 function safe(id) {
   const el = document.getElementById(id);
@@ -22,9 +21,6 @@ function safe(id) {
   return el;
 }
 
-/* ==================================================================
-   ENTRY
-   ================================================================== */
 export function renderReports() {
   try {
     const reportMonth = reportState.month;
@@ -42,21 +38,18 @@ export function renderReports() {
     try { renderInsights(monthExp, total, prevTotal, days); }
     catch (e) { console.error('[Reports] Insights:', e); }
 
-    try { renderBarChart(monthExp, days, uniqueDays); }
-    catch (e) { console.error('[Reports] BarChart:', e); }
+    try { renderLineChart(monthExp, days, uniqueDays); }
+    catch (e) { console.error('[Reports] LineChart:', e); }
 
     try { renderTop(monthExp); }
     catch (e) { console.error('[Reports] Top:', e); }
 
-    setupBarInteraction();
+    setupChartInteraction();
   } catch (err) {
     console.error('[Reports] Fatal:', err);
   }
 }
 
-/* ==================================================================
-   HERO — dùng .section-title + .report-hero-amount
-   ================================================================== */
 function renderHero(month, total, diffPct, prevTotal) {
   const monthLabelEl = safe('reportMonthLabel');
   if (monthLabelEl) monthLabelEl.textContent = monthLabel(month);
@@ -83,9 +76,6 @@ function renderHero(month, total, diffPct, prevTotal) {
   `;
 }
 
-/* ==================================================================
-   INSIGHTS
-   ================================================================== */
 function renderInsights(monthExp, total, prevTotal, days) {
   const el = safe('reportInsights');
   if (!el) return;
@@ -110,62 +100,96 @@ function renderInsights(monthExp, total, prevTotal, days) {
     </div>`;
 }
 
-/* ==================================================================
-   BAR CHART
-   ================================================================== */
-function renderBarChart(monthExp, days, uniqueDays) {
-  const barsEl = safe('reportBars');
+function renderLineChart(monthExp, days, uniqueDays) {
+  const chartWrap = safe('reportBars');
   const maxEl = safe('reportBarsMax');
   const labelEl = safe('reportBarsLabel');
-  if (!barsEl) return;
+  if (!chartWrap) return;
 
   const dailyMap = new Map();
   const dailyCount = new Map();
-  let skipped = 0;
 
   monthExp.forEach(e => {
-    if (!e || !e.date || typeof e.date !== 'string') { skipped++; return; }
+    if (!e || !e.date || typeof e.date !== 'string') return;
     const parts = e.date.split('-');
-    if (parts.length < 3) { skipped++; return; }
+    if (parts.length < 3) return;
     const d = parseInt(parts[2], 10);
-    if (!Number.isFinite(d)) { skipped++; return; }
+    if (!Number.isFinite(d)) return;
     dailyMap.set(d, (dailyMap.get(d) || 0) + Number(e.amount || 0));
     dailyCount.set(d, (dailyCount.get(d) || 0) + 1);
   });
 
-  const values = Array.from(dailyMap.values());
-  const maxDay = values.length ? Math.max(...values, 0) : 0;
-
-  if (maxEl) maxEl.textContent = maxDay > 0 ? 'Max: ' + fmtMoneyShort(maxDay) : '—';
-  if (labelEl) labelEl.textContent = `${uniqueDays}/${days} ngày`;
-
-  let barsHtml = '';
+  const values = [];
   for (let d = 1; d <= days; d++) {
-    const val = dailyMap.get(d) || 0;
-    const cnt = dailyCount.get(d) || 0;
-    const pct = maxDay > 0 ? (val / maxDay) * 100 : 0;
-    const hasVal = val > 0;
-    const show = days <= 15 || d % 2 === 0 || d === 1 || d === days;
-    const h = hasVal ? Math.max(pct, 2) : 0;
-
-    const barStyle = hasVal
-      ? `height:${h}%; background:linear-gradient(180deg, var(--primary, #34d399) 0%, var(--primary-hover, #10b981) 100%); min-height:3px; width:100%; max-width:18px; border-radius:4px 4px 0 0;`
-      : `height:0; background:transparent; width:100%; max-width:18px;`;
-
-    barsHtml += `<div class="bar-col" data-day="${d}" data-amount="${val}" data-count="${cnt}" style="cursor:pointer;">
-      <div class="bar ${hasVal ? 'has-value' : 'is-empty'}" style="${barStyle}"></div>
-      <div class="bar-label">${show ? d : ''}</div>
-    </div>`;
+    values.push({ day: d, amount: dailyMap.get(d) || 0, count: dailyCount.get(d) || 0 });
   }
 
-  barsEl.innerHTML = barsHtml;
+  const maxDayAmount = Math.max(...values.map(v => v.amount), 0);
+  
+  if (maxEl) maxEl.textContent = maxDayAmount > 0 ? 'Max: ' + fmtMoneyShort(maxDayAmount) : '—';
+  if (labelEl) labelEl.textContent = `${uniqueDays}/${days} ngày`;
 
-  console.log('[Reports] Bar chart rendered:', days, 'days · maxDay =', maxDay, '· skipped =', skipped);
+  if (maxDayAmount === 0) {
+    chartWrap.innerHTML = `<div style="height:180px;display:flex;align-items:center;justify-content:center;color:var(--text-soft);font-size:12px;">Chưa có dữ liệu chi tiêu</div>`;
+    return;
+  }
+
+  const W = 340;
+  const H = 180;
+  const padL = 40;
+  const padR = 10;
+  const padT = 10;
+  const padB = 20;
+  const cw = W - padL - padR;
+  const ch = H - padT - padB;
+
+  let gridLines = '';
+  for (let i = 0; i <= 4; i++) {
+    const y = padT + (ch / 4) * i;
+    const val = maxDayAmount * (1 - i / 4);
+    gridLines += `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" class="chart-grid-line" />`;
+    gridLines += `<text x="${padL - 6}" y="${y + 3}" class="chart-y-label">${fmtMoneyShort(val)}</text>`;
+  }
+
+  const points = values.map((v, i) => {
+    const x = padL + (i / (days - 1 || 1)) * cw;
+    const y = padT + ch - (v.amount / maxDayAmount) * ch;
+    return { ...v, x, y };
+  });
+
+  const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+  const areaPath = `M ${padL} ${padT + ch} ${points.map(p => `L ${p.x} ${p.y}`).join(' ')} L ${W - padR} ${padT + ch} Z`;
+
+  const pointsHtml = points.map(p => {
+    const showLabel = days <= 10 || p.day % 5 === 0 || p.day === 1 || p.day === days;
+    const label = showLabel ? `<text x="${p.x}" y="${H - 4}" class="chart-label">${p.day}</text>` : '';
+    
+    return `
+      <circle cx="${p.x}" cy="${p.y}" r="4" class="chart-point" 
+              data-day="${p.day}" data-amount="${p.amount}" data-count="${p.count}">
+      </circle>
+      ${label}
+    `;
+  }).join('');
+
+  chartWrap.innerHTML = `
+    <div class="chart-svg-wrap">
+      <svg viewBox="0 0 ${W} ${H}">
+        <defs>
+          <linearGradient id="chartAreaGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="var(--primary)" stop-opacity="0.25"/>
+            <stop offset="100%" stop-color="var(--primary)" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        ${gridLines}
+        <path d="${areaPath}" class="chart-area" />
+        <path d="${linePath}" class="chart-line" />
+        ${pointsHtml}
+      </svg>
+    </div>
+  `;
 }
 
-/* ==================================================================
-   TOP CATEGORIES
-   ================================================================== */
 function renderTop(monthExp) {
   const labelEl = safe('reportTopLabel');
   const el = safe('reportTop');
@@ -198,24 +222,19 @@ function renderTop(monthExp) {
       <thead><tr><th>Danh mục</th><th>Số tiền</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>`;
-
-  console.log('[Reports] Top categories rendered:', allCats.length);
 }
 
-/* ==================================================================
-   TOOLTIP
-   ================================================================== */
-function showBarTooltip(el) {
+function showChartTooltip(circleEl) {
   const tt = safe('barTooltip');
   if (!tt) return;
 
-  const day = el.dataset.day;
-  const amount = Number(el.dataset.amount || 0);
-  const count = Number(el.dataset.count || 0);
+  const day = circleEl.dataset.day;
+  const amount = Number(circleEl.dataset.amount || 0);
+  const count = Number(circleEl.dataset.count || 0);
 
-  if (currentBarActive) currentBarActive.classList.remove('active');
-  el.classList.add('active');
-  currentBarActive = el;
+  if (currentPointActive) currentPointActive.classList.remove('active');
+  circleEl.classList.add('active');
+  currentPointActive = circleEl;
 
   tt.innerHTML = `
     <div class="bar-tooltip-label">Ngày ${day}/${reportState.month.getMonth() + 1}</div>
@@ -224,55 +243,55 @@ function showBarTooltip(el) {
 
   tt.classList.add('show');
 
-  const rect = el.getBoundingClientRect();
+  const rect = circleEl.getBoundingClientRect();
   const ttR = tt.getBoundingClientRect();
   let left = rect.left + rect.width / 2 - ttR.width / 2;
-  let top = rect.top - ttR.height - 10;
+  let top = rect.top - ttR.height - 12;
+  
   if (left < 10) left = 10;
   if (left + ttR.width > window.innerWidth - 10) left = window.innerWidth - ttR.width - 10;
-  if (top < 10) top = rect.bottom + 10;
+  if (top < 10) top = rect.bottom + 12;
 
   tt.style.left = left + 'px';
   tt.style.top = top + 'px';
   hapticTap();
 }
 
-function hideBarTooltip() {
+function hideChartTooltip() {
   const tt = safe('barTooltip');
   if (tt) tt.classList.remove('show');
-  if (currentBarActive) {
-    currentBarActive.classList.remove('active');
-    currentBarActive = null;
+  if (currentPointActive) {
+    currentPointActive.classList.remove('active');
+    currentPointActive = null;
   }
 }
 
-function setupBarInteraction() {
-  if (barInteractionSetup) return;
+function setupChartInteraction() {
   const chart = safe('reportBars');
   if (!chart) return;
-  barInteractionSetup = true;
 
-  let hideTimer = null;
+  if (!chart.dataset.bound) {
+    chart.dataset.bound = "true";
+    
+    let hideTimer = null;
 
-  chart.addEventListener('click', (e) => {
-    const bar = e.target.closest('.bar-col');
-    if (!bar) return;
-    showBarTooltip(bar);
-    if (hideTimer) clearTimeout(hideTimer);
-    hideTimer = setTimeout(hideBarTooltip, 3000);
-  });
+    chart.addEventListener('click', (e) => {
+      const point = e.target.closest('.chart-point');
+      if (!point) return;
+      showChartTooltip(point);
+      if (hideTimer) clearTimeout(hideTimer);
+      hideTimer = setTimeout(hideChartTooltip, 3000);
+    });
 
-  document.addEventListener('click', (e) => {
-    if (!e.target.closest('#reportBars') && !e.target.closest('#barTooltip')) {
-      if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
-      hideBarTooltip();
-    }
-  });
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#reportBars') && !e.target.closest('#barTooltip')) {
+        if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
+        hideChartTooltip();
+      }
+    });
+  }
 }
 
-/* ==================================================================
-   PUBLIC API
-   ================================================================== */
 export function renderReportsTab() {
   renderReports();
 }
