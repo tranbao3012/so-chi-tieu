@@ -12,8 +12,12 @@ import {
 
 import { logout, markLocalChange, saveConfig } from './sync.js';
 
+let reminderInterval = null;
+let lastNotifiedMinute = '';
+
 export function renderSettings() {
   updateSyncUI();
+  updateReminderUI();
 }
 
 function updateSyncUI() {
@@ -32,6 +36,21 @@ function updateSyncUI() {
 
   const connected = !!(savedPat && savedPin && savedGistId);
   progressFill.classList.toggle('connected', connected);
+}
+
+function updateReminderUI() {
+  const toggle = document.getElementById('reminderToggle');
+  const body = document.getElementById('reminderBody');
+  const timeInput = document.getElementById('reminderTime');
+
+  if (!toggle || !body || !timeInput) return;
+
+  const isEnabled = state.settings.reminderEnabled || false;
+  const savedTime = state.settings.reminderTime || '20:00';
+
+  toggle.checked = isEnabled;
+  timeInput.value = savedTime;
+  body.classList.toggle('hidden', !isEnabled);
 }
 
 function setupCollapse(toggleId, bodyId) {
@@ -131,6 +150,36 @@ function importJson(file) {
   reader.readAsText(file);
 }
 
+export function checkReminder() {
+  if (!state.settings.reminderEnabled) return;
+  
+  const timeStr = state.settings.reminderTime || '20:00';
+  const now = new Date();
+  const currentHourMin = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+  if (currentHourMin === timeStr && lastNotifiedMinute !== currentHourMin) {
+    lastNotifiedMinute = currentHourMin;
+    
+    if (Notification.permission === 'granted') {
+      navigator.serviceWorker.ready.then(reg => {
+        reg.showNotification('Quản Lý Chi Tiêu', {
+          body: 'Đã đến giờ ghi chép chi tiêu hôm nay. Hãy dành 1 phút để cập nhật nhé!',
+          icon: 'icons/icon-192.png',
+          badge: 'icons/favicon-32.png',
+          vibrate: [200, 100, 200]
+        });
+      }).catch(err => {
+        console.error('Lỗi gửi thông báo:', err);
+      });
+    }
+  }
+}
+
+function startReminderDaemon() {
+  if (reminderInterval) clearInterval(reminderInterval);
+  reminderInterval = setInterval(checkReminder, 30000);
+}
+
 export function bindSettingsTabEvents() {
   setupCollapse('syncToggle', 'syncBody');
   setupCollapse('backupToggle', 'backupBody');
@@ -202,6 +251,54 @@ export function bindSettingsTabEvents() {
     });
   }
 
+  const reminderToggle = document.getElementById('reminderToggle');
+  if (reminderToggle) {
+    reminderToggle.addEventListener('change', async (e) => {
+      hapticTap();
+      const isChecked = e.target.checked;
+
+      if (isChecked) {
+        if (!('Notification' in window)) {
+          toast('Thiết bị không hỗ trợ thông báo', 'error');
+          e.target.checked = false;
+          return;
+        }
+
+        if (Notification.permission !== 'granted') {
+          const permission = await Notification.requestPermission();
+          if (permission !== 'granted') {
+            toast('Bạn cần cấp quyền thông báo cho ứng dụng', 'error');
+            e.target.checked = false;
+            return;
+          }
+        }
+        state.settings.reminderEnabled = true;
+      } else {
+        state.settings.reminderEnabled = false;
+      }
+      
+      saveState();
+      markLocalChange();
+      updateReminderUI();
+      startReminderDaemon();
+    });
+  }
+
+  const reminderTime = document.getElementById('reminderTime');
+  if (reminderTime) {
+    reminderTime.addEventListener('change', (e) => {
+      const val = e.target.value;
+      if (val) {
+        state.settings.reminderTime = val;
+        saveState();
+        markLocalChange();
+        toast('Đã lưu giờ nhắc nhở');
+      }
+    });
+  }
+
   document.addEventListener('sync:user', updateSyncUI);
   document.addEventListener('sync:logout', updateSyncUI);
+  
+  startReminderDaemon();
 }
