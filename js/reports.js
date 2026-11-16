@@ -1,7 +1,3 @@
-/* js/reports.js — V2.4 (Line/Area Chart + Tooltip Bubble)
-   - renderBarChart() -> renderLineChart(): Vẽ SVG mượt mà.
-   - Cập nhật logic show tooltip cho SVG circle. */
-
 import {
   state, reportState,
   ic, escapeHtml,
@@ -13,7 +9,7 @@ import {
   hapticTap
 } from './core.js';
 
-let currentPointActive = null;
+let currentBarActive = null;
 
 function safe(id) {
   const el = document.getElementById(id);
@@ -38,8 +34,8 @@ export function renderReports() {
     try { renderInsights(monthExp, total, prevTotal, days); }
     catch (e) { console.error('[Reports] Insights:', e); }
 
-    try { renderLineChart(monthExp, days, uniqueDays); }
-    catch (e) { console.error('[Reports] LineChart:', e); }
+    try { renderBarChart(monthExp, days, uniqueDays); }
+    catch (e) { console.error('[Reports] BarChart:', e); }
 
     try { renderTop(monthExp); }
     catch (e) { console.error('[Reports] Top:', e); }
@@ -100,7 +96,7 @@ function renderInsights(monthExp, total, prevTotal, days) {
     </div>`;
 }
 
-function renderLineChart(monthExp, days, uniqueDays) {
+function renderBarChart(monthExp, days, uniqueDays) {
   const chartWrap = safe('reportBars');
   const maxEl = safe('reportBarsMax');
   const labelEl = safe('reportBarsLabel');
@@ -143,6 +139,9 @@ function renderLineChart(monthExp, days, uniqueDays) {
   const cw = W - padL - padR;
   const ch = H - padT - padB;
 
+  const colWidth = cw / days;
+  const barWidth = Math.max(4, Math.min(16, colWidth * 0.7));
+
   let gridLines = '';
   for (let i = 0; i <= 4; i++) {
     const y = padT + (ch / 4) * i;
@@ -151,40 +150,35 @@ function renderLineChart(monthExp, days, uniqueDays) {
     gridLines += `<text x="${padL - 6}" y="${y + 3}" class="chart-y-label">${fmtMoneyShort(val)}</text>`;
   }
 
-  const points = values.map((v, i) => {
-    const x = padL + (i / (days - 1 || 1)) * cw;
-    const y = padT + ch - (v.amount / maxDayAmount) * ch;
-    return { ...v, x, y };
-  });
+  let barsHtml = '';
+  values.forEach((p) => {
+    const x = padL + (p.day - 1) * colWidth + (colWidth - barWidth) / 2;
+    const barH = (p.amount / maxDayAmount) * ch;
+    const y = padT + ch - barH;
 
-  const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
-  const areaPath = `M ${padL} ${padT + ch} ${points.map(p => `L ${p.x} ${p.y}`).join(' ')} L ${W - padR} ${padT + ch} Z`;
+    if (p.amount > 0) {
+      barsHtml += `<rect x="${x}" y="${y}" width="${barWidth}" height="${barH}" rx="3" class="chart-bar" data-day="${p.day}" data-amount="${p.amount}" data-count="${p.count}"></rect>`;
+    } else {
+      barsHtml += `<rect x="${x}" y="${padT + ch - 2}" width="${barWidth}" height="2" rx="1" class="chart-bar-empty"></rect>`;
+    }
 
-  const pointsHtml = points.map(p => {
     const showLabel = days <= 10 || p.day % 5 === 0 || p.day === 1 || p.day === days;
-    const label = showLabel ? `<text x="${p.x}" y="${H - 4}" class="chart-label">${p.day}</text>` : '';
-    
-    return `
-      <circle cx="${p.x}" cy="${p.y}" r="4" class="chart-point" 
-              data-day="${p.day}" data-amount="${p.amount}" data-count="${p.count}">
-      </circle>
-      ${label}
-    `;
-  }).join('');
+    if (showLabel) {
+      barsHtml += `<text x="${x + barWidth/2}" y="${H - 4}" class="chart-label">${p.day}</text>`;
+    }
+  });
 
   chartWrap.innerHTML = `
     <div class="chart-svg-wrap">
       <svg viewBox="0 0 ${W} ${H}">
         <defs>
-          <linearGradient id="chartAreaGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="var(--primary)" stop-opacity="0.25"/>
-            <stop offset="100%" stop-color="var(--primary)" stop-opacity="0"/>
+          <linearGradient id="chartBarGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="var(--primary)" />
+            <stop offset="100%" stop-color="var(--primary-hover)" />
           </linearGradient>
         </defs>
         ${gridLines}
-        <path d="${areaPath}" class="chart-area" />
-        <path d="${linePath}" class="chart-line" />
-        ${pointsHtml}
+        ${barsHtml}
       </svg>
     </div>
   `;
@@ -224,17 +218,17 @@ function renderTop(monthExp) {
     </table>`;
 }
 
-function showChartTooltip(circleEl) {
+function showChartTooltip(barEl) {
   const tt = safe('barTooltip');
   if (!tt) return;
 
-  const day = circleEl.dataset.day;
-  const amount = Number(circleEl.dataset.amount || 0);
-  const count = Number(circleEl.dataset.count || 0);
+  const day = barEl.dataset.day;
+  const amount = Number(barEl.dataset.amount || 0);
+  const count = Number(barEl.dataset.count || 0);
 
-  if (currentPointActive) currentPointActive.classList.remove('active');
-  circleEl.classList.add('active');
-  currentPointActive = circleEl;
+  if (currentBarActive) currentBarActive.classList.remove('active');
+  barEl.classList.add('active');
+  currentBarActive = barEl;
 
   tt.innerHTML = `
     <div class="bar-tooltip-label">Ngày ${day}/${reportState.month.getMonth() + 1}</div>
@@ -243,7 +237,7 @@ function showChartTooltip(circleEl) {
 
   tt.classList.add('show');
 
-  const rect = circleEl.getBoundingClientRect();
+  const rect = barEl.getBoundingClientRect();
   const ttR = tt.getBoundingClientRect();
   let left = rect.left + rect.width / 2 - ttR.width / 2;
   let top = rect.top - ttR.height - 12;
@@ -260,9 +254,9 @@ function showChartTooltip(circleEl) {
 function hideChartTooltip() {
   const tt = safe('barTooltip');
   if (tt) tt.classList.remove('show');
-  if (currentPointActive) {
-    currentPointActive.classList.remove('active');
-    currentPointActive = null;
+  if (currentBarActive) {
+    currentBarActive.classList.remove('active');
+    currentBarActive = null;
   }
 }
 
@@ -276,9 +270,9 @@ function setupChartInteraction() {
     let hideTimer = null;
 
     chart.addEventListener('click', (e) => {
-      const point = e.target.closest('.chart-point');
-      if (!point) return;
-      showChartTooltip(point);
+      const bar = e.target.closest('.chart-bar');
+      if (!bar) return;
+      showChartTooltip(bar);
       if (hideTimer) clearTimeout(hideTimer);
       hideTimer = setTimeout(hideChartTooltip, 3000);
     });
