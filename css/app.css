@@ -518,6 +518,17 @@
   overflow: hidden;
 }
 
+.settings-card.static-card {
+  padding: 0;
+}
+
+.settings-header-static {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+}
+
 .settings-title {
   font-size: 13px;
   font-weight: 800;
@@ -645,6 +656,73 @@
 .settings-desc { font-size: 11px; color: var(--text-soft); margin-top: 2px; line-height: 1.4; }
 .form-input { padding: 8px 10px; border-radius: 8px; background: var(--surface-2); border: 1px solid var(--border); font-size: 13px; font-weight: 700; color: var(--text); outline: none; text-align: right; width: 100px; flex-shrink: 0; -webkit-appearance: none; appearance: none; }
 .form-input:focus { border-color: var(--primary); }
+
+/* ═══════════════ REMINDER SWITCH & TIME ═══════════════ */
+.reminder-body {
+  padding: 0 16px 16px;
+  display: block;
+}
+.reminder-body.hidden {
+  display: none;
+}
+
+.ios-switch {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 26px;
+  flex-shrink: 0;
+}
+.ios-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.ios-switch .slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: var(--surface-3);
+  transition: .3s;
+  border-radius: 26px;
+}
+.ios-switch .slider::before {
+  position: absolute;
+  content: "";
+  height: 22px;
+  width: 22px;
+  left: 2px;
+  bottom: 2px;
+  background-color: #fff;
+  transition: .3s;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+.ios-switch input:checked + .slider {
+  background-color: var(--primary);
+}
+.ios-switch input:checked + .slider::before {
+  transform: translateX(20px);
+}
+
+.time-input {
+  width: 100px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  text-align: center;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.time-input::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 0.6;
+  cursor: pointer;
+}
 
 .app-footer {
   margin-top: 24px;
