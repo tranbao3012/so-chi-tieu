@@ -16,7 +16,7 @@ import {
 
 import { renderReportsTab, bindReportTabEvents } from './reports.js';
 
-import { renderSettings, bindSettingsTabEvents } from './settings.js';
+import { renderSettings, bindSettingsTabEvents, checkReminder } from './settings.js';
 
 document.documentElement.setAttribute('data-platform', PLATFORM);
 
@@ -270,6 +270,14 @@ async function setupSync() {
   }
 }
 
+function setupReminderCheck() {
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      checkReminder();
+    }
+  });
+}
+
 function init() {
   loadState();
   applyTheme();
@@ -286,6 +294,7 @@ function init() {
   try { bindStateChanged(); } catch (e) { console.error('bindStateChanged', e); }
   try { setupScrollBehavior(); } catch (e) { console.error('setupScrollBehavior', e); }
   try { setupKeyboardHandling(); } catch (e) { console.error('setupKeyboardHandling', e); }
+  try { setupReminderCheck(); } catch (e) { console.error('setupReminderCheck', e); }
 
   renderTab('dashboard');
 
