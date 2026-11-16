@@ -1,7 +1,7 @@
 import {
   state, AI,
   ic, escapeHtml,
-  fmtMoney, fmtDate, dayIso,
+  fmtMoney, fmtDate, dayIso, todayIso,
   getDayExpenses,
   calcSummary, calcTrend,
   getCategory, getCategoryIcon, getPayment,
@@ -11,6 +11,17 @@ import {
 
 import { markLocalChange } from './sync.js';
 import { openExpenseModal } from './expenses.js';
+
+function getRelativeDate(iso) {
+  if (!iso) return '';
+  const today = todayIso();
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  const yest = dayIso(d);
+  if (iso === today) return 'Hôm nay';
+  if (iso === yest) return 'Hôm qua';
+  return fmtDate(iso);
+}
 
 function renderBalanceCard() {
   const el = document.getElementById('balanceCard');
@@ -214,15 +225,19 @@ function renderRecentList() {
         <button class="swipe-action-btn delete" data-del-expense="${e.id}">${ic('trash', 18)}<span>Xoá</span></button>
       </div>
       <div class="recent-item" data-swipe-row="${e.id}">
-        <div class="recent-icon">${ic(iconName, 20)}</div>
+        <div class="recent-icon-wrap ${isAno ? 'warning' : ''}">${ic(iconName, 22)}</div>
         <div class="recent-meta">
-          <div class="recent-title">${escapeHtml(cat.name)}${e.note ? ' · ' + escapeHtml(e.note) : ''}${isAno ? ` <span class="badge-anomaly">${ic('alertTriangle', 12)}</span>` : ''}</div>
-          <div class="recent-sub">
-            <span>${fmtDate(e.date)}</span>
-            <span class="badge-payment">${ic(pay.icon, 10)} ${escapeHtml(pay.name)}</span>
+          <div class="recent-top">
+            <span class="recent-title">${escapeHtml(cat.name)}</span>
+            ${e.note ? `<span class="note-separator">·</span><span class="recent-note">${escapeHtml(e.note)}</span>` : ''}
+            ${isAno ? `<span class="badge-anomaly">${ic('alertTriangle', 12)} Bất thường</span>` : ''}
+          </div>
+          <div class="recent-bottom">
+            <span>${getRelativeDate(e.date)}</span>
+            <span class="badge-payment">${ic(pay.icon, 12)} ${escapeHtml(pay.name)}</span>
           </div>
         </div>
-        <div class="recent-amount">${fmtMoney(e.amount)}</div>
+        <div class="recent-amount negative">-${fmtMoney(e.amount)}</div>
       </div>
     </div>`;
   }).join('');
