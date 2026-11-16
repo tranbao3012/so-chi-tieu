@@ -198,6 +198,28 @@
         </div>
       </div>
 
+      <div class="settings-card static-card">
+        <div class="settings-header-static">
+          <span class="settings-title" style="margin: 0;">Nhắc nhở ghi chép</span>
+          <label class="ios-switch">
+            <input type="checkbox" id="reminderToggle">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="reminder-body" id="reminderBody">
+          <div class="settings-row" style="margin-top: 12px;">
+            <div class="settings-meta">
+              <div class="settings-label">Thời gian thông báo</div>
+              <div class="settings-desc">Hệ thống sẽ nhắc bạn ghi chép vào giờ này</div>
+            </div>
+            <input type="time" id="reminderTime" class="form-input time-input" value="20:00">
+          </div>
+          <div class="settings-desc" style="margin-top: 8px; color: var(--warning); font-size: 10px; line-height: 1.4;">
+            * Lưu ý: Thông báo chỉ hoạt động khi ứng dụng đang chạy ngầm hoặc vừa mở lại. Nếu tắt hẳn ứng dụng, hệ điều hành có thể chặn thông báo.
+          </div>
+        </div>
+      </div>
+
       <div class="app-footer">
         Copyright by Tran Bao
       </div>
