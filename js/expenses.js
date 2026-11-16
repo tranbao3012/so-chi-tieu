@@ -16,6 +16,17 @@ let editingCatId = null;
 let isLongPress = false;
 let pressTimer = null;
 
+function getRelativeDate(iso) {
+  if (!iso) return '';
+  const today = todayIso();
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  const yest = dayIso(d);
+  if (iso === today) return 'Hôm nay';
+  if (iso === yest) return 'Hôm qua';
+  return fmtDate(iso);
+}
+
 function renderSmartFilters() {
   const el = document.getElementById('smartFilters');
   if (!el) return;
@@ -89,7 +100,7 @@ function renderExpenses() {
 
     return `<div class="expense-group">
       <div class="group-header">
-        <div class="group-header-left">${ic('calendar')}<span>${fmtDate(date)}</span></div>
+        <div class="group-header-left">${ic('calendar')}<span>${getRelativeDate(date)}</span></div>
         <span class="group-total">${fmtMoney(dayTotal)}</span>
       </div>
       ${items.map(e => {
@@ -103,17 +114,19 @@ function renderExpenses() {
             <button class="swipe-action-btn edit" data-edit-expense="${e.id}">${ic('edit', 18)}<span>Sửa</span></button>
             <button class="swipe-action-btn delete" data-del-expense="${e.id}">${ic('trash', 18)}<span>Xoá</span></button>
           </div>
-          <div class="expense-row${isAno ? ' anomaly' : ''}" data-swipe-row="${e.id}">
-            <div class="expense-icon">${ic(iconName, 20)}</div>
+          <div class="expense-row" data-swipe-row="${e.id}">
+            <div class="expense-icon-wrap ${isAno ? 'warning' : ''}">${ic(iconName, 22)}</div>
             <div class="expense-body">
               <div class="expense-top">
                 <span class="expense-category">${escapeHtml(cat.name)}</span>
-                <span class="badge-payment">${ic(pay.icon, 10)} ${escapeHtml(pay.name)}</span>
-                ${isAno ? `<span class="badge-anomaly">${ic('alertTriangle', 12)}</span>` : ''}
+                ${e.note ? `<span class="note-separator">·</span><span class="expense-note">${escapeHtml(e.note)}</span>` : ''}
+                ${isAno ? `<span class="badge-anomaly">${ic('alertTriangle', 12)} Bất thường</span>` : ''}
               </div>
-              <div class="expense-note">${escapeHtml(e.note || 'Không có ghi chú')}</div>
+              <div class="expense-bottom">
+                <span class="badge-payment">${ic(pay.icon, 12)} ${escapeHtml(pay.name)}</span>
+              </div>
             </div>
-            <div class="expense-amount">${fmtMoney(e.amount)}</div>
+            <div class="expense-amount negative">-${fmtMoney(e.amount)}</div>
           </div>
         </div>`;
       }).join('')}
